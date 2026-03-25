@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { membroService } from '../../api/membroService';
+import membroService from '../../api/membroService';
 
 export function useMembros() {
     const [membros, setMembros] = useState([]);

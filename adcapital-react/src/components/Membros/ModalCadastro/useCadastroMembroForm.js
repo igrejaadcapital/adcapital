@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { membroService } from '../../../api/membroService';
+import membroService from '../../../api/membroService';
 
 export function useCadastroMembroForm(membro, membros, graus, onClose, onSuccess) {
     const [formData, setFormData] = useState({

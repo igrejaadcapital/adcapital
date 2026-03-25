@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Header from '../Header';
 import MembroCard from './MembroCard';
 import CadastroMainFormModal from './ModalCadastro/CadastroMainFormModal';
-import { membroService } from '../../api/membroService';
+import membroService from '../../api/membroService';
 
 export default function MembrosPage({
   membros,
