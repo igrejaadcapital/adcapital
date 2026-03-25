@@ -26,3 +26,32 @@ class MembroViewSet(viewsets.ModelViewSet):
     """
     queryset = Membro.objects.all()
     serializer_class = MembroSerializer
+
+    def perform_create(self, serializer):
+        self._salvar_com_parentescos(serializer)
+
+    def perform_update(self, serializer):
+        self._salvar_com_parentescos(serializer)
+
+    def _salvar_com_parentescos(self, serializer):
+        membro = serializer.save()
+        parentescos_data = self.request.data.get('parentescos_novo', [])
+        
+        if self.action == 'update' or self.action == 'partial_update':
+            # Remove apenas os vínculos que este membro criou originalmente
+            # Isso evita erros de "Unique Constraint" ao tentar recriar o que já existe
+            Parentesco.objects.filter(membro_origem=membro).delete()
+
+        for item in parentescos_data:
+            # Frontend pode enviar "parente_id" ou "membro_destino"
+            p_id = item.get('parente_id') or item.get('membro_destino')
+            grau = item.get('grau')
+
+            # Só tenta criar se o ID do parente for diferente do ID do próprio membro
+            if p_id and grau and str(p_id) != str(membro.id):
+                # Usamos get_or_create para não dar erro se o inverso já existir
+                Parentesco.objects.get_or_create(
+                    membro_origem=membro,
+                    membro_destino_id=p_id,
+                    defaults={'grau': grau}
+                )
