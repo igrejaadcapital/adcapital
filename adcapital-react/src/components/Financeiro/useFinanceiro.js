@@ -1,70 +1,62 @@
-// src/components/Financeiro/useFinanceiro.js
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import financeiroService from '../../api/financeiroService';
 
 export function useFinanceiro() {
-  
-  const [transacoes, setTransacoes] = useState(() => {
-    
-    const salvas = localStorage.getItem('transacoes');
-    return salvas ? JSON.parse(salvas) : [
-      { id: 1, data: '2026-03-12', descricao: 'Dízimos e Ofertas', sub: 'Dízimos', valor: 850, tipo: 'ENTRADA' },
-      { id: 2, data: '2026-03-10', descricao: 'Pagamento Energia', sub: 'Luz', valor: 340, tipo: 'SAIDA' },
-    ];
+  const [transacoes, setTransacoes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [dashboardData, setDashboardData] = useState({
+    total_entradas: 0,
+    total_saidas: 0,
+    saldo_atual: 0
   });
 
-  // Estados dos Filtros
-  const [buscaTexto, setBuscaTexto] = useState(''); // Para Descrição e Categoria
-  const [buscaMes, setBuscaMes] = useState('');     // Formato "YYYY-MM"
+  const [buscaTexto, setBuscaTexto] = useState('');
+  const [buscaMes, setBuscaMes] = useState('');
 
-  // Processa a lista filtrada
+  const carregarDados = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [resTransacoes, resDash] = await Promise.all([
+        financeiroService.listar(),
+        financeiroService.getDashboard()
+      ]);
+      setTransacoes(resTransacoes.data);
+      setDashboardData(resDash.data);
+    } catch (error) {
+      console.error('Erro ao carregar o financeiro:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    carregarDados();
+  }, [carregarDados]);
+
   const transacoesFiltradas = useMemo(() => {
     return transacoes.filter(t => {
-
       const termo = buscaTexto.toLowerCase();
-
-      // Se a descrição estiver vazia, usamos a subcategoria para a comparação
-      const descricaoEfetiva = t.descricao?.trim() || t.sub;
+      // O modelo salva na prop 'categoria', não tem mais 'sub'
+      const descricaoEfetiva = t.descricao?.trim() || t.categoria || '';
       
-      // Lógica de Texto (Busca na descrição ou na sub-categoria)
       const matchTexto = 
         descricaoEfetiva.toLowerCase().includes(termo) || 
-        t.sub.toLowerCase().includes(termo);
+        (t.categoria || '').toLowerCase().includes(termo);
       
-      // Lógica de Mês
       const matchMes = buscaMes ? t.data.startsWith(buscaMes) : true;
-      
       return matchTexto && matchMes;
     });
-  },[transacoes, buscaTexto, buscaMes]);
-
-  const atualizarTransacoes = (novasTransacoes) => {
-    setTransacoes(novasTransacoes);
-    localStorage.setItem('transacoes', JSON.stringify(novasTransacoes));
-  };
-
-  const { totalEntradas, totalSaidas, saldoAtual } = useMemo(() => {
-    const totalEntradas = transacoesFiltradas
-      .filter((t) => t.tipo === 'ENTRADA')
-      .reduce((acc, t) => acc + t.valor, 0);
-
-    const totalSaidas = transacoesFiltradas
-      .filter((t) => t.tipo === 'SAIDA')
-      .reduce((acc, t) => acc + t.valor, 0);
-
-    const saldoBase = 15250.0;
-    const saldoAtual = saldoBase + totalEntradas - totalSaidas;
-
-    return { totalEntradas: totalEntradas, totalSaidas: totalSaidas, saldoAtual: saldoAtual };
-  }, [transacoesFiltradas]);
+  }, [transacoes, buscaTexto, buscaMes]);
 
   return {
     transacoes,
     transacoesFiltradas,
     buscaTexto, setBuscaTexto,
     buscaMes, setBuscaMes,
-    atualizarTransacoes,
-    totalEntradas,
-    totalSaidas,
-    saldoAtual,
+    atualizarTransacoes: carregarDados,
+    totalEntradas: dashboardData.total_entradas,
+    totalSaidas: dashboardData.total_saidas,
+    saldoAtual: dashboardData.saldo_atual,
+    loading
   };
 }

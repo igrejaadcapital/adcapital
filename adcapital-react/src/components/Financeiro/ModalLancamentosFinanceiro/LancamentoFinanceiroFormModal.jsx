@@ -104,20 +104,35 @@ export default function LancamentoFinanceiroFormModal({ tipo, onClose, onSave, c
                         />
                     </div>
 
+                    {/* Comprovante / Arquivo */}
+                    <div className="space-y-1">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Comprovante (Imagem/PDF)</label>
+                        <input 
+                            type="file" 
+                            className="w-full bg-slate-50 border-none rounded-2xl p-4 text-xs font-bold text-slate-700 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer transition-all"
+                            onChange={(e) => setFormData({...formData, comprovante: e.target.files[0]})}
+                        />
+                        {lancamento?.comprovante && (
+                            <a href={lancamento.comprovante} target="_blank" rel="noreferrer" className="text-[10px] text-blue-500 font-bold underline ml-1 inline-block mt-2">
+                                📎 Ver Comprovante Anexado
+                            </a>
+                        )}
+                    </div>
+
                     {/* Botões de Ação */}
-                    <div className="flex gap-3 pt-4">
+                    <div className="flex flex-col gap-3 pt-4">
+                        <button 
+                            type="submit" 
+                            className={`w-full py-4 rounded-2xl font-black text-[10px] uppercase text-white shadow-lg transition-all ${tipo === 'ENTRADA' ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-100' : 'bg-red-500 hover:bg-red-600 shadow-red-100'}`}
+                        >
+                            Confirmar Lançamento
+                        </button>
                         <button 
                             type="button" 
                             onClick={onClose} 
-                            className="flex-1 bg-slate-100 text-slate-400 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest"
+                            className="w-full bg-slate-100 hover:bg-slate-200 transition-colors text-slate-500 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest"
                         >
                             Cancelar
-                        </button>
-                        <button 
-                            type="submit" 
-                            className={`flex-[2] py-4 rounded-2xl font-black text-[10px] uppercase text-white shadow-lg transition-all ${tipo === 'ENTRADA' ? 'bg-emerald-500 shadow-emerald-100' : 'bg-red-500 shadow-red-100'}`}
-                        >
-                            Confirmar
                         </button>
                     </div>
                 </form>

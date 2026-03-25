@@ -1,23 +1,31 @@
-// src/api/financeiroService.js
 import api from './config';
 
-export const financeiroService = {
-    // Procura todos os lançamentos (Entradas e Saídas)
-    listar: () => api.get('/financeiro/lancamentos/'),
-
-    // Guarda um novo lançamento ou atualiza um existente
-    // Se tiver ID, usa PUT (editar), se não tiver, usa POST (novo)
-    salvar: (dados) => {
-        if (dados.id && typeof dados.id === 'number' && dados.id < 1000000000) {
-            return api.put(`/financeiro/lancamentos/${dados.id}/`, dados);
+const financeiroService = {
+    getDashboard: () => api.get('/financeiro/dashboard/'),
+    listar: () => api.get('/financeiro/transacoes/'),
+    
+    salvar: (id, dados) => {
+        const formData = new FormData();
+        for (const key in dados) {
+            if (dados[key] !== null && dados[key] !== undefined) {
+                // If it's a file, append the File object itself
+                formData.append(key, dados[key]);
+            }
         }
-        // Nota: Se o ID for um timestamp gigante do JS, o Django deve tratar como novo
-        return api.post('/financeiro/lancamentos/', dados);
+        
+        const config = {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        };
+
+        if (id) {
+            return api.put(`/financeiro/transacoes/${id}/`, formData, config);
+        }
+        return api.post('/financeiro/transacoes/', formData, config);
     },
 
-    // Elimina um registo
-    excluir: (id) => api.delete(`/financeiro/lancamentos/${id}/`),
-
-    // Procura as categorias (Dízimos, Ofertas, Aluguer, etc.) que vêm do banco de dados
-    listarCategorias: (tipo) => api.get(`/financeiro/categorias/?tipo=${tipo}`)
+    excluir: (id) => api.delete(`/financeiro/transacoes/${id}/`),
 };
+
+export default financeiroService;

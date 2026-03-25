@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import LancamentoFinanceiroFormModal from './ModalLancamentosFinanceiro/LancamentoFinanceiroFormModal';
+import financeiroService from '../../api/financeiroService';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
 export default function FinanceiroMain({
     transacoes,
@@ -31,27 +33,31 @@ export default function FinanceiroMain({
         setMostrarModal(true);
     };
 
-    const handleSave = (dados) => {
-        // REGRA: Se a descrição estiver vazia ou for apenas espaços, assume a categoria
+    const handleSave = async (dados) => {
         const dadosTratados = {
             ...dados,
-            descricao: dados.descricao?.trim() ? dados.descricao : dados.sub
+            descricao: dados.descricao?.trim() ? dados.descricao : dados.categoria
         };
 
-        if (lancamentoParaEditar) {
-            const listaNova = transacoes.map(t => t.id === dadosTratados.id ? dadosTratados : t);
-            atualizarTransacoes(listaNova);
-        } else {
-            atualizarTransacoes([dadosTratados, ...transacoes]);
+        try {
+            await financeiroService.salvar(lancamentoParaEditar?.id, dadosTratados);
+            atualizarTransacoes();
+            setMostrarModal(false);
+        } catch(e) {
+            console.error(e);
+            alert("Erro ao salvar." + (e.response?.data ? JSON.stringify(e.response.data) : ""));
         }
-        setMostrarModal(false);
     };
 
-    // Função para excluir
-    const handleDelete = (id) => {
+    const handleDelete = async (id) => {
         if (window.confirm("Deseja realmente excluir este lançamento?")) {
-            const listaNova = transacoes.filter(t => t.id !== id);
-            atualizarTransacoes(listaNova);
+            try {
+                await financeiroService.excluir(id);
+                atualizarTransacoes();
+            } catch(e) {
+                console.error(e);
+                alert("Erro ao remover.");
+            }
         }
     };
 
@@ -68,10 +74,38 @@ export default function FinanceiroMain({
                     <h2 className="text-2xl font-black text-slate-800">R$ {totalEntradas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</h2>
                 </div>
                 <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm">
-                    <p className="text-[10px] font-black text-red-500 uppercase tracking-widest">Saídas (Mês)</p>
+                    <p className="text-[10px] font-black text-red-500 uppercase tracking-widest">Saídas</p>
                     <h2 className="text-2xl font-black text-slate-800">R$ {totalSaidas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</h2>
                 </div>
             </div>
+
+            {/* Gráfico de Visão Geral */}
+            {(totalEntradas > 0 || totalSaidas > 0) && (
+                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm mb-6 flex flex-col items-center">
+                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Proporção (Entradas vs Saídas)</h3>
+                    <div className="w-full h-48">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie
+                                    data={[
+                                        { name: 'Entradas', value: totalEntradas },
+                                        { name: 'Saídas', value: totalSaidas }
+                                    ]}
+                                    innerRadius={40}
+                                    outerRadius={80}
+                                    paddingAngle={5}
+                                    dataKey="value"
+                                >
+                                    <Cell fill="#10b981" />
+                                    <Cell fill="#ef4444" />
+                                </Pie>
+                                <Tooltip formatter={(val) => `R$ ${val.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`} />
+                                <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+            )}
 
             {/* Barra de Filtros - Alinhamento Natural */}
             <div className="flex flex-col md:flex-row gap-4 bg-white p-4 rounded-3xl border border-slate-100 shadow-sm mb-6 items-end">
@@ -157,12 +191,12 @@ export default function FinanceiroMain({
                                 <td className="p-4 text-xs font-bold text-slate-500">{new Date(t.data + 'T00:00:00').toLocaleDateString('pt-BR')}</td>
                                 <td className="p-4">
                                     <div className="flex flex-col">
-                                        <span className="font-bold text-slate-700">
-                                            {/* Se descrição estiver vazia ou apenas espaços, mostra a categoria */}
-                                            {t.descricao?.trim() ? t.descricao : t.sub}
+                                        <span className="font-bold text-slate-700 flex items-center gap-2">
+                                            {t.descricao?.trim() ? t.descricao : t.categoria}
+                                            {t.comprovante && <span title="Possui comprovante anexo" className="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full font-black">📎 Anexo</span>}
                                         </span>
                                         <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                                            {t.sub}
+                                            {t.categoria}
                                         </span>
                                     </div>
                                 </td>
