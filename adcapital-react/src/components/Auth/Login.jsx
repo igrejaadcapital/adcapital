@@ -19,7 +19,7 @@ export default function Login() {
       <div className="bg-white p-10 rounded-[2.5rem] shadow-xl w-full max-w-md border border-slate-200">
         <div className="flex flex-col items-center mb-8">
           <img src="/logo.png" alt="Logo AD Capital" className="h-16 w-auto mb-4 object-contain rounded-sm" />
-          <h1 className="text-2xl font-black text-slate-800 tracking-tight">AD Capital Igreja</h1>
+          <h1 className="text-2xl font-black text-slate-800 tracking-tight">Igreja AD Capital</h1>
           <p className="text-sm text-slate-500 font-medium">Acesso Restrito do Sistema</p>
         </div>
 
@@ -32,7 +32,7 @@ export default function Login() {
 
           <div className="space-y-2">
             <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-2">
-              Usuário / E-mail
+              Usuário
             </label>
             <input
               type="text"
