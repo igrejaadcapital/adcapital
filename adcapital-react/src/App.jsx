@@ -9,8 +9,7 @@ import AgendaPage from './components/Agenda/AgendaPage'
 import Login from './components/Auth/Login'
 import { useAuth } from './components/Auth/useAuth'
 
-function App() {
-  const { token, logout } = useAuth();
+function MainApp({ logout }) {
   const { membros, membrosFiltrados, busca, setBusca, funcoes, graus, carregarDados } = useMembros();
   const [telaAtiva, setTelaAtiva] = useState('home');
 
@@ -31,10 +30,6 @@ function App() {
     adicionarCategoriaEntrada,
     adicionarCategoriaSaida,
   } = useCategoriasFinanceiras();
-
-  if (!token) {
-    return <Login />;
-  }
 
   return (
     <div className="min-h-screen bg-slate-100 font-sans text-slate-900">
@@ -105,4 +100,15 @@ function App() {
     </div>
   )
 }
+
+function App() {
+  const { token, logout } = useAuth();
+
+  if (!token) {
+    return <Login />;
+  }
+
+  return <MainApp logout={logout} />;
+}
+
 export default App;
