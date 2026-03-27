@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+
+const AuthContext = createContext();
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
 
-export function useAuth() {
+export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => localStorage.getItem('access_token'));
   const [error, setError] = useState(null);
   const [carregando, setCarregando] = useState(false);
@@ -41,5 +43,17 @@ export function useAuth() {
     setToken(null);
   };
 
-  return { token, login, logout, error, carregando };
+  return (
+    <AuthContext.Provider value={{ token, login, logout, error, carregando }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth deve ser usado dentro de um AuthProvider');
+  }
+  return context;
 }

@@ -7,7 +7,7 @@ import { useCategoriasFinanceiras } from './components/Financeiro/useCategoriasF
 import { useFinanceiro } from './components/Financeiro/useFinanceiro'
 import AgendaPage from './components/Agenda/AgendaPage'
 import Login from './components/Auth/Login'
-import { useAuth } from './components/Auth/useAuth'
+import { useAuth } from './components/Auth/AuthProvider'
 
 function MainApp({ logout }) {
   const { membros, membrosFiltrados, busca, setBusca, funcoes, graus, carregarDados } = useMembros();

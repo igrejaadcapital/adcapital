@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAuth } from './useAuth';
+import { useAuth } from './AuthProvider';
 
 export default function Login() {
   const { login, carregando, error } = useAuth();
@@ -8,10 +8,7 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const sucesso = await login(username, password);
-    if (sucesso) {
-      window.location.reload();
-    }
+    await login(username, password);
   };
 
   return (
