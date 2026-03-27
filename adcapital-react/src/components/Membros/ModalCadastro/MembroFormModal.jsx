@@ -4,12 +4,29 @@ export default function MembroFormModal({ formData, handleChange, funcoes, aplic
         <div className="space-y-8">
             {/* SEÇÃO 1: Dados Pessoais */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="md:col-span-2 flex flex-col">
+                <div className="flex flex-col">
                     <label className="text-[10px] font-black text-slate-400 uppercase mb-2 ml-1 tracking-widest">Nome Completo</label>
                     <input
-                        className="p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-medium"
+                        className="p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-medium uppercase"
                         value={formData.nome || ''}
                         onChange={e => handleChange('nome', e.target.value)}
+                        required
+                    />
+                </div>
+
+                <div className="flex flex-col">
+                    <label className="text-[10px] font-black text-slate-400 uppercase mb-2 ml-1 tracking-widest">CPF (Obrigatório)</label>
+                    <input
+                        className="p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-mono"
+                        placeholder="000.000.000-00"
+                        value={formData.cpf || ''}
+                        onChange={e => {
+                            let v = e.target.value.replace(/\D/g, "");
+                            v = v.replace(/(\d{3})(\d)/, "$1.$2");
+                            v = v.replace(/(\d{3})(\d)/, "$1.$2");
+                            v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+                            handleChange('cpf', v.substring(0, 14));
+                        }}
                         required
                     />
                 </div>

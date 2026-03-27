@@ -46,11 +46,29 @@ class MembroSerializer(serializers.ModelSerializer):
         relacoes = Parentesco.objects.filter(membro_origem=obj)
         return ParentescoDetalheSerializer(relacoes, many=True).data
 
+    def validate_nome(self, value):
+        return value.upper() if value else value
+
+    def validate_cpf(self, value):
+        if not value:
+            raise serializers.ValidationError("O CPF é obrigatório.")
+        # Remove pontos e traços
+        cpf_limpo = "".join(filter(str.isdigit, value))
+        if len(cpf_limpo) != 11:
+            raise serializers.ValidationError("CPF inválido. Deve ter 11 dígitos.")
+        return cpf_limpo
+
     def validate_email(self, value):
         return value if value else None
 
-    def validate_data_entrada(self, value):
+    def _validate_date(self, value):
         return value if value else None
 
+    def validate_data_nascimento(self, value):
+        return self._validate_date(value)
+
+    def validate_data_entrada(self, value):
+        return self._validate_date(value)
+
     def validate_data_saida(self, value):
-        return value if value else None
+        return self._validate_date(value)

@@ -7,6 +7,7 @@ export function useCadastroMembroForm(membro, membros, graus, onClose, onSuccess
         email: '',
         telefone: '',
         funcao: 'Membro',
+        cpf: '',
         data_nascimento: '',
         data_entrada: '',
         data_saida: '',
