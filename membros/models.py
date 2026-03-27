@@ -1,5 +1,11 @@
 from django.db import models
 
+class Funcao(models.Model):
+    nome = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.nome
+
 class Membro(models.Model):
     # Opções que você já tinha definido (Mantido do adcapitalapp)
     FUNCOES_CHOICES = [
@@ -23,7 +29,7 @@ class Membro(models.Model):
     data_nascimento = models.DateField(null=True, blank=True)
     
     # Hierarquia e Status
-    funcao = models.CharField(max_length=50, choices=FUNCOES_CHOICES, default='MEMBRO')
+    funcao = models.ForeignKey(Funcao, on_delete=models.SET_NULL, null=True, blank=True)
     departamento = models.CharField(max_length=100, blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='LIGADO')
     

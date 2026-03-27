@@ -6,8 +6,10 @@ from .serializers import MembroSerializer
 
 @api_view(['GET'])
 def buscar_opcoes_funcao(request):
-    """Retorna a lista dinâmica de funções extraída do models"""
-    opcoes = [{'id': f[0], 'nome': f[1]} for f in Membro.FUNCOES_CHOICES]
+    """Retorna a lista dinâmica de funções da tabela Funcao"""
+    from .models import Funcao
+    funcoes = Funcao.objects.all().order_by('nome')
+    opcoes = [{'id': f.nome, 'nome': f.nome} for f in funcoes]
     return Response(opcoes)
 
 @api_view(['GET'])
