@@ -6,8 +6,11 @@ import FinanceiroMain from './components/Financeiro/FinanceiroMain'
 import { useCategoriasFinanceiras } from './components/Financeiro/useCategoriasFinanceiras'
 import { useFinanceiro } from './components/Financeiro/useFinanceiro'
 import AgendaPage from './components/Agenda/AgendaPage'
+import Login from './components/Auth/Login'
+import { useAuth } from './components/Auth/useAuth'
 
 function App() {
+  const { token, logout } = useAuth();
   const { membros, membrosFiltrados, busca, setBusca, funcoes, graus, carregarDados } = useMembros();
   const [telaAtiva, setTelaAtiva] = useState('home');
 
@@ -29,6 +32,10 @@ function App() {
     adicionarCategoriaSaida,
   } = useCategoriasFinanceiras();
 
+  if (!token) {
+    return <Login />;
+  }
+
   return (
     <div className="min-h-screen bg-slate-100 font-sans text-slate-900">
       <nav className="bg-white border-b border-slate-200 p-4 sticky top-0 z-40 shadow-sm flex items-center justify-between">
@@ -42,6 +49,8 @@ function App() {
           <button onClick={() => setTelaAtiva('membros')} className={`pb-1 transition-all ${telaAtiva === 'membros' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Membros</button>
           <button onClick={() => setTelaAtiva('financeiro')} className={`pb-1 transition-all ${telaAtiva === 'financeiro' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Financeiro</button>
           <button onClick={() => setTelaAtiva('agenda')} className={`pb-1 transition-all ${telaAtiva === 'agenda' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Agenda</button>
+          
+          <button onClick={logout} className="ml-4 font-black uppercase text-rose-500 hover:text-rose-600 transition-colors border border-rose-100 hover:border-rose-200 bg-rose-50 px-3 py-1 rounded">Sair</button>
           </div>
         </div>
       </nav>
