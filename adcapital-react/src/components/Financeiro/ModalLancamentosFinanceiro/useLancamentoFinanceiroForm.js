@@ -9,7 +9,6 @@ export const useLancamentoFinanceiroForm = (tipo, onSave, onClose, categoriasPro
         : (tipo === 'ENTRADA' ? categoriasPadraoEntrada : categoriasPadraoSaida);
 
     const [novaCategoria, setNovaCategoria] = useState('');
-    const [mostrarCampoNovo, setMostrarCampoNovo] = useState(false);
     const [valorExibicao, setValorExibicao] = useState(() => {
         const valor = lancamento?.valor ?? 0;
         return valor ? valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : "0,00";
@@ -17,10 +16,10 @@ export const useLancamentoFinanceiroForm = (tipo, onSave, onClose, categoriasPro
 
     const [formData, setFormData] = useState(() => ({
         data: lancamento?.data || new Date().toISOString().split('T')[0],
-        categoria: lancamento?.categoria || categoriasLista[0] || '',
+        categoria: lancamento?.categoria || (categoriasLista.length > 0 ? categoriasLista[0] : ''),
         descricao: lancamento?.descricao || '',
         valor: lancamento?.valor || 0,
-        comprovante: null // Novo campo
+        comprovante: null
     }));
 
     const handleValorChange = (e) => {

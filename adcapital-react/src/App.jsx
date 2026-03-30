@@ -6,6 +6,7 @@ import FinanceiroMain from './components/Financeiro/FinanceiroMain'
 import { useCategoriasFinanceiras } from './components/Financeiro/useCategoriasFinanceiras'
 import { useFinanceiro } from './components/Financeiro/useFinanceiro'
 import AgendaPage from './components/Agenda/AgendaPage'
+import SettingsPage from './components/Configuracoes/SettingsPage'
 import Login from './components/Auth/Login'
 import { useAuth } from './components/Auth/AuthProvider'
 
@@ -44,6 +45,7 @@ function MainApp({ logout }) {
           <button onClick={() => setTelaAtiva('membros')} className={`pb-1 transition-all ${telaAtiva === 'membros' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Membros</button>
           <button onClick={() => setTelaAtiva('financeiro')} className={`pb-1 transition-all ${telaAtiva === 'financeiro' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Financeiro</button>
           <button onClick={() => setTelaAtiva('agenda')} className={`pb-1 transition-all ${telaAtiva === 'agenda' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Agenda</button>
+          <button onClick={() => setTelaAtiva('config')} className={`pb-1 transition-all ${telaAtiva === 'config' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Configurações</button>
           
           <button onClick={logout} className="ml-4 font-black uppercase text-rose-500 hover:text-rose-600 transition-colors border border-rose-100 hover:border-rose-200 bg-rose-50 px-3 py-1 rounded">Sair</button>
           </div>
@@ -95,6 +97,10 @@ function MainApp({ logout }) {
 
         {telaAtiva === 'agenda' && (
           <AgendaPage />
+        )}
+
+        {telaAtiva === 'config' && (
+          <SettingsPage />
         )}
       </main>
     </div>

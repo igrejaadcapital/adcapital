@@ -43,40 +43,34 @@ export default function LancamentoFinanceiroFormModal({ tipo, onClose, onSave, c
 
                     {/* Categoria / Novo Tipo */}
                     <div className="space-y-1">
-                        <div className="flex justify-between items-center ml-1">
-                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Categoria</label>
-                            <button 
-                                type="button" 
-                                onClick={() => setMostrarCampoNovo(!mostrarCampoNovo)} 
-                                className="text-[9px] font-black text-blue-600 uppercase hover:underline"
-                            >
-                                {mostrarCampoNovo ? 'Voltar para lista' : '+ Criar Nova'}
-                            </button>
-                        </div>
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Categoria</label>
+                        
+                        <select 
+                            className="w-full bg-slate-50 border-none rounded-2xl p-4 font-bold text-slate-700 appearance-none cursor-pointer mb-2"
+                            value={categorias.includes(formData.categoria) ? formData.categoria : (formData.categoria ? 'OUTRA' : categorias[0])}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                if (val === 'OUTRA') {
+                                    setFormData({...formData, categoria: ''});
+                                } else {
+                                    setFormData({...formData, categoria: val});
+                                }
+                            }}
+                        >
+                            {categorias.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                            <option value="OUTRA">+ Nova Categoria...</option>
+                        </select>
 
-                        {mostrarCampoNovo ? (
-                            <div className="flex gap-2">
-                                <input 
-                                    type="text" 
-                                    placeholder="Nome da categoria..." 
-                                    className="flex-1 bg-blue-50 border-none rounded-2xl p-4 font-bold text-blue-900"
-                                    value={novaCategoria} 
-                                    onChange={(e) => setNovaCategoria(e.target.value)} 
-                                />
-                                <button 
-                                    type="button" 
-                                    onClick={adicionarNovaCategoria} 
-                                    className="bg-blue-600 text-white px-4 rounded-2xl font-black text-xs"
-                                >OK</button>
-                            </div>
-                        ) : (
-                            <select 
-                                className="w-full bg-slate-50 border-none rounded-2xl p-4 font-bold text-slate-700 appearance-none cursor-pointer"
+                        {/* Campo extra para nova categoria (Padronizado com Membros) */}
+                        {(!categorias.includes(formData.categoria) || formData.categoria === '') && (
+                            <input 
+                                type="text" 
+                                autoFocus
+                                placeholder="Digite o nome da nova categoria..." 
+                                className={`w-full border-2 ${tipo === 'ENTRADA' ? 'border-emerald-500 bg-emerald-50 text-emerald-900' : 'border-red-500 bg-red-50 text-red-900'} rounded-2xl p-4 font-bold outline-none animate-pulse`}
                                 value={formData.categoria} 
-                                onChange={(e) => setFormData({...formData, categoria: e.target.value})}
-                            >
-                                {categoriasForm.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                            </select>
+                                onChange={(e) => setFormData({...formData, categoria: e.target.value})} 
+                            />
                         )}
                     </div>
 

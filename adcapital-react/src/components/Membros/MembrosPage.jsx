@@ -2,7 +2,6 @@ import { useState } from 'react';
 import Header from '../Header';
 import MembroCard from './MembroCard';
 import CadastroMainFormModal from './ModalCadastro/CadastroMainFormModal';
-import GestaoFuncoesModal from './GestaoFuncoesModal';
 import membroService from '../../api/membroService';
 
 export default function MembrosPage({
@@ -15,7 +14,6 @@ export default function MembrosPage({
   carregarDados,
 }) {
   const [mostrarModal, setMostrarModal] = useState(false);
-  const [mostrarGestaoFuncoes, setMostrarGestaoFuncoes] = useState(false);
   const [membroParaEditar, setMembroParaEditar] = useState(null);
 
   const abrirNovo = () => {
@@ -50,15 +48,6 @@ export default function MembrosPage({
           totalFiltrado={membrosFiltrados.length}
           onNovo={abrirNovo}
         />
-        <div className="flex justify-end gap-2 -mt-4 mb-4">
-            <button 
-                onClick={() => setMostrarGestaoFuncoes(true)}
-                className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-blue-600 transition-all flex items-center gap-1 bg-white px-3 py-1.5 rounded-full border border-slate-100 shadow-sm"
-            >
-                ⚙️ Gerenciar Cargos
-            </button>
-        </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
           {membrosFiltrados.map((m) => (
             <MembroCard
@@ -80,13 +69,6 @@ export default function MembrosPage({
           graus={graus}
           onClose={() => setMostrarModal(false)}
           onSuccess={carregarDados}
-        />
-      )}
-      {mostrarGestaoFuncoes && (
-        <GestaoFuncoesModal 
-            funcoes={funcoes}
-            onClose={() => setMostrarGestaoFuncoes(false)}
-            onSuccess={carregarDados}
         />
       )}
     </>

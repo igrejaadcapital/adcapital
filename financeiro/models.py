@@ -1,5 +1,19 @@
 from django.db import models
 
+class CategoriaFinanceira(models.Model):
+    TIPO_CHOICES = [
+        ('ENTRADA', 'Entrada'),
+        ('SAIDA', 'Saída'),
+    ]
+    nome = models.CharField(max_length=100)
+    tipo = models.CharField(max_length=10, choices=TIPO_CHOICES)
+
+    class Meta:
+        unique_together = ('nome', 'tipo')
+
+    def __str__(self):
+        return f"{self.nome} ({self.tipo})"
+
 class Transacao(models.Model):
     TIPO_CHOICES = [
         ('ENTRADA', 'Entrada'),

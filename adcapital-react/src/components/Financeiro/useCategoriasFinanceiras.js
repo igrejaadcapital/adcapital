@@ -1,67 +1,47 @@
-import { useState } from 'react';
-
-const CATEGORIAS_PADRAO_ENTRADAS = ["Dízimos", "Ofertas", "Filantropia", "Rendimentos", "Outros"];
-const CATEGORIAS_PADRAO_SAIDAS = ["Água", "Luz", "Telefone", "Aluguel", "Condomínio", "Manutenção", "Obras", "Filantropia", "Outros"];
+import { useState, useEffect } from 'react';
+import configuracaoService from '../../api/configuracaoService';
 
 export function useCategoriasFinanceiras() {
-  const [categorias, setCategorias] = useState(() => {
-    if (typeof window === 'undefined') {
-      return {
-        entradas: CATEGORIAS_PADRAO_ENTRADAS,
-        saidas: CATEGORIAS_PADRAO_SAIDAS,
-      };
-    }
+  const [categoriasEntrada, setCategoriasEntrada] = useState([]);
+  const [categoriasSaida, setCategoriasSaida] = useState([]);
 
-    const salvas = localStorage.getItem('categoriasFinanceiras');
-    if (salvas) {
-      try {
-        const parsed = JSON.parse(salvas);
-        return {
-          entradas: parsed.entradas || CATEGORIAS_PADRAO_ENTRADAS,
-          saidas: parsed.saidas || CATEGORIAS_PADRAO_SAIDAS,
-        };
-      } catch {
-        return {
-          entradas: CATEGORIAS_PADRAO_ENTRADAS,
-          saidas: CATEGORIAS_PADRAO_SAIDAS,
-        };
-      }
-    }
-
-    return {
-      entradas: CATEGORIAS_PADRAO_ENTRADAS,
-      saidas: CATEGORIAS_PADRAO_SAIDAS,
-    };
-  });
-
-  const persistir = (novasCategorias) => {
-    setCategorias(novasCategorias);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('categoriasFinanceiras', JSON.stringify(novasCategorias));
+  const carregarCategorias = async () => {
+    try {
+      const res = await configuracaoService.listarCategorias();
+      setCategoriasEntrada(res.data.filter(c => c.tipo === 'ENTRADA').map(c => c.nome));
+      setCategoriasSaida(res.data.filter(c => c.tipo === 'SAIDA').map(c => c.nome));
+    } catch (err) {
+      console.error("Erro ao carregar categorias do banco:", err);
     }
   };
 
-  const adicionarCategoriaEntrada = (nova) => {
+  useEffect(() => {
+    carregarCategorias();
+  }, []);
+
+  const adicionarCategoriaEntrada = async (nova) => {
     if (!nova) return;
-    if (categorias.entradas.includes(nova)) return;
-    persistir({
-      ...categorias,
-      entradas: [...categorias.entradas, nova],
-    });
+    try {
+      await configuracaoService.salvarCategoria({ nome: nova, tipo: 'ENTRADA' });
+      carregarCategorias();
+    } catch (err) {
+      console.error("Erro ao salvar categoria:", err);
+    }
   };
 
-  const adicionarCategoriaSaida = (nova) => {
+  const adicionarCategoriaSaida = async (nova) => {
     if (!nova) return;
-    if (categorias.saidas.includes(nova)) return;
-    persistir({
-      ...categorias,
-      saidas: [...categorias.saidas, nova],
-    });
+    try {
+      await configuracaoService.salvarCategoria({ nome: nova, tipo: 'SAIDA' });
+      carregarCategorias();
+    } catch (err) {
+      console.error("Erro ao salvar categoria:", err);
+    }
   };
 
   return {
-    categoriasEntrada: categorias.entradas,
-    categoriasSaida: categorias.saidas,
+    categoriasEntrada,
+    categoriasSaida,
     adicionarCategoriaEntrada,
     adicionarCategoriaSaida,
   };

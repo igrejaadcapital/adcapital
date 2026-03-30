@@ -2,12 +2,16 @@ from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db.models import Sum
-from .models import Transacao
-from .serializers import TransacaoSerializer
+from .models import Transacao, CategoriaFinanceira
+from .serializers import TransacaoSerializer, CategoriaFinanceiraSerializer
 
 class TransacaoViewSet(viewsets.ModelViewSet):
     queryset = Transacao.objects.all().order_by('-data')
     serializer_class = TransacaoSerializer
+
+class CategoriaFinanceiraViewSet(viewsets.ModelViewSet):
+    queryset = CategoriaFinanceira.objects.all().order_by('nome')
+    serializer_class = CategoriaFinanceiraSerializer
 
 class DashboardAPIView(APIView):
     def get(self, request):
