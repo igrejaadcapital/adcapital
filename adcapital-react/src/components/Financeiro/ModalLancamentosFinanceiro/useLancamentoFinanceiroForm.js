@@ -8,7 +8,6 @@ export const useLancamentoFinanceiroForm = (tipo, onSave, onClose, categoriasPro
         ? categoriasProp
         : (tipo === 'ENTRADA' ? categoriasPadraoEntrada : categoriasPadraoSaida);
 
-    const [novaCategoria, setNovaCategoria] = useState('');
     const [valorExibicao, setValorExibicao] = useState(() => {
         const valor = lancamento?.valor ?? 0;
         return valor ? valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : "0,00";
@@ -33,15 +32,6 @@ export const useLancamentoFinanceiroForm = (tipo, onSave, onClose, categoriasPro
         setFormData({ ...formData, valor: parseFloat(value) / 100 });
     };
 
-    const adicionarNovaCategoria = () => {
-        if (novaCategoria.trim() === '') return;
-        if (onAdicionarCategoria) {
-            onAdicionarCategoria(novaCategoria);
-        }
-        setFormData({ ...formData, categoria: novaCategoria });
-        setNovaCategoria('');
-        setMostrarCampoNovo(false);
-    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -59,13 +49,8 @@ export const useLancamentoFinanceiroForm = (tipo, onSave, onClose, categoriasPro
         formData,
         setFormData,
         categorias: categoriasLista,
-        mostrarCampoNovo,
-        setMostrarCampoNovo,
-        novaCategoria,
-        setNovaCategoria,
         valorExibicao,
         handleValorChange,
-        adicionarNovaCategoria,
         handleSubmit
     };
 };
