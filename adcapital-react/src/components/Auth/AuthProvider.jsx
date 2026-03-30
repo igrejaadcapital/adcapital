@@ -24,6 +24,7 @@ export function AuthProvider({ children }) {
       if (response.ok) {
         const data = await response.json();
         localStorage.setItem('access_token', data.access);
+        localStorage.setItem('refresh_token', data.refresh);
         setToken(data.access);
         return true;
       } else {
@@ -40,6 +41,7 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
     setToken(null);
   };
 
