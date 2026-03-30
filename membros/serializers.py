@@ -40,6 +40,13 @@ class MembroSerializer(serializers.ModelSerializer):
     class Meta:
         model = Membro
         fields = '__all__'
+        extra_kwargs = {
+            'data_nascimento': {'required': False, 'allow_null': True},
+            'data_entrada': {'required': False, 'allow_null': True},
+            'data_saida': {'required': False, 'allow_null': True},
+            'email': {'required': False, 'allow_null': True},
+            'telefone': {'required': False, 'allow_null': True},
+        }
 
     def get_parentes(self, obj):
         # Busca parentescos onde este membro é a origem
@@ -61,14 +68,11 @@ class MembroSerializer(serializers.ModelSerializer):
     def validate_email(self, value):
         return value if value else None
 
-    def _validate_date(self, value):
+    def validate_data_nascimento(self, value):
         return value if value else None
 
-    def validate_data_nascimento(self, value):
-        return self._validate_date(value)
-
     def validate_data_entrada(self, value):
-        return self._validate_date(value)
+        return value if value else None
 
     def validate_data_saida(self, value):
-        return self._validate_date(value)
+        return value if value else None

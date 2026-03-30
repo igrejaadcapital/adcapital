@@ -83,7 +83,13 @@ export function useCadastroMembroForm(membro, membros, graus, onClose, onSuccess
 
             const payload = {
                 ...formData,
-                parentescos_novo: parentescosValidos
+                parentescos_novo: parentescosValidos,
+                // Garantir que campos vazios sejam enviados como null para o Django não reclamar
+                data_nascimento: formData.data_nascimento || null,
+                data_entrada: formData.data_entrada || null,
+                data_saida: formData.data_saida || null,
+                email: formData.email || null,
+                telefone: formData.telefone || null,
             };
 
             await membroService.salvar(formData.id, payload);
