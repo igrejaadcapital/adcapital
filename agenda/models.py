@@ -1,5 +1,5 @@
 from django.db import models
-from .services import sync_event_to_google, delete_event_from_google
+from .services import sync_event_to_google, update_event_to_google, delete_event_from_google
 
 class Evento(models.Model):
     titulo = models.CharField(max_length=200, verbose_name="Título do Evento")
@@ -21,7 +21,7 @@ class Evento(models.Model):
         is_new = self.pk is None
         super().save(*args, **kwargs)
 
-        # Se for novo, vamos empurrar pro Google Calendar automaticamente!
+        # Se for novo E não tiver ID do Google, cria no Google
         if is_new and not self.google_event_id:
             google_id = sync_event_to_google(
                 titulo=self.titulo,
@@ -32,6 +32,16 @@ class Evento(models.Model):
             if google_id:
                 self.google_event_id = google_id
                 super().save(update_fields=['google_event_id'])
+        
+        # Se NÃO for novo e tiver ID do Google, atualiza no Google
+        elif not is_new and self.google_event_id:
+            update_event_to_google(
+                google_event_id=self.google_event_id,
+                titulo=self.titulo,
+                descricao=self.descricao or "",
+                data_inicio=self.data_inicio,
+                data_fim=self.data_fim
+            )
 
     def delete(self, *args, **kwargs):
         # Tenta deletar no Google antes de apagar do sistema

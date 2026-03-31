@@ -54,5 +54,19 @@ export function useAgenda() {
     }
   };
 
-  return { eventos, carregando, buscarEventos, criarEvento, deletarEvento };
+  const sincronizar = async (id, dados) => {
+    setCarregando(true);
+    try {
+      await api.put(`/agenda/eventos/${id}/`, dados);
+      await buscarEventos();
+      return true;
+    } catch (error) {
+      console.error("Erro ao sincronizar evento:", error);
+      return false;
+    } finally {
+      setCarregando(false);
+    }
+  };
+
+  return { eventos, carregando, buscarEventos, criarEvento, deletarEvento, sincronizar };
 }

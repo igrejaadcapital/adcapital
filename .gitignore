@@ -3,7 +3,7 @@ venv/
 __pycache__/
 *.pyc
 db.sqlite3
-.env
+/.env
 
 # Node / React
 node_modules/
@@ -17,3 +17,9 @@ dist-ssr/
 
 # Google Cloud
 google_credentials.json
+
+# Temporary / Log files
+*.log
+tmp/
+.DS_Store
+Thumbs.db
