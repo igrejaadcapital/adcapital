@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api',
+    baseURL: import.meta.env.VITE_API_URL || 'https://api.adcapitaligreja.com.br/api',
     timeout: 15000 // 15 segundos antes de considerar erro de conexão
 });
 
