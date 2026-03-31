@@ -9,7 +9,7 @@ import ptBrLocale from '@fullcalendar/core/locales/pt-br';
 export default function AgendaPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState('calendar'); // 'calendar' ou 'list'
-  const { eventos, carregando, criarEvento, deletarEvento, sincronizar } = useAgenda();
+  const { eventos, carregando, syncStatus, criarEvento, deletarEvento, sincronizar } = useAgenda();
 
   const handleSalvar = async (eventoData) => {
     const sucesso = await criarEvento(eventoData);
@@ -40,37 +40,48 @@ export default function AgendaPage() {
 
   return (
     <div className="space-y-6 animate-fade-in pb-10">
-      {/* Header com Controles */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-100 gap-4">
-        <div>
-          <h2 className="text-2xl font-black text-slate-800 tracking-tight">Agenda Oficial (Google Calendar)</h2>
-          <p className="text-sm text-slate-500 font-medium">Sincronização em tempo real com o Google Calendar da Igreja.</p>
-        </div>
-        
-        <div className="flex items-center gap-3 w-full md:w-auto">
-          {/* Toggle de Visualização */}
-          <div className="bg-slate-100 p-1 rounded-xl flex gap-1 mr-2">
-            <button 
-              onClick={() => setViewMode('calendar')}
-              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${viewMode === 'calendar' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+      {/* Header com Controles - Layout Simplificado e Robusto */}
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+          <div className="flex items-center gap-4">
+             <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-2xl font-black text-slate-800 tracking-tight">Agenda Oficial (Google Calendar)</h2>
+                  {/* Indicador de Status de Sincronização */}
+                  <div className="flex items-center gap-1.5 px-3 py-1 bg-slate-50 rounded-full border border-slate-200">
+                    <div className={`w-2 h-2 rounded-full ${syncStatus.status === 'online' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)] animate-pulse'}`}></div>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Google {syncStatus.status}</span>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-500 font-medium">Sincronização em tempo real com o Google Calendar da Igreja.</p>
+             </div>
+          </div>
+          
+          <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto">
+            {/* Toggle de Visualização */}
+            <div className="bg-slate-100 p-1 rounded-xl flex gap-1">
+              <button 
+                onClick={() => setViewMode('calendar')}
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-none ${viewMode === 'calendar' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
+              >
+                Calendário
+              </button>
+              <button 
+                onClick={() => setViewMode('list')}
+                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-none ${viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
+              >
+                Lista
+              </button>
+            </div>
+
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-md shadow-blue-500/20 active:scale-95 flex items-center justify-center gap-2"
+              disabled={carregando}
             >
-              Calendário
-            </button>
-            <button 
-              onClick={() => setViewMode('list')}
-              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-            >
-              Lista
+              {carregando ? 'Processando...' : '+ Adicionar Evento'}
             </button>
           </div>
-
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-md shadow-blue-500/20 active:scale-95 flex items-center justify-center gap-2 flex-1 md:flex-none"
-            disabled={carregando}
-          >
-            {carregando ? 'Processando...' : '+ Adicionar Evento'}
-          </button>
         </div>
       </div>
 
@@ -79,7 +90,7 @@ export default function AgendaPage() {
         {carregando && eventos.length === 0 ? (
            <div className="p-12 text-center text-slate-400 font-bold animate-pulse">Sincronizando com o Google...</div>
         ) : viewMode === 'list' ? (
-          /* Visualização em Lista (Legado melhorado) */
+          /* Visualização em Lista */
           <div className="divide-y divide-slate-100">
             {eventos.length === 0 ? (
               <EmptyState />
@@ -90,7 +101,7 @@ export default function AgendaPage() {
             )}
           </div>
         ) : (
-          /* Visualização em Calendário (Nova) */
+          /* Visualização em Calendário */
           <div className="p-4 md:p-6 calendar-container">
             <style>{`
               .fc { --fc-border-color: #f1f5f9; --fc-button-bg-color: #3b82f6; --fc-button-border-color: #3b82f6; --fc-button-hover-bg-color: #2563eb; font-family: inherit; }
@@ -159,7 +170,7 @@ function ListItem({ ev, deletarEvento, sincronizar }) {
              {new Date(ev.data_fim).toLocaleString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit' }).toUpperCase()}
           </span>
           {ev.google_event_id ? (
-            <span className="text-green-700 bg-green-50 px-3 pt-1 pb-0.5 rounded-xl flex items-center gap-1">Sincronizado ✅</span>
+            <span className="text-green-700 bg-green-50 px-3 pt-1 pb-0.5 rounded-xl flex items-center gap-1 tracking-tight">Sincronizado ✅</span>
           ) : (
             <button 
               onClick={() => sincronizar(ev.id, ev)}

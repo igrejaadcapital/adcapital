@@ -4,6 +4,7 @@ import api from '../../api/config';
 export function useAgenda() {
   const [eventos, setEventos] = useState([]);
   const [carregando, setCarregando] = useState(false);
+  const [syncStatus, setSyncStatus] = useState({ status: 'loading', message: '' });
 
   const buscarEventos = useCallback(async () => {
     setCarregando(true);
@@ -17,9 +18,19 @@ export function useAgenda() {
     }
   }, []);
 
+  const verificarStatus = useCallback(async () => {
+    try {
+      const response = await api.get('/agenda/status/');
+      setSyncStatus(response.data);
+    } catch (error) {
+      setSyncStatus({ status: 'offline', message: 'Erro ao conectar ao servidor de API.' });
+    }
+  }, []);
+
   useEffect(() => {
     buscarEventos();
-  }, [buscarEventos]);
+    verificarStatus();
+  }, [buscarEventos, verificarStatus]);
 
   const criarEvento = async (novoEvento) => {
     setCarregando(true);
@@ -68,5 +79,14 @@ export function useAgenda() {
     }
   };
 
-  return { eventos, carregando, buscarEventos, criarEvento, deletarEvento, sincronizar };
+  return { 
+    eventos, 
+    carregando, 
+    syncStatus, 
+    buscarEventos, 
+    verificarStatus, 
+    criarEvento, 
+    deletarEvento, 
+    sincronizar 
+  };
 }

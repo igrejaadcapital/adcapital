@@ -1,4 +1,5 @@
 import os
+import json
 import datetime
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
@@ -11,11 +12,33 @@ SERVICE_ACCOUNT_FILE = os.path.join(settings.BASE_DIR, 'google_credentials.json'
 CALENDAR_ID = 'igrejaadcapital@gmail.com'
 
 def get_calendar_service():
-    if not os.path.exists(SERVICE_ACCOUNT_FILE):
+    """
+    Tenta carregar as credenciais tanto de arquivo (local) quanto de 
+    variável de ambiente (Render), para garantir a sincronização.
+    """
+    creds = None
+    
+    # 1. Tenta carregar da variável de ambiente (Seguro para Produção)
+    env_creds = os.environ.get('GOOGLE_CREDENTIALS_JSON')
+    if env_creds:
+        try:
+            creds_dict = json.loads(env_creds)
+            creds = service_account.Credentials.from_service_account_info(
+                creds_dict, scopes=SCOPES)
+        except Exception as e:
+            print("Erro ao carregar credenciais da variável de ambiente:", e)
+
+    # 2. Se não houver variável, tenta carregar do arquivo local (Desenvolvimento)
+    if not creds and os.path.exists(SERVICE_ACCOUNT_FILE):
+        try:
+            creds = service_account.Credentials.from_service_account_file(
+                SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+        except Exception as e:
+            print("Erro ao carregar credenciais do arquivo local:", e)
+
+    if not creds:
         return None
     
-    creds = service_account.Credentials.from_service_account_file(
-        SERVICE_ACCOUNT_FILE, scopes=SCOPES)
     return build('calendar', 'v3', credentials=creds)
 
 def sync_event_to_google(titulo, descricao, data_inicio, data_fim):
