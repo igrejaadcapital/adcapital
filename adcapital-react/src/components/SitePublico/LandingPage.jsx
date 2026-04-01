@@ -12,8 +12,8 @@ import {
   Facebook,
   ChevronDown
 } from 'lucide-react';
+import qrcode from '../../assets/qrcode.png';
 import api from '../../api/config';
-import { QRCodeSVG } from 'qrcode.react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -259,11 +259,11 @@ const LandingPage = () => {
         <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
           
           <div className="flex flex-col items-center md:items-start text-center md:text-left">
-             <div className="bg-white p-4 rounded-3xl mb-8 shadow-2xl">
-                <QRCodeSVG 
-                  value={`ENDEREÇO: ${config?.endereco_completo || 'Brasilia'}`} 
-                  size={180}
-                  level="H"
+             <div className="bg-white p-2 rounded-3xl mb-8 shadow-2xl overflow-hidden w-[180px] h-[180px]">
+                <img 
+                  src={qrcode} 
+                  alt="QR Code" 
+                  className="w-full h-full object-contain"
                 />
              </div>
              <p className="text-white font-black text-lg mb-4 uppercase tracking-tighter italic">Assembleia de Deus na Capital</p>
