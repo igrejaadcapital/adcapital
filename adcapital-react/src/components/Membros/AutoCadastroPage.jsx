@@ -40,11 +40,11 @@ export default function AutoCadastroPage() {
             // Chamada para a nova Rota Direta (bypassing DRF)
             const res = await axios.post(`${BASE_HOST}/portal/verificar/`, { resposta });
             
-            // Verificação robusta: se o servidor deu 200, liberamos o acesso.
-            if (res.status === 200 || res.data.success) {
+            // Verificação RÍGIDA: só libramos o acesso se o sucesso for explícito (true)
+            if (res.data && res.data.success === true) {
                 setStep('form');
             } else {
-                setError("Resposta incorreta.");
+                setError(res.data?.error || "Resposta incorreta.");
             }
         } catch (err) {
             console.error("Erro na verificação:", err);

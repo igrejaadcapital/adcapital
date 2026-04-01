@@ -18,8 +18,13 @@ def portal_verificar_resposta_direto(request):
         data = json.loads(request.body)
         resposta_user = data.get('resposta', '').strip().lower()
         
+        if not resposta_user:
+            return JsonResponse({'success': False, 'error': 'Digite uma resposta.'}, status=400)
+            
         config, _ = ConfiguracaoPortal.objects.get_or_create(id=1)
-        resposta_correta = (config.resposta or "Jesus").strip().lower()
+        # Forçamos uma resposta correta válida se o campo estiver vazio no banco
+        resposta_base = config.resposta.strip() if (config.resposta and config.resposta.strip()) else "Jesus"
+        resposta_correta = resposta_base.lower()
         
         if not config.is_ativo:
             return JsonResponse({'error': 'Portal desativado'}, status=403)
@@ -27,7 +32,7 @@ def portal_verificar_resposta_direto(request):
         if resposta_user == resposta_correta:
             return JsonResponse({'success': True})
         
-        return JsonResponse({'success': False, 'error': 'Resposta incorreta.'}, status=401)
+        return JsonResponse({'success': False, 'error': 'Resposta incorreta. Tente "Jesus".'}, status=401)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
