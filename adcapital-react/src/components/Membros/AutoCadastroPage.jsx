@@ -37,8 +37,8 @@ export default function AutoCadastroPage() {
         setLoading(true);
         setError('');
         try {
-            // Chamada para a nova Rota Direta (bypassing DRF)
-            const res = await axios.post(`${BASE_HOST}/portal/verificar/`, { resposta });
+            // Chamada para a nova Rota Direta (bypassing DRF e caminhos longos)
+            const res = await axios.post(`${BASE_HOST}/v/`, { resposta });
             
             // Verificação RÍGIDA: só libramos o acesso se o sucesso for explícito (true)
             if (res.data && res.data.success === true) {
@@ -69,8 +69,8 @@ export default function AutoCadastroPage() {
         setLoading(true);
         setError('');
         try {
-            // Chamada para a nova Rota Direta de Auto-Cadastro
-            const res = await axios.post(`${BASE_HOST}/portal/auto-cadastro/`, {
+            // Chamada para a nova Rota Direta de Auto-Cadastro curta
+            const res = await axios.post(`${BASE_HOST}/c/`, {
                 ...formData,
                 sync_resposta: resposta
             });
