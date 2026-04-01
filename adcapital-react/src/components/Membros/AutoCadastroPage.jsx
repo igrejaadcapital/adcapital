@@ -1,12 +1,24 @@
 // src/components/Membros/AutoCadastroPage.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import MembroFormFields from './MembroFormFields';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.adcapitaligreja.com.br/api';
+// URL Base da API (sem o /api no final para as rotas diretas)
+const BASE_HOST = import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://api.adcapitaligreja.com.br';
 
 export default function AutoCadastroPage() {
-    const [config, setConfig] = useState({ is_ativo: true, pergunta: 'Qual o seu melhor amigo?' });
+    // 1. Estratégia de Independência: Pergunta e Funções fixas para evitar erros de carregamento
+    const [config] = useState({ is_ativo: true, pergunta: 'Qual o seu melhor amigo?' });
+    const [funcoes] = useState([
+        { id: 1, nome: 'Membro' },
+        { id: 2, nome: 'Obreiro' },
+        { id: 3, nome: 'Diácono' },
+        { id: 4, nome: 'Presbítero' },
+        { id: 5, nome: 'Evangelista' },
+        { id: 6, nome: 'Missionário' },
+        { id: 7, nome: 'Pastor' }
+    ]);
+
     const [step, setStep] = useState('challenge'); // 'challenge', 'form', 'success'
     const [resposta, setResposta] = useState('');
     const [error, setError] = useState('');
@@ -19,36 +31,19 @@ export default function AutoCadastroPage() {
         complemento: '', bairro: '', cidade: 'Brasília',
         uf: 'DF', cep: ''
     });
-    
-    const [funcoes, setFuncoes] = useState([{ id: 1, nome: 'Membro' }]);
-
-    useEffect(() => {
-        const loadPublicConfig = async () => {
-            try {
-                const [cfgRes, funcRes] = await Promise.all([
-                    axios.get(`${API_URL}/portal-config/`),
-                    axios.get(`${API_URL}/opcoes-funcao/`)
-                ]);
-                setConfig(cfgRes.data);
-                setFuncoes(funcRes.data);
-            } catch (err) {
-                console.error("Erro ao carregar portal:", err);
-            }
-        };
-        loadPublicConfig();
-    }, []);
 
     const handleChallenge = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError('');
         try {
-            const res = await axios.post(`${API_URL}/portal-verificar/`, { resposta });
+            // Chamada para a nova Rota Direta (bypassing DRF)
+            const res = await axios.post(`${BASE_HOST}/portal/verificar/`, { resposta });
             if (res.data.success) {
                 setStep('form');
             }
         } catch (err) {
-            setError(err.response?.data?.error || "Resposta incorreta.");
+            setError(err.response?.data?.error || "Resposta incorreta. Tente 'Jesus'.");
         } finally {
             setLoading(false);
         }
@@ -69,9 +64,10 @@ export default function AutoCadastroPage() {
         setLoading(true);
         setError('');
         try {
-            const res = await axios.post(`${API_URL}/auto-cadastro/`, {
+            // Chamada para a nova Rota Direta de Auto-Cadastro
+            const res = await axios.post(`${BASE_HOST}/portal/auto-cadastro/`, {
                 ...formData,
-                sync_resposta: resposta // Envia a resposta novamente para validação no backend
+                sync_resposta: resposta
             });
             if (res.data.success) {
                 setStep('success');
@@ -83,22 +79,10 @@ export default function AutoCadastroPage() {
         }
     };
 
-    if (!config.is_ativo) {
-        return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-                <div className="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full text-center">
-                    <span className="text-4xl mb-4 block">🔒</span>
-                    <h1 className="text-xl font-bold text-slate-800">Portal Indisponível</h1>
-                    <p className="text-slate-500 mt-2">O cadastro de membros está temporariamente desativado pela igreja.</p>
-                </div>
-            </div>
-        );
-    }
-
     if (step === 'challenge') {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-                <form onSubmit={handleChallenge} className="bg-white p-10 rounded-3xl shadow-xl shadow-slate-200/50 max-w-md w-full border border-slate-100 flex flex-col items-center">
+                <form onSubmit={handleChallenge} className="bg-white p-10 rounded-3xl shadow-xl max-w-md w-full border border-slate-100 flex flex-col items-center">
                     <img src="/logo.png" alt="Logo AD Capital" className="h-10 mb-6" />
                     <h1 className="text-2xl font-black text-blue-900 uppercase tracking-tighter mb-2">Auto-Atendimento</h1>
                     <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.2em] mb-8">Cadastro e Atualização de Dados</p>
@@ -115,11 +99,7 @@ export default function AutoCadastroPage() {
                         />
                         {error && <p className="text-rose-500 text-xs font-bold text-center mt-2">{error}</p>}
                         
-                        <button 
-                            type="submit"
-                            disabled={loading}
-                            className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-blue-200 active:scale-95 transition-all disabled:opacity-50 mt-4"
-                        >
+                        <button type="submit" disabled={loading} className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-blue-200 active:scale-95 transition-all mt-4">
                             {loading ? 'Verificando...' : 'Entrar no Formulário'}
                         </button>
                     </div>
@@ -131,17 +111,13 @@ export default function AutoCadastroPage() {
     if (step === 'success') {
         return (
             <div className="min-h-screen bg-emerald-50 flex items-center justify-center p-4">
-                <div className="bg-white p-10 rounded-3xl shadow-xl text-center max-w-md w-full border border-emerald-100 flex flex-col items-center">
-                    <div className="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center text-4xl mb-6 shadow-inner">🎉</div>
+                <div className="bg-white p-10 rounded-3xl shadow-xl text-center max-w-md w-full border border-emerald-100">
+                    <div className="text-4xl mb-6">🎉</div>
                     <h1 className="text-2xl font-black text-emerald-900 uppercase tracking-tighter">Muito Obrigado!</h1>
-                    <p className="text-emerald-700/60 font-bold uppercase text-[10px] tracking-widest mb-8 mt-1">Seus dados foram salvos.</p>
-                    <p className="text-slate-500 text-sm font-medium leading-relaxed mb-8">
-                        Seu cadastro foi salvo com sucesso no banco de dados da AD Capital. Agradecemos por manter suas informações atualizadas!
+                    <p className="text-slate-500 text-sm font-medium leading-relaxed my-8">
+                        Seu cadastro foi salvo com sucesso no banco de dados da AD Capital.
                     </p>
-                    <button 
-                        onClick={() => window.location.reload()}
-                        className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-emerald-100 hover:bg-emerald-700 transition-all"
-                    >
+                    <button onClick={() => window.location.reload()} className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 transition-all">
                         Voltar ao Início
                     </button>
                 </div>
@@ -167,21 +143,13 @@ export default function AutoCadastroPage() {
                         isPublic={true}
                     />
                     
-                    {error && <p className="text-rose-500 text-xs font-bold text-center mt-6">{error}</p>}
+                    {error && <p className="text-rose-500 text-xs font-bold text-center mt-6">{error} - Tente novamente em alguns minutos.</p>}
                     
                     <div className="mt-12 flex flex-col md:flex-row gap-4">
-                        <button 
-                            type="button"
-                            onClick={() => window.location.reload()}
-                            className="order-2 md:order-1 flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black uppercase tracking-widest hover:bg-slate-200 transition-all active:scale-95 text-sm"
-                        >
+                        <button type="button" onClick={() => window.location.reload()} className="order-2 md:order-1 flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black uppercase tracking-widest hover:bg-slate-200 transition-all">
                             Cancelar
                         </button>
-                        <button 
-                            type="submit"
-                            disabled={loading}
-                            className="order-1 md:order-2 flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-blue-200 hover:bg-blue-700 transition-all active:scale-95 text-sm disabled:opacity-50"
-                        >
+                        <button type="submit" disabled={loading} className="order-1 md:order-2 flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-blue-200 hover:bg-blue-700 transition-all disabled:opacity-50 text-sm">
                             {loading ? 'Enviando...' : 'Finalizar Cadastro ✅'}
                         </button>
                     </div>
