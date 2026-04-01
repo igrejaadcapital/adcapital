@@ -8,9 +8,17 @@ from .serializers import MembroSerializer
 @csrf_exempt
 def portal_verificar_resposta_direto(request):
     """
-    Função pura de Django (não DRF) para validar a resposta do portal
-    sem interferência de middleware de autenticação (erro 401).
+    Função pura de Django (não DRF) para validar a resposta do portal.
+    Inclui suporte manual a CORS para evitar travamentos de 'Preflight'.
     """
+    # Suporte manual a Preflight (OPTIONS)
+    if request.method == 'OPTIONS':
+        response = JsonResponse({'status': 'ok'})
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        return response
+
     if request.method != 'POST':
         return JsonResponse({'error': 'Apenas POST permitido'}, status=405)
     
@@ -42,6 +50,14 @@ def auto_cadastro_direto(request):
     Função pura de Django para realizar o auto-cadastro sem DRF.
     Bypass total de erro 401.
     """
+    # Suporte manual a Preflight (OPTIONS)
+    if request.method == 'OPTIONS':
+        response = JsonResponse({'status': 'ok'})
+        response["Access-Control-Allow-Origin"] = "*"
+        response["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        return response
+
     if request.method != 'POST':
         return JsonResponse({'error': 'Apenas POST permitido'}, status=405)
         
