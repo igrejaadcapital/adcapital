@@ -52,12 +52,15 @@ def verificar_resposta_portal(request):
     resposta_user = request.data.get('resposta', '').strip().lower()
     config, _ = ConfiguracaoPortal.objects.get_or_create(id=1)
     
+    # Se por algum motivo a resposta no banco estiver vazia, usamos o padrão "Jesus"
+    resposta_correta = (config.resposta or "Jesus").strip().lower()
+
     if not config.is_ativo:
         return Response({"error": "O portal de cadastro está desativado no momento."}, status=403)
         
-    if resposta_user == config.resposta.strip().lower():
+    if resposta_user == resposta_correta:
         return Response({"success": True})
-    return Response({"success": False, "error": "Resposta incorreta. Tente novamente."}, status=401)
+    return Response({"success": False, "error": "Resposta incorreta. Dica: Tente 'Jesus'."}, status=401)
 
 class ConfiguracaoPortalViewSet(viewsets.ModelViewSet):
     """Gerenciamento da configuração pelo Admin (id fixo = 1)"""
