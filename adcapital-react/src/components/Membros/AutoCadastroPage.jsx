@@ -50,7 +50,7 @@ export default function AutoCadastroPage() {
             console.error("Erro na verificação:", err);
             // Se o erro for 401, a resposta está errada. Se for 404 ou outro, é problema de rede/servidor.
             if (err.response?.status === 401) {
-                setError(err.response?.data?.error || "Resposta incorreta. Tente 'Jesus'.");
+                setError(err.response?.data?.error || "Resposta incorreta. Verifique e tente novamente.");
             } else {
                 setError("Erro ao conectar com o servidor. Tente novamente em instantes.");
             }

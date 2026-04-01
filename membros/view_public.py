@@ -40,7 +40,7 @@ def portal_verificar_resposta_direto(request):
         if resposta_user == resposta_correta:
             return JsonResponse({'success': True})
         
-        return JsonResponse({'success': False, 'error': 'Resposta incorreta. Tente "Jesus".'}, status=401)
+        return JsonResponse({'success': False, 'error': 'Resposta incorreta. Tente novamente.'}, status=401)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
