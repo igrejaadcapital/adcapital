@@ -15,6 +15,10 @@ const configuracaoService = {
     return api.post('/financeiro/categorias/', dados);
   },
   excluirCategoria: (id) => api.delete(`/financeiro/categorias/${id}/`),
+
+  // Portal de Membros
+  getPortalConfig: () => api.get('/membros/configuracao-portal/1/'),
+  updatePortalConfig: (dados) => api.put('/membros/configuracao-portal/1/', dados),
 };
 
 export default configuracaoService;

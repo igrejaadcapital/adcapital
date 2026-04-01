@@ -6,6 +6,7 @@ export default function SettingsPage() {
   const [categoriasEntrada, setCategoriasEntrada] = useState([]);
   const [categoriasSaida, setCategoriasSaida] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [portalConfig, setPortalConfig] = useState({ is_ativo: true, pergunta: '', resposta: '' });
 
   const [novaFuncao, setNovaFuncao] = useState('');
   const [novaEntrada, setNovaEntrada] = useState('');
@@ -14,14 +15,16 @@ export default function SettingsPage() {
   const carregarDados = async () => {
     try {
       setLoading(true);
-      const [fRes, cRes] = await Promise.all([
+      const [fRes, cRes, pRes] = await Promise.all([
         configuracaoService.listarFuncoes(),
         configuracaoService.listarCategorias(),
+        configuracaoService.getPortalConfig(),
       ]);
       
       setFuncoes(fRes.data);
       setCategoriasEntrada(cRes.data.filter(c => c.tipo === 'ENTRADA'));
       setCategoriasSaida(cRes.data.filter(c => c.tipo === 'SAIDA'));
+      setPortalConfig(pRes.data);
     } catch (err) {
       console.error("Erro ao carregar configurações:", err);
     } finally {
@@ -32,6 +35,12 @@ export default function SettingsPage() {
   useEffect(() => {
     carregarDados();
   }, []);
+
+  const handleUpdatePortal = async (field, value) => {
+    const updated = { ...portalConfig, [field]: value };
+    setPortalConfig(updated);
+    await configuracaoService.updatePortalConfig(updated);
+  };
 
   const handleAdicionarFuncao = async () => {
     if (!novaFuncao) return;
@@ -118,7 +127,7 @@ export default function SettingsPage() {
                 value={novaEntrada}
                 onChange={e => setNovaEntrada(e.target.value)}
               />
-              <button onClick={() => handleAdicionarCategoria('ENTRADA')} className="bg-emerald-600 text-white px-3 rounded-lg font-black">+</button>
+              <button onClick={handleAdicionarCategoria('ENTRADA')} className="bg-emerald-600 text-white px-3 rounded-lg font-black">+</button>
             </div>
           </div>
           <div className="p-4 space-y-2 flex-1 max-h-[400px] overflow-y-auto">
@@ -147,7 +156,7 @@ export default function SettingsPage() {
                 value={novaSaida}
                 onChange={e => setNovaSaida(e.target.value)}
               />
-              <button onClick={() => handleAdicionarCategoria('SAIDA')} className="bg-rose-600 text-white px-3 rounded-lg font-black">+</button>
+              <button onClick={handleAdicionarCategoria('SAIDA')} className="bg-rose-600 text-white px-3 rounded-lg font-black">+</button>
             </div>
           </div>
           <div className="p-4 space-y-2 flex-1 max-h-[400px] overflow-y-auto">
@@ -161,11 +170,76 @@ export default function SettingsPage() {
         </section>
       </div>
 
+      {/* NOVO: Gestão do Portal de Auto-Cadastro */}
+      <div className="px-4">
+        <section className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="bg-blue-600 p-6 flex justify-between items-center">
+            <div>
+              <h2 className="font-black text-white uppercase text-xs tracking-widest flex items-center gap-2">
+                🌐 Portal de Auto-Cadastro de Membros
+              </h2>
+              <p className="text-blue-100 text-[10px] font-bold uppercase mt-1">Acesso externo para membros (URL: /cadastro)</p>
+            </div>
+            <button 
+              onClick={() => handleUpdatePortal('is_ativo', !portalConfig.is_ativo)}
+              className={`px-6 py-2 rounded-full font-black text-[10px] uppercase tracking-widest transition-all ${portalConfig.is_ativo ? 'bg-white text-blue-600' : 'bg-blue-800 text-blue-400'}`}
+            >
+              Link do Portal: {portalConfig.is_ativo ? '✅ Ativado' : '❌ Desativado'}
+            </button>
+          </div>
+          
+          <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-end">
+            <div className="space-y-4">
+               <div className="flex flex-col">
+                  <label className="text-[10px] font-black text-slate-400 uppercase mb-2 ml-1 tracking-widest">Pergunta de Segurança (O que o membro verá)</label>
+                  <input 
+                    type="text"
+                    className="p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 font-bold text-slate-700"
+                    value={portalConfig.pergunta}
+                    onChange={e => setPortalConfig({...portalConfig, pergunta: e.target.value})}
+                    onBlur={e => handleUpdatePortal('pergunta', e.target.value)}
+                  />
+               </div>
+               <div className="flex flex-col">
+                  <label className="text-[10px] font-black text-slate-400 uppercase mb-2 ml-1 tracking-widest">Resposta Correta (Para liberar o formulário)</label>
+                  <input 
+                    type="text"
+                    className="p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 font-bold text-blue-600 uppercase"
+                    value={portalConfig.resposta}
+                    onChange={e => setPortalConfig({...portalConfig, resposta: e.target.value})}
+                    onBlur={e => handleUpdatePortal('resposta', e.target.value)}
+                  />
+               </div>
+            </div>
+
+            <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100">
+               <h4 className="text-[11px] font-black text-slate-400 uppercase mb-3 tracking-widest flex items-center gap-2">
+                 ⚡ Resumo do Funcionamento
+               </h4>
+               <ul className="text-xs font-medium text-slate-600 space-y-3">
+                 <li className="flex items-start gap-2">
+                   <span className="text-blue-500">→</span>
+                   <span>Membros acessarão a URL <span className="font-bold text-blue-600">/cadastro</span>.</span>
+                 </li>
+                 <li className="flex items-start gap-2">
+                   <span className="text-blue-500">→</span>
+                   <span>Eles devem responder a pergunta corretamente para ver o formulário.</span>
+                 </li>
+                 <li className="flex items-start gap-2">
+                   <span className="text-blue-500">→</span>
+                   <span>O sistema identifica membros existentes pelo CPF para permitir atualizações.</span>
+                 </li>
+               </ul>
+            </div>
+          </div>
+        </section>
+      </div>
+
       <div className="px-4">
         <div className="bg-blue-900 rounded-3xl p-8 text-white shadow-xl shadow-blue-200 flex flex-col md:flex-row justify-between items-center gap-6">
           <div>
               <h3 className="text-xl font-black uppercase tracking-tighter">Dica de Gestão</h3>
-              <p className="text-blue-200 text-sm font-medium mt-1">Todas as categorias criadas aqui ficarão disponíveis imediatamente nos formulários de cadastro e financeiro.</p>
+              <p className="text-blue-200 text-sm font-medium mt-1">Todas as listas e configurações definidas aqui são aplicadas globalmente em todo o sistema.</p>
           </div>
           <div className="flex gap-4">
               <span className="px-4 py-2 bg-white/10 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/20">Sincronizado via Banco de Dados</span>

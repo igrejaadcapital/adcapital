@@ -9,6 +9,7 @@ import AgendaPage from './components/Agenda/AgendaPage'
 import SettingsPage from './components/Configuracoes/SettingsPage'
 import Login from './components/Auth/Login'
 import { useAuth } from './components/Auth/AuthProvider'
+import AutoCadastroPage from './components/Membros/AutoCadastroPage'
 
 function MainApp({ logout }) {
   const { membros, membrosFiltrados, busca, setBusca, funcoes, graus, carregarDados } = useMembros();
@@ -109,6 +110,11 @@ function MainApp({ logout }) {
 
 function App() {
   const { token, logout } = useAuth();
+  const isPortal = window.location.pathname.startsWith('/cadastro');
+
+  if (isPortal) {
+    return <AutoCadastroPage />;
+  }
 
   if (!token) {
     return <Login />;

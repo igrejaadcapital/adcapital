@@ -98,3 +98,22 @@ class Parentesco(models.Model):
         except Exception as e:
             # Apenas loga o erro no terminal, mas NÃO trava o salvamento do usuário
             print(f"Aviso: Não foi possível criar relação inversa: {e}")
+
+class ConfiguracaoPortal(models.Model):
+    is_ativo = models.BooleanField(default=True, verbose_name="Portal Ativo")
+    pergunta = models.CharField(max_length=255, default="Qual o seu melhor amigo?", verbose_name="Pergunta de Acesso")
+    resposta = models.CharField(max_length=255, default="Jesus", verbose_name="Resposta Correta")
+
+    class Meta:
+        verbose_name = "Configuração do Portal"
+        verbose_name_plural = "Configurações do Portal"
+
+    def __str__(self):
+        return f"Configuração Portal - {'Ativo' if self.is_ativo else 'Inativo'}"
+
+    # Garante que só exista uma única configuração no banco
+    def save(self, *args, **kwargs):
+        if not self.pk and ConfiguracaoPortal.objects.exists():
+            # Se já existe uma, impede a criação de outra
+            return
+        super().save(*args, **kwargs)

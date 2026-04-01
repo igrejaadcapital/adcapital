@@ -76,3 +76,8 @@ class MembroSerializer(serializers.ModelSerializer):
 
     def validate_data_saida(self, value):
         return value if value else None
+
+class ConfiguracaoPortalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ConfiguracaoPortal
+        fields = '__all__'
