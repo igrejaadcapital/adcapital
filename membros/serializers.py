@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Membro, Parentesco, Funcao
+from .models import Membro, Parentesco, Funcao, ConfiguracaoPortal
 
 class ParentescoDetalheSerializer(serializers.ModelSerializer):
     nome_parente = serializers.ReadOnlyField(source='membro_destino.nome')
