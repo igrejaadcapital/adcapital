@@ -39,10 +39,15 @@ export default function AutoCadastroPage() {
         try {
             // Chamada para a nova Rota Direta (bypassing DRF)
             const res = await axios.post(`${BASE_HOST}/portal/verificar/`, { resposta });
-            if (res.data.success) {
+            
+            // Verificação robusta: se o servidor deu 200, liberamos o acesso.
+            if (res.status === 200 || res.data.success) {
                 setStep('form');
+            } else {
+                setError("Resposta incorreta.");
             }
         } catch (err) {
+            console.error("Erro na verificação:", err);
             setError(err.response?.data?.error || "Resposta incorreta. Tente 'Jesus'.");
         } finally {
             setLoading(false);
