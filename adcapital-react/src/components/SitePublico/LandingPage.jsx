@@ -87,7 +87,7 @@ const LandingPage = () => {
           transition={{ duration: 0.8 }}
           className="z-10 flex flex-col items-center"
         >
-          <img src="/logo.png" alt="Logo AD Capital" className="w-24 h-24 mb-6 drop-shadow-2xl" />
+          <img src="/logo.png" alt="Logo AD Capital" className="w-24 h-24 mb-6 drop-shadow-2xl rounded-full object-cover" />
           <h1 className="text-4xl md:text-6xl font-black tracking-tighter mb-4">
             IGREJA <span className="text-blue-400">AD CAPITAL</span>
           </h1>
@@ -286,7 +286,7 @@ const LandingPage = () => {
           </div>
 
           <div className="flex flex-col items-center md:items-end">
-            <img src="/logo.png" alt="Logo Footer" className="w-20 h-20 mb-6 opacity-30 grayscale hover:grayscale-0 transition-all" />
+            <img src="/logo.png" alt="Logo Footer" className="w-20 h-20 mb-6 opacity-30 grayscale hover:grayscale-0 transition-all rounded-full object-cover" />
             <p className="text-slate-700 text-xs font-bold uppercase tracking-widest">
               © 2026 AD CAPITAL - Todos os direitos reservados
             </p>
