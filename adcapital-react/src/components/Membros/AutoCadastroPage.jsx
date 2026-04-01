@@ -3,8 +3,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import MembroFormFields from './MembroFormFields';
 
-// URL Base da API (sem o /api no final para as rotas diretas)
-const BASE_HOST = import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://api.adcapitaligreja.com.br';
+// URL Base da API (FIXA para evitar confusão de domínios)
+const BASE_HOST = 'https://api.adcapitaligreja.com.br';
 
 export default function AutoCadastroPage() {
     // 1. Estratégia de Independência: Pergunta e Funções fixas para evitar erros de carregamento
