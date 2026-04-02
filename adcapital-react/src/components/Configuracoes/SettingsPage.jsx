@@ -13,7 +13,8 @@ import {
   Info,
   Settings,
   ShieldAlert,
-  Image
+  Image,
+  Layers
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -138,6 +139,9 @@ export default function SettingsPage() {
         </button>
         <button onClick={() => setAba('seguranca')} className={cn("w-full p-4 rounded-3xl flex items-center gap-3 transition-all font-black text-xs uppercase tracking-widest", aba === 'seguranca' ? "bg-blue-600 text-white shadow-lg" : "bg-white text-slate-400 border border-slate-100 hover:bg-slate-50")}>
           <ShieldAlert size={18} /> Segurança
+        </button>
+        <button onClick={() => setAba('arquitetura')} className={cn("w-full p-4 rounded-3xl flex items-center gap-3 transition-all font-black text-xs uppercase tracking-widest", aba === 'arquitetura' ? "bg-blue-600 text-white shadow-lg" : "bg-white text-slate-400 border border-slate-100 hover:bg-slate-50")}>
+          <Layers size={18} /> Arquitetura
         </button>
       </aside>
 
@@ -274,27 +278,41 @@ export default function SettingsPage() {
              </section>
           )}
 
-          {/* --- ABA SEGURANÇA --- */}
-          {aba === 'seguranca' && (
+          {/* --- ABA ARQUITETURA --- */}
+          {aba === 'arquitetura' && (
             <section className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 overflow-hidden">
-               <div className="p-8 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                  <h2 className="font-black uppercase text-xs tracking-widest">Segurança do Portal</h2>
-                  <button 
-                    onClick={() => configuracaoService.savePortalConfig({...portalConfig, is_ativo: !portalConfig.is_ativo}).then(carregarDados)}
-                    className={cn("px-8 py-3 rounded-full font-black text-xs uppercase tracking-widest shadow-lg transition-all", portalConfig.is_ativo ? "bg-emerald-500 text-white shadow-emerald-500/20" : "bg-rose-500 text-white shadow-rose-500/20")}
-                  >
-                    {portalConfig.is_ativo ? 'Portal Ativo' : 'Portal Inativo'}
-                  </button>
+               <div className="p-8 border-b border-slate-100 bg-slate-50/50">
+                  <h2 className="font-black uppercase text-xs tracking-widest">Estrutura do Sistema</h2>
                </div>
-               <div className="p-8 space-y-6">
-                  <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100 flex items-center gap-6 mb-4">
-                     <ShieldAlert className="text-slate-400" size={32} />
-                     <p className="text-xs font-bold text-slate-500 uppercase leading-relaxed tracking-wider">A pergunta e resposta de segurança são exibidas para pessoas que tentam acessar o formulário de cadastro pelo site principal.</p>
+               <div className="p-8 space-y-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <ArquiteturaItem icon={<Globe />} title="Domínio & DNS" subtitle="Registro.br / Cloudflare" text="Onde o nome da igreja mora e como as pessoas chegam ao site." />
+                      <ArquiteturaItem icon={<Settings />} title="Site & Painel" subtitle="Render (App Web)" text="O código visual que os membros e visitantes veem no navegador." />
+                      <ArquiteturaItem icon={<Info />} title="Banco de Dados" subtitle="Render (API)" text="Onde guardamos todos os membros, dízimos e programações." />
+                      <ArquiteturaItem icon={<ImageIcon />} title="Mídia & Fotos" subtitle="Cloudinary" text="Armazenamento seguro de fotos para não perdê-las ao reiniciar." />
                   </div>
-                  <Field label="Pergunta de Segurança" value={portalConfig.pergunta} onChange={v => setPortalConfig({...portalConfig, pergunta: v})} 
-                    onBlur={v => configuracaoService.savePortalConfig({...portalConfig, pergunta: v})} />
-                  <Field label="Resposta Exata (Senhárea)" value={portalConfig.resposta} onChange={v => setPortalConfig({...portalConfig, resposta: v})} 
-                    onBlur={v => configuracaoService.savePortalConfig({...portalConfig, resposta: v})} isUpper />
+                  
+                  <div className="bg-blue-50/50 p-8 rounded-[2rem] border border-blue-100/50">
+                      <h3 className="font-black text-blue-900/40 text-[10px] uppercase tracking-[0.2em] mb-4">Endereços Oficiais (URLs)</h3>
+                      <ul className="space-y-3">
+                         <li className="flex justify-between text-xs font-bold font-mono bg-white p-3 rounded-xl border border-blue-100">
+                            <span className="text-blue-600">adcapitaligreja.com.br</span>
+                            <span className="text-slate-400">Público / Site</span>
+                         </li>
+                         <li className="flex justify-between text-xs font-bold font-mono bg-white p-3 rounded-xl border border-blue-100">
+                            <span className="text-blue-600">sistema.adcapitaligreja.com.br</span>
+                            <span className="text-slate-400">Admin / Login</span>
+                         </li>
+                         <li className="flex justify-between text-xs font-bold font-mono bg-white p-3 rounded-xl border border-blue-100">
+                            <span className="text-blue-600">cadastro.adcapitaligreja.com.br</span>
+                            <span className="text-slate-400">Portal de Membros</span>
+                         </li>
+                         <li className="flex justify-between text-xs font-bold font-mono bg-white p-3 rounded-xl border border-blue-100">
+                            <span className="text-blue-600">api.adcapitaligreja.com.br</span>
+                            <span className="text-slate-400">Backend / Dados</span>
+                         </li>
+                      </ul>
+                  </div>
                </div>
             </section>
           )}
@@ -304,6 +322,19 @@ export default function SettingsPage() {
 }
 
 // COMPONENTES AUXILIARES
+function ArquiteturaItem({ icon, title, subtitle, text }) {
+  return (
+    <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 space-y-2">
+       <div className="flex items-center gap-3 text-blue-600 mb-2">
+         {icon}
+         <span className="font-black uppercase text-[10px] tracking-widest">{title}</span>
+       </div>
+       <p className="font-bold text-xs text-slate-800">{subtitle}</p>
+       <p className="text-[10px] text-slate-400 font-bold leading-relaxed">{text}</p>
+    </div>
+  );
+}
+
 function Field({ label, value, onChange, onBlur, isTextArea, isUpper }) {
   return (
     <div className="flex flex-col">

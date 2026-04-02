@@ -233,65 +233,66 @@ const LandingPage = () => {
         </section>
       )}
 
-      {/* --- DÍZIMOS E OFERTAS --- */}
-      <section className="py-16 px-6 max-w-2xl mx-auto">
-        <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2rem] p-8 md:p-12 text-center relative overflow-hidden shadow-2xl">
-          <div className="absolute -top-24 -left-24 w-64 h-64 bg-blue-400/20 rounded-full blur-[80px]" />
-          <div className="relative z-10">
-            <Heart className="w-10 h-10 mx-auto mb-4 text-white animate-pulse" />
-            <h2 className="text-2xl md:text-3xl font-black mb-6 text-white uppercase italic tracking-tight">Ofertas e Dízimos</h2>
-            <div className="space-y-4">
-              <p className="text-blue-100 text-sm md:text-base font-semibold tracking-wide uppercase leading-tight">
-                {config?.beneficiario}
-              </p>
-              <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-4 rounded-2xl inline-block">
-                <span className="text-blue-200 text-[10px] font-black uppercase block mb-1">CHAVE PIX:</span>
-                <p className="text-lg md:text-xl font-black text-white">{config?.pix_chave}</p>
-              </div>
-              <p className="text-blue-200 font-bold uppercase text-sm tracking-widest">{config?.banco_nome}</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* --- FOOTER / CONTATO --- */}
       <footer className="py-20 bg-slate-950 border-t border-slate-900">
-        <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+        <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-3 gap-12 items-center">
           
-          <div className="flex flex-col items-center md:items-start text-center md:text-left">
-             <div className="bg-white p-2 rounded-3xl mb-8 shadow-2xl overflow-hidden w-[180px] h-[180px]">
+          {/* Coluna 1: QR Code e Endereço */}
+          <div className="flex flex-col items-center lg:items-start text-center lg:text-left">
+             <div className="bg-white p-2 rounded-3xl mb-6 shadow-2xl overflow-hidden w-[160px] h-[160px]">
                 <img 
                   src={qrcode} 
                   alt="QR Code" 
                   className="w-full h-full object-contain"
                 />
              </div>
-             <p className="text-white font-black text-lg mb-4 uppercase tracking-tighter italic">Assembleia de Deus na Capital</p>
-             <p className="text-slate-500 max-w-sm mb-6 leading-relaxed">
+             <p className="text-white font-black text-lg mb-2 uppercase tracking-tighter italic leading-none">AD CAPITAL</p>
+             <p className="text-slate-500 max-w-[250px] mb-6 text-[11px] font-medium leading-relaxed">
                {config?.endereco_completo}
              </p>
-             <div className="flex gap-4">
-                <a href={config?.instagram_url} target="_blank" className="p-4 bg-slate-900 rounded-full hover:bg-blue-600 transition-all text-white">
-                  <Instagram size={24} />
+             <div className="flex gap-3">
+                <a href={config?.instagram_url} target="_blank" className="p-3 bg-slate-900 rounded-full hover:bg-blue-600 transition-all text-white border border-slate-800">
+                  <Instagram size={18} />
                 </a>
-                <a href={config?.youtube_url} target="_blank" className="p-4 bg-slate-900 rounded-full hover:bg-red-600 transition-all text-white">
-                  <Youtube size={24} />
+                <a href={config?.youtube_url} target="_blank" className="p-3 bg-slate-900 rounded-full hover:bg-red-600 transition-all text-white border border-slate-800">
+                  <Youtube size={18} />
                 </a>
                 {config?.facebook_url && (
-                  <a href={config?.facebook_url} target="_blank" className="p-4 bg-slate-900 rounded-full hover:bg-blue-800 transition-all text-white">
-                    <Facebook size={24} />
+                  <a href={config?.facebook_url} target="_blank" className="p-3 bg-slate-900 rounded-full hover:bg-blue-800 transition-all text-white border border-slate-800">
+                    <Facebook size={18} />
                   </a>
                 )}
              </div>
           </div>
 
-          <div className="flex flex-col items-center md:items-end">
-            <img src="/logo.png" alt="Logo Footer" className="w-20 h-20 mb-6 opacity-30 grayscale hover:grayscale-0 transition-all rounded-full object-cover" />
-            <p className="text-slate-700 text-xs font-bold uppercase tracking-widest">
-              © 2026 AD CAPITAL - Todos os direitos reservados
+          {/* Coluna 2: Ofertas e Dízimos (Centro) */}
+          <div className="flex flex-col items-center">
+             <div className="bg-gradient-to-br from-blue-600/20 to-indigo-700/20 backdrop-blur-sm p-8 rounded-[2.5rem] border border-blue-500/20 w-full max-w-[320px] relative overflow-hidden group hover:border-blue-500/40 transition-all">
+                <div className="absolute -top-12 -right-12 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all" />
+                <Heart className="w-8 h-8 mx-auto mb-4 text-blue-500 animate-pulse" />
+                <h3 className="text-white font-black text-sm uppercase tracking-[0.2em] mb-6 text-center italic">Ofertas e Dízimos</h3>
+                
+                <div className="space-y-4">
+                   <div className="bg-slate-900/50 p-4 rounded-2xl border border-white/5 text-center">
+                      <span className="text-[9px] font-black text-blue-400 uppercase block mb-1 tracking-widest">CHAVE PIX</span>
+                      <p className="text-xs font-black text-white select-all">{config?.pix_chave}</p>
+                   </div>
+                   <p className="text-[10px] text-slate-500 font-bold uppercase text-center tracking-widest">
+                      {config?.banco_nome}
+                   </p>
+                </div>
+             </div>
+          </div>
+
+          {/* Coluna 3: Logo e Direitos */}
+          <div className="flex flex-col items-center lg:items-end text-center lg:text-right">
+            <img src="/logo.png" alt="Logo Footer" className="w-16 h-16 mb-6 opacity-20 grayscale hover:grayscale-0 transition-all rounded-full object-cover" />
+            <p className="text-slate-600 text-[10px] font-black uppercase tracking-[0.2em] mb-1">
+              © 2026 AD CAPITAL
             </p>
-            <p className="text-slate-800 text-[10px] mt-2">
-              Desenvolvid pelo AntiGravity AI
+            <p className="text-slate-700 text-[9px] font-bold uppercase tracking-widest leading-loose">
+              Todos os direitos reservados<br/>
+              <span className="opacity-50 text-[8px]">Desenvolvido pelo AntiGravity AI</span>
             </p>
           </div>
 
