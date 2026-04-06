@@ -172,8 +172,8 @@ export default function SettingsPage() {
         <button onClick={() => setAba('seguranca')} className={cn("w-full p-4 rounded-3xl flex items-center gap-3 transition-all font-black text-xs uppercase tracking-widest", aba === 'seguranca' ? "bg-blue-600 text-white shadow-lg" : "bg-white text-slate-400 border border-slate-100 hover:bg-slate-50")}>
           <ShieldAlert size={18} /> Segurança
         </button>
-        <button onClick={() => setAba('arquitetura')} className={cn("w-full p-4 rounded-3xl flex items-center gap-3 transition-all font-black text-xs uppercase tracking-widest", aba === 'arquitetura' ? "bg-blue-600 text-white shadow-lg" : "bg-white text-slate-400 border border-slate-100 hover:bg-slate-50")}>
-          <Layers size={18} /> Arquitetura
+        <button onClick={() => setAba('wiki')} className={cn("w-full p-4 rounded-3xl flex items-center gap-3 transition-all font-black text-xs uppercase tracking-widest", aba === 'wiki' ? "bg-blue-600 text-white shadow-lg" : "bg-white text-slate-400 border border-slate-100 hover:bg-slate-50")}>
+          <BookOpen size={18} /> Wiki & TI
         </button>
       </aside>
 
@@ -351,40 +351,100 @@ export default function SettingsPage() {
             </section>
           )}
 
-          {/* --- ABA ARQUITETURA --- */}
-          {aba === 'arquitetura' && (
-            <section className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 overflow-hidden">
-               <div className="p-8 border-b border-slate-100 bg-slate-50/50">
-                  <h2 className="font-black uppercase text-xs tracking-widest">Estrutura do Sistema</h2>
-               </div>
-               <div className="p-8 space-y-8">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <ArquiteturaItem icon={<Globe />} title="Domínio & DNS" subtitle="Registro.br / Cloudflare" text="Onde o nome da igreja mora e como as pessoas chegam ao site." />
-                      <ArquiteturaItem icon={<Settings />} title="Site & Painel" subtitle="Render (App Web)" text="O código visual que os membros e visitantes veem no navegador." />
-                      <ArquiteturaItem icon={<Info />} title="Banco de Dados" subtitle="Render (API)" text="Onde guardamos todos os membros, dízimos e programações." />
-                      <ArquiteturaItem icon={<ImageIcon />} title="Mídia & Fotos" subtitle="Cloudinary" text="Armazenamento seguro de fotos para não perdê-las ao reiniciar." />
+          {/* --- TAB WIKI & SISTEMA --- */}
+          {aba === 'wiki' && (
+            <section className="space-y-8 pb-20">
+               {/* Cabeçalho Wiki */}
+               <div className="bg-white rounded-[2.5rem] p-8 shadow-xl border border-slate-100">
+                  <div className="flex items-center gap-4 mb-4">
+                     <div className="p-3 bg-blue-100 text-blue-600 rounded-2xl">
+                        <BookOpen size={24} />
+                     </div>
+                     <div>
+                        <h2 className="font-black uppercase text-sm tracking-widest">Wiki do Sistema</h2>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase">Documentação Técnica e Manual de Operações</p>
+                     </div>
                   </div>
+               </div>
+
+               {/* Tecnologias */}
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-white rounded-[2.5rem] p-8 shadow-md border border-slate-100 space-y-6">
+                     <h3 className="font-black text-[10px] uppercase tracking-[0.2em] text-blue-600 flex items-center gap-2">
+                        <Layers size={14} /> Stack Tecnológica
+                     </h3>
+                     <div className="space-y-4">
+                        <TechItem label="Frontend" value="React 19 + Tailwind CSS" />
+                        <TechItem label="Backend" value="Django 6.0 (Python)" />
+                        <TechItem label="Banco de Dados" value="Supabase (PostgreSQL)" />
+                        <TechItem label="Mídia/Fotos" value="Cloudinary" />
+                        <TechItem label="Hospedagem" value="Render" />
+                     </div>
+                  </div>
+
+                  <div className="bg-white rounded-[2.5rem] p-8 shadow-md border border-slate-100 space-y-6">
+                     <h3 className="font-black text-[10px] uppercase tracking-[0.2em] text-emerald-600 flex items-center gap-2">
+                        <ExternalLink size={14} /> Conexões Oficiais
+                     </h3>
+                     <div className="space-y-3">
+                        <UrlItem label="Site Público" url="adcapitaligreja.com.br" />
+                        <UrlItem label="Sistema Admin" url="sistema.adcapitaligreja.com.br" />
+                        <UrlItem label="Portal Membros" url="cadastro.adcapitaligreja.com.br" />
+                        <UrlItem label="API Backend" url="api.adcapitaligreja.com.br" />
+                     </div>
+                  </div>
+               </div>
+
+               {/* MER - Modelo de Entidade Relacionamento */}
+               <div className="bg-white rounded-[2.5rem] p-8 shadow-xl border border-slate-100 space-y-8">
+                  <h3 className="font-black text-[10px] uppercase tracking-[0.2em] text-slate-400">Modelo de Dados (Relacionamentos)</h3>
                   
-                  <div className="bg-blue-50/50 p-8 rounded-[2rem] border border-blue-100/50">
-                      <h3 className="font-black text-blue-900/40 text-[10px] uppercase tracking-[0.2em] mb-4">Endereços Oficiais (URLs)</h3>
-                      <ul className="space-y-3">
-                         <li className="flex justify-between text-xs font-bold font-mono bg-white p-3 rounded-xl border border-blue-100">
-                            <span className="text-blue-600">adcapitaligreja.com.br</span>
-                            <span className="text-slate-400">Público / Site</span>
-                         </li>
-                         <li className="flex justify-between text-xs font-bold font-mono bg-white p-3 rounded-xl border border-blue-100">
-                            <span className="text-blue-600">sistema.adcapitaligreja.com.br</span>
-                            <span className="text-slate-400">Admin / Login</span>
-                         </li>
-                         <li className="flex justify-between text-xs font-bold font-mono bg-white p-3 rounded-xl border border-blue-100">
-                            <span className="text-blue-600">cadastro.adcapitaligreja.com.br</span>
-                            <span className="text-slate-400">Portal de Membros</span>
-                         </li>
-                         <li className="flex justify-between text-xs font-bold font-mono bg-white p-3 rounded-xl border border-blue-100">
-                            <span className="text-blue-600">api.adcapitaligreja.com.br</span>
-                            <span className="text-slate-400">Backend / Dados</span>
-                         </li>
-                      </ul>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <DataCard title="Membros" fields={['Nome', 'CPF (Único)', 'Status', 'Função FK', 'Relacionamento FK']} />
+                      <DataCard title="Finanças" fields={['Transação', 'Valor', 'Tipo (+/-)', 'Categoria']} />
+                      <DataCard title="Agenda" fields={['Evento', 'Data Início/Fim', 'Google Sync ID']} />
+                  </div>
+
+                  <div className="p-6 bg-slate-50 rounded-[2rem] border border-dashed border-slate-200">
+                      <p className="text-[10px] font-bold text-slate-500 uppercase leading-relaxed text-center">
+                         O banco está estruturado para garantir integridade. Relacionamentos de Parentesco são bidirecionais automáticos. 
+                         As finanças são categorizadas para relatórios de entradas e saídas.
+                      </p>
+                  </div>
+               </div>
+
+               {/* Manual de Operações (Backup) */}
+               <div className="bg-slate-900 rounded-[2.5rem] p-10 text-white shadow-2xl shadow-slate-900/40 space-y-6">
+                  <div className="flex items-center gap-4">
+                     <div className="p-3 bg-white/10 rounded-2xl">
+                        <Save size={24} className="text-blue-400" />
+                     </div>
+                     <div>
+                        <h3 className="font-black uppercase text-xs tracking-widest">Procedimento de Backup</h3>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase">Segurança e Exportação de Dados</p>
+                     </div>
+                  </div>
+
+                  <div className="space-y-4">
+                     <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                        Para realizar uma cópia completa dos dados para o seu computador, execute o comando abaixo no terminal da pasta do projeto:
+                     </p>
+                     <div className="bg-black/40 p-5 rounded-2xl border border-white/5 font-mono text-xs text-blue-300 flex justify-between items-center group">
+                        <code>.\venv\Scripts\python.exe fast_backup.py</code>
+                        <span className="text-[9px] font-black text-white/20 uppercase group-hover:text-white/40 transition-all">PowerShell</span>
+                     </div>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                        <ul className="space-y-2">
+                           <li className="flex items-center gap-2 text-[10px] font-bold text-slate-300 capitalize">
+                              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                              Arquivo gerado: backup_adcapital.json
+                           </li>
+                           <li className="flex items-center gap-2 text-[10px] font-bold text-slate-300 capitalize">
+                              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                              Destino recomendado: Nuvem ou HD Externo
+                           </li>
+                        </ul>
+                     </div>
                   </div>
                </div>
             </section>
@@ -393,6 +453,46 @@ export default function SettingsPage() {
     </div>
   );
 }
+
+// COMPONENTES AUXILIARES PARA WIKI
+function TechItem({ label, value }) {
+  return (
+    <div className="flex justify-between items-center p-3 bg-slate-50/50 rounded-xl border border-slate-50">
+       <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">{label}</span>
+       <span className="text-xs font-bold text-slate-700">{value}</span>
+    </div>
+  );
+}
+
+function UrlItem({ label, url }) {
+  return (
+    <a href={`https://${url}`} target="_blank" rel="noreferrer" className="flex justify-between items-center p-4 bg-white border border-slate-100 rounded-2xl hover:border-blue-200 hover:shadow-md transition-all group">
+       <div>
+          <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-0.5">{label}</p>
+          <p className="text-xs font-mono font-bold text-blue-600">{url}</p>
+       </div>
+       <ExternalLink size={14} className="text-slate-200 group-hover:text-blue-400 transition-all" />
+    </a>
+  );
+}
+
+function DataCard({ title, fields }) {
+  return (
+    <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 space-y-3">
+       <h4 className="text-[10px] font-black text-blue-900 uppercase tracking-widest">{title}</h4>
+       <div className="space-y-1.5">
+          {fields.map((f, i) => (
+            <div key={i} className="flex items-center gap-2 text-[10px] font-bold text-slate-500">
+               <div className="w-1 h-1 bg-slate-300 rounded-full" />
+               {f}
+            </div>
+          ))}
+       </div>
+    </div>
+  );
+}
+
+// COMPONENTES AUXILIARES ORIGINAIS
 
 // COMPONENTES AUXILIARES
 function ArquiteturaItem({ icon, title, subtitle, text }) {
