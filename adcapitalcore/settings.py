@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-*jzy@g1==oqy@(o+*(+ibbsojas%_7-=*hd7+o6*g!*wmzrcrs')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = [host.strip() for host in os.environ.get('ALLOWED_HOSTS', '').split(',')]
 if not ALLOWED_HOSTS or ALLOWED_HOSTS == ['']:
@@ -101,6 +101,7 @@ if 'DATABASE_URL' in os.environ:
     DATABASES['default'] = dj_database_url.config(
         conn_max_age=600,
         conn_health_checks=True,
+        ssl_require=True
     )
 
 
@@ -152,11 +153,19 @@ STORAGES = {
     },
 }
 
-# LIBERAÇÃO DE CORS (Essencial para o site funcionar)
+# LIBERAÇÃO DE CORS E CSRF (Essencial para o sistema funcionar em produção)
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_METHODS = ["DELETE", "GET", "OPTIONS", "PATCH", "POST", "PUT"]
 CORS_ALLOW_HEADERS = ["*"]
 CORS_PREFLIGHT_MAX_AGE = 86400
+
+# Domínios confiáveis para requisições cross-origin (Django 4.0+)
+CSRF_TRUSTED_ORIGINS = [
+    "https://adcapitaligreja.com.br",
+    "https://sistema.adcapitaligreja.com.br",
+    "https://cadastro.adcapitaligreja.com.br",
+    "https://api.adcapitaligreja.com.br"
+]
 
 # Cloudinary Credentials
 CLOUDINARY_STORAGE = {
