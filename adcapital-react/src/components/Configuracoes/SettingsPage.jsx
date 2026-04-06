@@ -391,6 +391,7 @@ export default function SettingsPage() {
                         <UrlItem label="Sistema Admin" url="sistema.adcapitaligreja.com.br" />
                         <UrlItem label="Portal Membros" url="cadastro.adcapitaligreja.com.br" />
                         <UrlItem label="API Backend" url="api.adcapitaligreja.com.br" />
+                        <UrlItem label="Django Admin (Manual)" url="api.adcapitaligreja.com.br/admin/" />
                      </div>
                   </div>
                </div>

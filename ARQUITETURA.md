@@ -20,6 +20,7 @@ Este documento consolida todos os serviços e endereços que compõem o ecossist
 | `adcapitaligreja.com.br` | **Site Institucional** (Público) | Visitantes / Google |
 | `sistema.adcapitaligreja.com.br` | **Painel Administrativo** | Secretários / Pastores |
 | `cadastro.adcapitaligreja.com.br` | **Portal de Membros** | Novos Membros |
+| `api.adcapitaligreja.com.br/admin` | **Django Admin (Manual)** | Superusuário / TI |
 | `api.adcapitaligreja.com.br` | **Comunicação Interna** (Backend) | Invisível ao usuário |
 
 ---
