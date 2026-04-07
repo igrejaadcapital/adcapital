@@ -271,9 +271,9 @@ const LandingPage = () => {
                 <h3 className="text-white font-black text-xl uppercase tracking-[0.3em] mb-10 text-center italic">Ofertas e Dízimos</h3>
                 
                 <div className="space-y-6">
-                   <div className="bg-white/10 backdrop-blur-md py-6 px-4 md:px-8 rounded-3xl border border-white/30 text-center shadow-inner w-full overflow-hidden">
+                   <div className="bg-white/10 backdrop-blur-md py-6 px-2 md:px-4 rounded-3xl border border-white/30 text-center shadow-inner w-full overflow-hidden">
                       <span className="text-[10px] font-black text-blue-200 uppercase block mb-4 tracking-[0.4em]">CHAVE PIX</span>
-                      <p className="text-lg md:text-2xl font-black text-white select-all tracking-tighter whitespace-nowrap leading-none">
+                      <p className="text-base md:text-xl font-black text-white select-all tracking-tight break-all leading-normal">
                         {config?.pix_chave}
                       </p>
                    </div>
