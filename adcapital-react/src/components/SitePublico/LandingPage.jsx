@@ -265,15 +265,15 @@ const LandingPage = () => {
 
           {/* Coluna 2: Ofertas e Dízimos (Centro) */}
           <div className="flex flex-col items-center py-4 lg:py-0 w-full">
-             <div className="bg-gradient-to-br from-blue-600 to-indigo-800 px-4 md:px-6 py-10 rounded-[3.5rem] shadow-2xl border border-white/20 w-full max-w-[500px] relative overflow-hidden group transition-all hover:scale-[1.02]">
+             <div className="bg-gradient-to-br from-blue-600 to-indigo-800 px-3 md:px-4 py-10 rounded-[3.5rem] shadow-2xl border border-white/20 w-full max-w-[500px] relative overflow-hidden group transition-all hover:scale-[1.02]">
                 <div className="absolute -top-12 -right-12 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
                 <Heart className="w-12 h-12 mx-auto mb-6 text-white animate-pulse" />
                 <h3 className="text-white font-black text-xl uppercase tracking-[0.3em] mb-10 text-center italic">Ofertas e Dízimos</h3>
                 
                 <div className="space-y-6">
-                   <div className="bg-white/10 backdrop-blur-md py-6 px-2 md:px-4 rounded-3xl border border-white/30 text-center shadow-inner w-full overflow-hidden">
+                   <div className="bg-white/10 backdrop-blur-md py-6 px-1 md:px-2 rounded-3xl border border-white/30 text-center shadow-inner w-full overflow-hidden">
                       <span className="text-[10px] font-black text-blue-200 uppercase block mb-4 tracking-[0.4em]">CHAVE PIX</span>
-                      <p className="text-base md:text-xl font-black text-white select-all tracking-tight break-all leading-normal">
+                      <p className="text-base md:text-lg font-black text-white select-all tracking-tighter whitespace-nowrap leading-none">
                         {config?.pix_chave}
                       </p>
                    </div>
