@@ -107,14 +107,10 @@ DATABASES = {
 
 if 'DATABASE_URL' in os.environ:
     DATABASES['default'] = dj_database_url.config(
-        conn_max_age=600,
+        conn_max_age=0, # Obrigatório por usar o Pooler do Supabase (porta 6543)
         conn_health_checks=True,
         ssl_require=True,
     )
-    # Definindo timeout de conexão via OPTIONS
-    DATABASES['default']['OPTIONS'] = DATABASES['default'].get('OPTIONS', {})
-    DATABASES['default']['OPTIONS']['connect_timeout'] = 10
-
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -167,7 +163,6 @@ STORAGES = {
 # LIBERAÇÃO DE CORS E CSRF (Essencial para o sistema funcionar em produção)
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_METHODS = ["DELETE", "GET", "OPTIONS", "PATCH", "POST", "PUT"]
-CORS_ALLOW_HEADERS = ["*"]
 CORS_PREFLIGHT_MAX_AGE = 86400
 
 # Domínios confiáveis para requisições cross-origin (Django 4.0+)
