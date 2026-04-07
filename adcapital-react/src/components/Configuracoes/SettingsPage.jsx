@@ -83,15 +83,29 @@ export default function SettingsPage() {
     setLoading(true);
     const formData = new FormData();
     Object.keys(siteConfig).forEach(key => {
-      if (key !== 'pastor_foto' || typeof siteConfig[key] !== 'string') {
-        formData.append(key, siteConfig[key]);
+      const value = siteConfig[key];
+      
+      // Regra para Foto: Só envia se for um arquivo novo (objeto File)
+      if (key === 'pastor_foto') {
+        if (value instanceof File) {
+          formData.append(key, value);
+        }
+      } 
+      // Regra para outros campos: Só envia se não for nulo/undefined
+      // Isso evita enviar a string "null" para o backend
+      else if (value !== null && value !== undefined) {
+        formData.append(key, value);
       }
     });
+
     try {
       await configuracaoService.saveSiteConfig(formData);
       alert("Configurações do site salvas!");
       await carregarDados();
-    } catch(e) { console.error(e); }
+    } catch(e) { 
+      console.error("Erro ao salvar site:", e.response?.data || e);
+      alert("Erro ao salvar: " + JSON.stringify(e.response?.data || "Verifique os dados."));
+    }
     setLoading(false);
   };
 
