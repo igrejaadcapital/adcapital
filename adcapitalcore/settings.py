@@ -28,9 +28,17 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-*jzy@g1==oqy@(o+*(+ib
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = [host.strip() for host in os.environ.get('ALLOWED_HOSTS', '').split(',')]
-if not ALLOWED_HOSTS or ALLOWED_HOSTS == ['']:
-    ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = [
+    'adcapitaligreja.com.br',
+    'sistema.adcapitaligreja.com.br',
+    'cadastro.adcapitaligreja.com.br',
+    'api.adcapitaligreja.com.br',
+    'localhost',
+    '127.0.0.1'
+]
+env_hosts = os.environ.get('ALLOWED_HOSTS', '')
+if env_hosts:
+    ALLOWED_HOSTS.extend([host.strip() for host in env_hosts.split(',')])
 
 
 # Application definition
@@ -101,7 +109,9 @@ if 'DATABASE_URL' in os.environ:
     DATABASES['default'] = dj_database_url.config(
         conn_max_age=600,
         conn_health_checks=True,
-        ssl_require=True
+        ssl_require=True,
+        # Importante: Timeout para evitar hangs no pooler do Supabase
+        connect_timeout=10
     )
 
 
