@@ -6,6 +6,7 @@ from .views import (
     ConfiguracaoSiteViewSet,
     FotoGaleriaViewSet,
     excluir_funcao,
+    adicionar_funcao,
     buscar_opcoes_funcao,
     buscar_opcoes_parentesco,
     buscar_configuracao_publica
@@ -34,6 +35,7 @@ urlpatterns = [
     path('configuracao-portal/publica/', buscar_configuracao_publica, name='config-publica'),
 
     # Rotas Administrativas
+    path('funcoes/', adicionar_funcao, name='adicionar-funcao-admin'),
     path('funcoes/<int:pk>/', excluir_funcao, name='excluir-funcao-admin'),
     path('', include(router.urls)),
 ]

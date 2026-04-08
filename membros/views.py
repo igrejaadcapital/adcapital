@@ -30,6 +30,16 @@ def excluir_funcao(request, pk):
     except Exception as e:
         return Response({'error': str(e)}, status=400)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def adicionar_funcao(request):
+    """Cria uma nova função manualmente (Apenas Admin)"""
+    nome = request.data.get('nome')
+    if not nome:
+        return Response({'error': 'Nome é obrigatório'}, status=400)
+    funcao, created = Funcao.objects.get_or_create(nome=nome.upper())
+    return Response({'id': funcao.id, 'nome': funcao.nome, 'created': created}, status=201)
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
 @authentication_classes([])
