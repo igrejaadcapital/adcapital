@@ -547,29 +547,55 @@ function Field({ label, value, onChange, onBlur, isTextArea, isUpper }) {
 function SettingsBox({ title, color, data, onAdd, onDelete }) {
   const [val, setVal] = useState('');
   const styles = {
-    blue: "bg-blue-600 text-white shadow-blue-500/10",
-    emerald: "bg-emerald-600 text-white shadow-emerald-500/10",
-    rose: "bg-rose-600 text-white shadow-rose-500/10"
+    blue: { bg: "bg-blue-600", text: "text-blue-600", light: "bg-blue-50", border: "border-blue-100" },
+    emerald: { bg: "bg-emerald-600", text: "text-emerald-600", light: "bg-emerald-50", border: "border-emerald-100" },
+    rose: { bg: "bg-rose-600", text: "text-rose-600", light: "bg-rose-50", border: "border-rose-100" }
   };
+  
+  const currentStyle = styles[color] || styles.blue;
+
   return (
-    <div className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 overflow-visible h-[500px] flex flex-col">
-      <div className={cn("p-6 text-center rounded-t-[2.5rem] font-black uppercase text-xs tracking-widest", styles[color])}>{title}</div>
+    <div className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 overflow-hidden h-[500px] flex flex-col">
+      <div className={cn("p-6 text-center font-black uppercase text-xs tracking-widest text-white", currentStyle.bg)}>{title}</div>
       <div className="p-6">
-        <div className="flex gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-100">
-           <input type="text" className="flex-1 bg-transparent p-3 font-bold text-sm outline-none px-4" 
-             placeholder="Novo item..." value={val} onChange={e => setVal(e.target.value)} />
-           <button onClick={() => {if(val) onAdd(val); setVal('')}} className="bg-slate-900 text-white w-12 h-12 rounded-xl font-black text-xl hover:scale-105 transition-all shadow-lg">+</button>
+        <div className={cn("flex items-center gap-2 p-1.5 rounded-2xl border transition-all focus-within:ring-4", currentStyle.light, currentStyle.border, color === 'blue' ? 'focus-within:ring-blue-500/10' : color === 'emerald' ? 'focus-within:ring-emerald-500/10' : 'focus-within:ring-rose-500/10')}>
+           <input 
+             type="text" 
+             className="flex-1 bg-transparent p-2.5 font-bold text-sm outline-none px-4 text-slate-700 placeholder:text-slate-300" 
+             placeholder="Novo item..." 
+             value={val} 
+             onChange={e => setVal(e.target.value)}
+             onKeyDown={e => {
+                if (e.key === 'Enter' && val) {
+                  onAdd(val);
+                  setVal('');
+                }
+             }}
+           />
+           <button 
+             onClick={() => {if(val) onAdd(val); setVal('')}} 
+             className={cn("w-10 h-10 rounded-xl flex items-center justify-center text-white transition-all hover:scale-105 active:scale-95 shadow-sm", currentStyle.bg)}
+           >
+              <Plus size={20} strokeWidth={3} />
+           </button>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto p-6 pt-0 space-y-3">
-        {data.map(d => (
-          <div key={d.id} className="flex justify-between items-center p-4 bg-slate-50/50 rounded-2xl border border-slate-50 hover:bg-white hover:shadow-md transition-all group">
-             <span className="font-bold text-slate-700 text-sm">{d.nome}</span>
-             <button onClick={() => onDelete(d.id)} className="text-slate-300 hover:text-rose-500 transition-all">
-                <Trash2 size={16} />
-             </button>
+      <div className="flex-1 overflow-y-auto p-6 pt-0 space-y-2">
+        {data.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full opacity-20 py-10">
+             <Plus size={40} className="mb-2" />
+             <p className="text-[10px] font-black uppercase tracking-widest">Nenhum item</p>
           </div>
-        ))}
+        ) : (
+          data.map(d => (
+            <div key={d.id} className="flex justify-between items-center p-4 bg-slate-50/50 rounded-2xl border border-slate-50 hover:bg-white hover:border-slate-100 hover:shadow-sm transition-all group">
+               <span className="font-bold text-slate-700 text-sm">{d.nome}</span>
+               <button onClick={() => onDelete(d.id)} className="p-2 text-slate-200 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all">
+                  <Trash2 size={16} />
+               </button>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
