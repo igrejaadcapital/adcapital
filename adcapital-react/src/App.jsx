@@ -13,7 +13,7 @@ import AutoCadastroPage from './components/Membros/AutoCadastroPage'
 import LandingPage from './components/SitePublico/LandingPage'
 
 function MainApp({ logout }) {
-  const { membros, membrosFiltrados, busca, setBusca, funcoes, graus, carregarDados } = useMembros();
+  const { membros, membrosFiltrados, busca, setBusca, funcoes, graus, carregarDados, loading, error } = useMembros();
   const [telaAtiva, setTelaAtiva] = useState('home');
 
   const {
@@ -25,6 +25,8 @@ function MainApp({ logout }) {
     totalEntradas,
     totalSaidas,
     saldoAtual,
+    loading: loadingFinanceiro,
+    error: errorFinanceiro
   } = useFinanceiro();
 
   const {
@@ -63,6 +65,9 @@ function MainApp({ logout }) {
             saidas={totalSaidas}
             irParaMembros={() => setTelaAtiva('membros')}
             irParaFinanceiro={() => setTelaAtiva('financeiro')}
+            loading={loading}
+            error={error}
+            retry={carregarDados}
           />
         )}
 
@@ -75,6 +80,8 @@ function MainApp({ logout }) {
             funcoes={funcoes}
             graus={graus}
             carregarDados={carregarDados}
+            loading={loading}
+            error={error}
           />
         )}
 
@@ -94,6 +101,8 @@ function MainApp({ logout }) {
             categoriasSaida={categoriasSaida}
             adicionarCategoriaEntrada={adicionarCategoriaEntrada}
             adicionarCategoriaSaida={adicionarCategoriaSaida}
+            loading={loadingFinanceiro}
+            error={errorFinanceiro}
           />
         )}
 

@@ -4,6 +4,7 @@ import financeiroService from '../../api/financeiroService';
 export function useFinanceiro() {
   const [transacoes, setTransacoes] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
   const [dashboardData, setDashboardData] = useState({
     total_entradas: 0,
     total_saidas: 0,
@@ -15,6 +16,7 @@ export function useFinanceiro() {
 
   const carregarDados = useCallback(async () => {
     setLoading(true);
+    setError(false);
     try {
       const [resTransacoes, resDash] = await Promise.all([
         financeiroService.listar(),
@@ -22,8 +24,9 @@ export function useFinanceiro() {
       ]);
       setTransacoes(resTransacoes.data);
       setDashboardData(resDash.data);
-    } catch (error) {
-      console.error('Erro ao carregar o financeiro:', error);
+    } catch (err) {
+      console.error('Erro ao carregar o financeiro:', err);
+      setError(true);
     } finally {
       setLoading(false);
     }

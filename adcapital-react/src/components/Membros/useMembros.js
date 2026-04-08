@@ -3,11 +3,15 @@ import membroService from '../../api/membroService';
 
 export function useMembros() {
     const [membros, setMembros] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(false);
     const [busca, setBusca] = useState('');
     const [funcoes, setFuncoes] = useState([]);
     const [graus, setGraus] = useState([]);
 
     const carregarDados = useCallback(async () => {
+        setLoading(true);
+        setError(false);
         try {
             const [m, f, g] = await Promise.all([
                 membroService.listar(),
@@ -19,6 +23,9 @@ export function useMembros() {
             setGraus(g.data);
         } catch (err) {
             console.error("Erro ao carregar dados do servidor:", err);
+            setError(true);
+        } finally {
+            setLoading(false);
         }
     }, []);
 
@@ -38,6 +45,8 @@ export function useMembros() {
         setBusca, 
         funcoes, 
         graus, 
-        carregarDados 
+        carregarDados,
+        loading,
+        error
     };
 }

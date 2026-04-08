@@ -1,3 +1,4 @@
+import { AlertCircle, RefreshCcw, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import LancamentoFinanceiroFormModal from './ModalLancamentosFinanceiro/LancamentoFinanceiroFormModal';
 import financeiroService from '../../api/financeiroService';
@@ -16,6 +17,8 @@ export default function FinanceiroMain({
     categoriasSaida,
     adicionarCategoriaEntrada,
     adicionarCategoriaSaida,
+    loading,
+    error
 }) {
     const [mostrarModal, setMostrarModal] = useState(false);
     const [tipoLancamento, setTipoLancamento] = useState('ENTRADA');
@@ -61,8 +64,31 @@ export default function FinanceiroMain({
         }
     };
 
+    if (error) {
+        return (
+            <div className="flex flex-col items-center justify-center p-20 bg-white rounded-[2.5rem] border border-rose-100 shadow-xl space-y-6">
+                <AlertCircle size={48} className="text-rose-500" />
+                <div className="text-center">
+                    <h2 className="text-lg font-black text-slate-800 uppercase tracking-widest">Erro no balanço financeiro</h2>
+                    <p className="text-xs font-bold text-slate-400 uppercase mt-2">O banco de dados demorou a responder. Isso pode acontecer após inatividade.</p>
+                </div>
+                <button 
+                    onClick={atualizarTransacoes}
+                    className="flex items-center gap-2 bg-slate-900 text-white px-8 py-3 rounded-full font-black text-xs uppercase tracking-[0.2em] hover:scale-105 transition-all"
+                >
+                    <RefreshCcw size={16} /> Tentar Novamente
+                </button>
+            </div>
+        );
+    }
+
     return (
-        <div className="max-w-6xl mx-auto p-4 space-y-6 animate-in fade-in duration-500">
+        <div className="max-w-6xl mx-auto p-4 space-y-6 animate-in fade-in duration-500 relative">
+            {loading && (
+                <div className="absolute inset-0 bg-white/50 backdrop-blur-[2px] z-50 flex items-center justify-center rounded-[2.5rem]">
+                   <Loader2 className="animate-spin text-blue-600" size={40} />
+                </div>
+            )}
             {/* Cards de Saldo */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-blue-900 rounded-3xl p-6 text-white shadow-xl">
