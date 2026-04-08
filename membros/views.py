@@ -34,11 +34,28 @@ def excluir_funcao(request, pk):
 @permission_classes([IsAuthenticated])
 def adicionar_funcao(request):
     """Cria uma nova função manualmente (Apenas Admin)"""
-    nome = request.data.get('nome')
-    if not nome:
-        return Response({'error': 'Nome é obrigatório'}, status=400)
-    funcao, created = Funcao.objects.get_or_create(nome=nome.upper())
-    return Response({'id': funcao.id, 'nome': funcao.nome, 'created': created}, status=201)
+    try:
+        nome = request.data.get('nome')
+        if not nome or not str(nome).strip():
+            return Response({'error': 'Nome é obrigatório'}, status=400)
+        
+        # Limpa o nome para evitar espaços extras e padroniza
+        nome_limpo = str(nome).strip().upper()
+        
+        funcao, created = Funcao.objects.get_or_create(nome=nome_limpo)
+        return Response({
+            'id': funcao.id, 
+            'nome': funcao.nome, 
+            'created': created,
+            'success': True
+        }, status=201)
+    except Exception as e:
+        # Se der erro 500, agora retornamos o motivo real em vez de uma página HTML genérica
+        print(f"ERRO AO ADICIONAR FUNCAO: {str(e)}")
+        return Response({
+            'error': f"Erro no servidor: {str(e)}",
+            'detail': "Verifique se a tabela de funções existe no banco de dados."
+        }, status=500)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
