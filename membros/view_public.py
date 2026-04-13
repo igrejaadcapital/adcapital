@@ -90,6 +90,46 @@ def auto_cadastro_direto(request):
         if serializer.is_valid():
             membro = serializer.save()
             
+            # --- START LGPD LOGIC (Resilient) ---
+            try:
+                # Set consent true as it's required in the frontend
+                membro.lgpd_consentido = True
+                if not membro.lgpd_data_aceite:
+                     from django.utils import timezone
+                     membro.lgpd_data_aceite = timezone.now()
+                
+                # Generate PDF if it doesn't exist
+                from .utils import gerar_termo_lgpd_pdf
+                nome_arquivo, pdf_file = gerar_termo_lgpd_pdf(membro)
+                membro.lgpd_documento.save(nome_arquivo, pdf_file, save=False)
+                membro.save()
+
+                # Enviar por e-mail
+                if membro.email:
+                    try:
+                        from django.core.mail import EmailMessage
+                        from django.conf import settings
+                        
+                        email_msg = EmailMessage(
+                            subject='Bem-vindo! Seu Termo de Ciência e Aceite (LGPD)',
+                            body=f'Olá {membro.nome},\n\nSeu cadastro no portal da Igreja Assembleia de Deus Ministério na Capital foi realizado com sucesso!\n\nEm anexo, enviamos a sua via do Termo de Consentimento de Dados Pessoais (LGPD) assinado eletronicamente no ato do seu cadastro.\n\nAtenciosamente,\nEquipe AD Capital',
+                            from_email=settings.EMAIL_HOST_USER,
+                            to=[membro.email],
+                        )
+                        
+                        # Anexar o PDF
+                        if membro.lgpd_documento:
+                             membro.lgpd_documento.seek(0)
+                             email_msg.attach(nome_arquivo, membro.lgpd_documento.read(), 'application/pdf')
+                             
+                        email_msg.send(fail_silently=True)
+                    except Exception as email_err:
+                        print(f"Erro ao enviar e-mail LGPD para {membro.email}: {email_err}")
+            except Exception as lgpd_err:
+                # Loga o erro mas NÃO quebra o request de cadastro
+                print(f"AVISO: Falha na lógica LGPD (Cadastro salvo no entanto): {lgpd_err}")
+            # --- END LGPD LOGIC ---
+
             # Lógica de Parentesco
             parentescos_data = data.get('parentescos_novo', [])
             if membro_existente:
@@ -108,7 +148,8 @@ def auto_cadastro_direto(request):
             return JsonResponse({
                 "success": True, 
                 "message": "Cadastro salvo!",
-                "id": membro.id
+                "id": membro.id,
+                "lgpd_url": membro.lgpd_documento.url if membro.lgpd_documento else None
             })
             
         return JsonResponse(serializer.errors, status=400)
