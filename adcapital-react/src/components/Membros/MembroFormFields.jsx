@@ -40,7 +40,6 @@ export default function MembroFormFields({ formData, handleChange, funcoes, apli
                         type="email"
                         value={formData.email || ''}
                         onChange={e => handleChange('email', e.target.value)}
-                        required
                     />
                 </div>
 
