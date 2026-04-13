@@ -1,4 +1,5 @@
 from django.db import models
+from cloudinary_storage.storage import RawMediaCloudinaryStorage
 
 class Funcao(models.Model):
     nome = models.CharField(max_length=100, unique=True)
@@ -63,7 +64,7 @@ class Membro(models.Model):
     # LGPD
     lgpd_consentido = models.BooleanField(default=False, verbose_name="Termo LGPD Assinado")
     lgpd_data_aceite = models.DateTimeField(null=True, blank=True, verbose_name="Data de Aceite LGPD")
-    lgpd_documento = models.FileField(upload_to='membros/lgpd/', null=True, blank=True, verbose_name="Documento LGPD Assinado")
+    lgpd_documento = models.FileField(upload_to='membros/lgpd/', null=True, blank=True, verbose_name="Documento LGPD Assinado", storage=RawMediaCloudinaryStorage())
 
     def save(self, *args, **kwargs):
         if self.nome:
