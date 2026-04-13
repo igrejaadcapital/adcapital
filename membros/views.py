@@ -219,112 +219,112 @@ class AutoCadastroMembroView(APIView):
             if resposta_user != resposta_correta:
                  return Response({"error": "Acesso negado: Resposta incorreta."}, status=401)
 
-        cpf_original = request.data.get('cpf')
-        if not cpf_original:
-            return Response({"error": "CPF é obrigatório"}, status=400)
+            cpf_original = request.data.get('cpf')
+            if not cpf_original:
+                return Response({"error": "CPF é obrigatório"}, status=400)
 
-        # Limpa o CPF para busca
-        cpf_limpo = "".join(filter(str.isdigit, cpf_original))
-        
-        # Busca se o membro já existe
-        membro_existente = Membro.objects.filter(cpf=cpf_limpo).first()
-        
-        if membro_existente:
-            # Edição (Update)
-            serializer = MembroSerializer(membro_existente, data=request.data, partial=True)
-        else:
-            # Novo Cadastro (Create)
-            serializer = MembroSerializer(data=request.data)
-
-        if serializer.is_valid():
-            membro = serializer.save()
+            # Limpa o CPF para busca
+            cpf_limpo = "".join(filter(str.isdigit, cpf_original))
             
-            # --- START LGPD LOGIC (Resilient) ---
-            try:
-                # Set consent true as it's required in the frontend
-                membro.lgpd_consentido = True
-                if not membro.lgpd_data_aceite:
-                     from django.utils import timezone
-                     membro.lgpd_data_aceite = timezone.now()
-                
-                # Generate PDF if it doesn't exist
-                from .utils import gerar_termo_lgpd_pdf
-                nome_arquivo, pdf_file = gerar_termo_lgpd_pdf(membro)
-                membro.lgpd_documento.save(nome_arquivo, pdf_file, save=False)
-                membro.save()
-
-                # Enviar por e-mail
-                if membro.email:
-                    try:
-                        from django.core.mail import EmailMessage
-                        from django.conf import settings
-                        
-                        email_msg = EmailMessage(
-                            subject='Bem-vindo! Seu Termo de Ciência e Aceite (LGPD)',
-                            body=f'Olá {membro.nome},\n\nSeu cadastro no portal da Igreja Assembleia de Deus Ministério na Capital foi realizado com sucesso!\n\nEm anexo, enviamos a sua via do Termo de Consentimento de Dados Pessoais (LGPD) assinado eletronicamente no ato do seu cadastro.\n\nAtenciosamente,\nEquipe AD Capital',
-                            from_email=settings.EMAIL_HOST_USER,
-                            to=[membro.email],
-                        )
-                        
-                        # Anexar o PDF
-                        if membro.lgpd_documento:
-                             membro.lgpd_documento.seek(0)
-                             email_msg.attach(nome_arquivo, membro.lgpd_documento.read(), 'application/pdf')
-                             
-                        email_msg.send(fail_silently=True)
-                    except Exception as email_err:
-                        print(f"Erro ao enviar e-mail LGPD para {membro.email}: {email_err}")
-            except Exception as lgpd_err:
-                # Loga o erro mas NÃO quebra o request de cadastro
-                print(f"AVISO: Falha na lógica LGPD (Cadastro salvo no entanto): {lgpd_err}")
-            # --- END LGPD LOGIC ---
-
-            # Lógica simplificada de parentesco para o auto-cadastro
-            parentescos_data = request.data.get('parentescos_novo', [])
-
-            # Se vier de um FormData como string JSON
-            if isinstance(parentescos_data, str):
-                try:
-                    parentescos_data = json.loads(parentescos_data)
-                except:
-                    parentescos_data = []
+            # Busca se o membro já existe
+            membro_existente = Membro.objects.filter(cpf=cpf_limpo).first()
+            
             if membro_existente:
-                Parentesco.objects.filter(membro_origem=membro).delete()
+                # Edição (Update)
+                serializer = MembroSerializer(membro_existente, data=request.data, partial=True)
+            else:
+                # Novo Cadastro (Create)
+                serializer = MembroSerializer(data=request.data)
+
+            if serializer.is_valid():
+                membro = serializer.save()
+                
+                # --- START LGPD LOGIC (Resilient) ---
+                try:
+                    # Set consent true as it's required in the frontend
+                    membro.lgpd_consentido = True
+                    if not membro.lgpd_data_aceite:
+                         from django.utils import timezone
+                         membro.lgpd_data_aceite = timezone.now()
+                    
+                    # Generate PDF if it doesn't exist
+                    from .utils import gerar_termo_lgpd_pdf
+                    nome_arquivo, pdf_file = gerar_termo_lgpd_pdf(membro)
+                    membro.lgpd_documento.save(nome_arquivo, pdf_file, save=False)
+                    membro.save()
+
+                    # Enviar por e-mail
+                    if membro.email:
+                        try:
+                            from django.core.mail import EmailMessage
+                            from django.conf import settings
+                            
+                            email_msg = EmailMessage(
+                                subject='Bem-vindo! Seu Termo de Ciência e Aceite (LGPD)',
+                                body=f'Olá {membro.nome},\n\nSeu cadastro no portal da Igreja Assembleia de Deus Ministério na Capital foi realizado com sucesso!\n\nEm anexo, enviamos a sua via do Termo de Consentimento de Dados Pessoais (LGPD) assinado eletronicamente no ato do seu cadastro.\n\nAtenciosamente,\nEquipe AD Capital',
+                                from_email=settings.EMAIL_HOST_USER,
+                                to=[membro.email],
+                            )
+                            
+                            # Anexar o PDF
+                            if membro.lgpd_documento:
+                                 membro.lgpd_documento.seek(0)
+                                 email_msg.attach(nome_arquivo, membro.lgpd_documento.read(), 'application/pdf')
+                                 
+                            email_msg.send(fail_silently=True)
+                        except Exception as email_err:
+                            print(f"Erro ao enviar e-mail LGPD para {membro.email}: {email_err}")
+                except Exception as lgpd_err:
+                    # Loga o erro mas NÃO quebra o request de cadastro
+                    print(f"AVISO: Falha na lógica LGPD (Cadastro salvo no entanto): {lgpd_err}")
+                # --- END LGPD LOGIC ---
+
+                # Lógica simplificada de parentesco para o auto-cadastro
+                parentescos_data = request.data.get('parentescos_novo', [])
+
+                # Se vier de um FormData como string JSON
+                if isinstance(parentescos_data, str):
+                    try:
+                        parentescos_data = json.loads(parentescos_data)
+                    except:
+                        parentescos_data = []
+                if membro_existente:
+                    Parentesco.objects.filter(membro_origem=membro).delete()
+                
+                for item in parentescos_data:
+                    p_id = item.get('parente_id') or item.get('membro_destino')
+                    grau = item.get('grau')
+                    if p_id and grau and str(p_id) != str(membro.id):
+                        # Verifica se o parente realmente existe para evitar erro de integridade (ForeignKey)
+                        if Membro.objects.filter(id=p_id).exists():
+                            Parentesco.objects.get_or_create(
+                                membro_origem=membro,
+                                membro_destino_id=p_id,
+                                defaults={'grau': grau}
+                            )
+                
+                return Response({
+                    "success": True, 
+                    "message": "Cadastro realizado/atualizado com sucesso!",
+                    "id": membro.id,
+                    "is_update": membro_existente is not None,
+                    "lgpd_url": membro.lgpd_documento.url if membro.lgpd_documento else None
+                })
             
-            for item in parentescos_data:
-                p_id = item.get('parente_id') or item.get('membro_destino')
-                grau = item.get('grau')
-                if p_id and grau and str(p_id) != str(membro.id):
-                    # Verifica se o parente realmente existe para evitar erro de integridade (ForeignKey)
-                    if Membro.objects.filter(id=p_id).exists():
-                        Parentesco.objects.get_or_create(
-                            membro_origem=membro,
-                            membro_destino_id=p_id,
-                            defaults={'grau': grau}
-                        )
+            return Response(serializer.errors, status=400)
+        
+        except Exception as e:
+            # LOG DE ERRO CRITICO (Isso vai aparecer nos logs do Render)
+            print(f"ERRO CRITICO NO AUTO-CADASTRO: {str(e)}")
+            import traceback
+            traceback.print_exc()
             
+            # Retornamos JSON em vez de HTML para não quebrar o CORS no frontend
             return Response({
-                "success": True, 
-                "message": "Cadastro realizado/atualizado com sucesso!",
-                "id": membro.id,
-                "is_update": membro_existente is not None,
-                "lgpd_url": membro.lgpd_documento.url if membro.lgpd_documento else None
-            })
-        
-        return Response(serializer.errors, status=400)
-    
-    except Exception as e:
-        # LOG DE ERRO CRITICO (Isso vai aparecer nos logs do Render)
-        print(f"ERRO CRITICO NO AUTO-CADASTRO: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        
-        # Retornamos JSON em vez de HTML para não quebrar o CORS no frontend
-        return Response({
-            "error": "Erro interno no servidor ao processar cadastro.",
-            "detail": str(e),
-            "help": "Verifique se todos os campos obrigatórios estão preenchidos corretamente."
-        }, status=500)
+                "error": "Erro interno no servidor ao processar cadastro.",
+                "detail": str(e),
+                "help": "Verifique se todos os campos obrigatórios estão preenchidos corretamente."
+            }, status=500)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
