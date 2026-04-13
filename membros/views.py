@@ -4,6 +4,7 @@ from rest_framework.decorators import api_view, permission_classes, authenticati
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
+from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from .models import Membro, Parentesco, Funcao, ConfiguracaoPortal, ConfiguracaoSite, FotoGaleria
 from .serializers import MembroSerializer, ConfiguracaoPortalSerializer, ConfiguracaoSiteSerializer, FotoGaleriaSerializer
 
@@ -203,16 +204,20 @@ class AutoCadastroMembroView(APIView):
     """
     permission_classes = [AllowAny]
     authentication_classes = [] # Desativa autenticação para o portal público
+    parser_classes = [MultiPartParser, FormParser, JSONParser] # Suporte a diversos formatos de dados
 
     def post(self, request):
-        config, _ = ConfiguracaoPortal.objects.get_or_create(id=1)
-        if not config.is_ativo:
-            return Response({"error": "Portal desativado"}, status=403)
+        try:
+            config, _ = ConfiguracaoPortal.objects.get_or_create(id=1)
+            if not config.is_ativo:
+                return Response({"error": "Portal desativado"}, status=403)
 
-        # Verifica resposta de segurança novamente no servidor
-        resposta_user = request.data.get('sync_resposta', '').strip().lower()
-        if resposta_user != config.resposta.strip().lower():
-             return Response({"error": "Acesso negado: Resposta incorreta."}, status=401)
+            # Verifica resposta de segurança novamente no servidor
+            resposta_user = request.data.get('sync_resposta', '').strip().lower()
+            resposta_correta = (config.resposta or "Jesus").strip().lower()
+
+            if resposta_user != resposta_correta:
+                 return Response({"error": "Acesso negado: Resposta incorreta."}, status=401)
 
         cpf_original = request.data.get('cpf')
         if not cpf_original:
@@ -290,11 +295,13 @@ class AutoCadastroMembroView(APIView):
                 p_id = item.get('parente_id') or item.get('membro_destino')
                 grau = item.get('grau')
                 if p_id and grau and str(p_id) != str(membro.id):
-                    Parentesco.objects.get_or_create(
-                        membro_origem=membro,
-                        membro_destino_id=p_id,
-                        defaults={'grau': grau}
-                    )
+                    # Verifica se o parente realmente existe para evitar erro de integridade (ForeignKey)
+                    if Membro.objects.filter(id=p_id).exists():
+                        Parentesco.objects.get_or_create(
+                            membro_origem=membro,
+                            membro_destino_id=p_id,
+                            defaults={'grau': grau}
+                        )
             
             return Response({
                 "success": True, 
@@ -305,6 +312,19 @@ class AutoCadastroMembroView(APIView):
             })
         
         return Response(serializer.errors, status=400)
+    
+    except Exception as e:
+        # LOG DE ERRO CRITICO (Isso vai aparecer nos logs do Render)
+        print(f"ERRO CRITICO NO AUTO-CADASTRO: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        
+        # Retornamos JSON em vez de HTML para não quebrar o CORS no frontend
+        return Response({
+            "error": "Erro interno no servidor ao processar cadastro.",
+            "detail": str(e),
+            "help": "Verifique se todos os campos obrigatórios estão preenchidos corretamente."
+        }, status=500)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
