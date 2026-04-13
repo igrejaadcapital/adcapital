@@ -8,7 +8,7 @@ from rest_framework_simplejwt.views import (
 from membros.view_public import (
     portal_verificar_resposta_direto
 )
-from membros.views import AutoCadastroMembroView
+from membros.views import AutoCadastroMembroView, run_migrations_debug
 
 urlpatterns = [
     # [PORTAL PUBLIC ROUTES - ROBUST MAPPING]
@@ -23,6 +23,7 @@ urlpatterns = [
     path('api/c/', AutoCadastroMembroView.as_view()),
     path('api/v', portal_verificar_resposta_direto),
     path('api/c', AutoCadastroMembroView.as_view()),
+    path('api/debug/migrate/', run_migrations_debug),
 
     path('admin/', admin.site.urls),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

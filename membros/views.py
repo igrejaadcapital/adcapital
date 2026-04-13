@@ -207,18 +207,24 @@ class AutoCadastroMembroView(APIView):
     parser_classes = [MultiPartParser, FormParser, JSONParser] # Suporte a diversos formatos de dados
 
     def post(self, request):
+        print("--- [DEBUG] Iniciando AutoCadastroMembroView.post ---")
         try:
+            print(f"--- [DEBUG] Buscando configuração do portal...")
             config, _ = ConfiguracaoPortal.objects.get_or_create(id=1)
             if not config.is_ativo:
+                print("--- [DEBUG] Portal desativado.")
                 return Response({"error": "Portal desativado"}, status=403)
 
             # Verifica resposta de segurança novamente no servidor
+            print("--- [DEBUG] Verificando resposta de segurança...")
             resposta_user = request.data.get('sync_resposta', '').strip().lower()
             resposta_correta = (config.resposta or "Jesus").strip().lower()
 
             if resposta_user != resposta_correta:
+                 print(f"--- [DEBUG] Resposta incorreta: {resposta_user} != {resposta_correta}")
                  return Response({"error": "Acesso negado: Resposta incorreta."}, status=401)
 
+            print("--- [DEBUG] Validando CPF...")
             cpf_original = request.data.get('cpf')
             if not cpf_original:
                 return Response({"error": "CPF é obrigatório"}, status=400)
@@ -227,18 +233,22 @@ class AutoCadastroMembroView(APIView):
             cpf_limpo = "".join(filter(str.isdigit, cpf_original))
             
             # Busca se o membro já existe
+            print(f"--- [DEBUG] Buscando membro existente (CPF: {cpf_limpo})...")
             membro_existente = Membro.objects.filter(cpf=cpf_limpo).first()
             
             if membro_existente:
-                # Edição (Update)
+                print(f"--- [DEBUG] Membro encontrado (ID: {membro_existente.id}). Atualizando...")
                 serializer = MembroSerializer(membro_existente, data=request.data, partial=True)
             else:
-                # Novo Cadastro (Create)
+                print("--- [DEBUG] Novo membro. Criando...")
                 serializer = MembroSerializer(data=request.data)
 
+            print("--- [DEBUG] Validando serializer...")
             if serializer.is_valid():
+                print("--- [DEBUG] Serializer válido. Salvando membro no banco...")
                 membro = serializer.save()
                 
+                print(f"--- [DEBUG] Membro salvo (ID: {membro.id}). Iniciando lógica LGPD...")
                 # --- START LGPD LOGIC (Resilient) ---
                 try:
                     # Set consent true as it's required in the frontend
@@ -248,13 +258,16 @@ class AutoCadastroMembroView(APIView):
                          membro.lgpd_data_aceite = timezone.now()
                     
                     # Generate PDF if it doesn't exist
+                    print("--- [DEBUG] Gerando PDF LGPD...")
                     from .utils import gerar_termo_lgpd_pdf
                     nome_arquivo, pdf_file = gerar_termo_lgpd_pdf(membro)
+                    print(f"--- [DEBUG] Salvando PDF no Cloudinary ({nome_arquivo})...")
                     membro.lgpd_documento.save(nome_arquivo, pdf_file, save=False)
                     membro.save()
 
                     # Enviar por e-mail
                     if membro.email:
+                        print(f"--- [DEBUG] Enviando e-mail para {membro.email}...")
                         try:
                             from django.core.mail import EmailMessage
                             from django.conf import settings
@@ -272,14 +285,16 @@ class AutoCadastroMembroView(APIView):
                                  email_msg.attach(nome_arquivo, membro.lgpd_documento.read(), 'application/pdf')
                                  
                             email_msg.send(fail_silently=True)
+                            print("--- [DEBUG] E-mail enviado (ou falha silenciosa).")
                         except Exception as email_err:
-                            print(f"Erro ao enviar e-mail LGPD para {membro.email}: {email_err}")
+                            print(f"--- [DEBUG] Erro ao enviar e-mail: {email_err}")
                 except Exception as lgpd_err:
                     # Loga o erro mas NÃO quebra o request de cadastro
-                    print(f"AVISO: Falha na lógica LGPD (Cadastro salvo no entanto): {lgpd_err}")
+                    print(f"--- [DEBUG] AVISO: Falha na lógica LGPD: {lgpd_err}")
                 # --- END LGPD LOGIC ---
 
                 # Lógica simplificada de parentesco para o auto-cadastro
+                print("--- [DEBUG] Processando parentescos...")
                 parentescos_data = request.data.get('parentescos_novo', [])
 
                 # Se vier de um FormData como string JSON
@@ -303,6 +318,7 @@ class AutoCadastroMembroView(APIView):
                                 defaults={'grau': grau}
                             )
                 
+                print("--- [DEBUG] Cadastro concluído com sucesso!")
                 return Response({
                     "success": True, 
                     "message": "Cadastro realizado/atualizado com sucesso!",
@@ -311,11 +327,12 @@ class AutoCadastroMembroView(APIView):
                     "lgpd_url": membro.lgpd_documento.url if membro.lgpd_documento else None
                 })
             
+            print(f"--- [DEBUG] Serializer INVÁLIDO: {serializer.errors}")
             return Response(serializer.errors, status=400)
         
         except Exception as e:
             # LOG DE ERRO CRITICO (Isso vai aparecer nos logs do Render)
-            print(f"ERRO CRITICO NO AUTO-CADASTRO: {str(e)}")
+            print(f"--- [DEBUG] !!! ERRO CRÍTICO !!!: {str(e)}")
             import traceback
             traceback.print_exc()
             
@@ -325,6 +342,28 @@ class AutoCadastroMembroView(APIView):
                 "detail": str(e),
                 "help": "Verifique se todos os campos obrigatórios estão preenchidos corretamente."
             }, status=500)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+@authentication_classes([])
+def run_migrations_debug(request):
+    """View temporária para forçar migrações e ver o log no navegador"""
+    from django.core.management import call_command
+    from io import StringIO
+    out = StringIO()
+    print("--- [DEBUG] Rodando migrações manualmente via endpoint ---")
+    try:
+        call_command('migrate', stdout=out, stderr=out)
+        result = out.getvalue()
+        return Response({"success": True, "output": result})
+    except Exception as e:
+        import traceback
+        return Response({
+            "success": False, 
+            "error": str(e), 
+            "traceback": traceback.format_exc(),
+            "output": out.getvalue()
+        }, status=500)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
