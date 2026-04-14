@@ -125,7 +125,7 @@ def enviar_email_resend_api(to, subject, body, filename=None, file_content=None)
     html_body = f"<p style='font-family: sans-serif;'>{body.replace('\n', '<br>')}</p>"
 
     payload = {
-        "from": "AD Capital <onboarding@resend.dev>",
+        "from": "AD Capital <noreply@adcapitaligreja.com.br>",
         "to": [to],
         "subject": subject,
         "html": html_body,
