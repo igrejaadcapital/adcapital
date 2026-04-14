@@ -107,13 +107,13 @@ def enviar_email_resend_api(to, subject, body, filename=None, file_content=None)
     """
     Envia um e-mail usando a API do Resend via HTTPS (Bypassa o bloqueio de SMTP do Render Free).
     """
-    api_key = os.environ.get('RESEND_API_KEY')
+    api_key = os.environ.get('RESEND_API_KEY', '').strip()
     if not api_key:
         print("--- [RESEND] ERRO: RESEND_API_KEY não configurada no ambiente.")
         return False
     
     # Log para depuração (ofuscado por segurança)
-    print(f"--- [RESEND] Verificando chave (Início: {api_key[:7]}... Fim: {api_key[-4:]})")
+    print(f"--- [RESEND] Verificando chave (Tamanho: {len(api_key)}, Início: {api_key[:12]}... Fim: {api_key[-4:]})")
 
     url = "https://api.resend.com/emails"
     headers = {
