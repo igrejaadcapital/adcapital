@@ -51,6 +51,8 @@ export default function SettingsPage() {
   const [galeria, setGaleria] = useState([]);
   const [editProg, setEditProg] = useState(null);
   const [novaProg, setNovaProg] = useState({ dia_semana: 0, titulo: '', horario: '', ordem: 0 });
+  const [deletandoId, setDeletandoId] = useState(null);
+  const [sucesso, setSucesso] = useState(false);
 
   const carregarDados = async () => {
     try {
