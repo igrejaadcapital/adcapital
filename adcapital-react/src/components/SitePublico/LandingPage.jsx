@@ -26,6 +26,7 @@ const LandingPage = () => {
   const [config, setConfig] = useState(null);
   const [programacao, setProgramacao] = useState([]);
   const [galeria, setGaleria] = useState([]);
+  const [ultimoVideo, setUltimoVideo] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -39,6 +40,11 @@ const LandingPage = () => {
         setConfig(resConfig.data);
         setProgramacao(resProg.data);
         setGaleria(resGal.data);
+
+        // Busca o último vídeo separadamente (não bloqueia o carregamento)
+        if (resConfig.data?.youtube_channel_id) {
+          api.get('/ultimo-video/').then(r => setUltimoVideo(r.data)).catch(() => {});
+        }
       } catch (err) {
         console.error("Erro ao carregar dados do site:", err);
       } finally {
@@ -237,6 +243,87 @@ const LandingPage = () => {
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                 allowFullScreen
               />
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* --- ÚLTIMO VÍDEO YOUTUBE --- */}
+      {ultimoVideo && (
+        <section className="py-20 bg-slate-900/50">
+          <div className="max-w-4xl mx-auto px-6">
+            <div className="text-center mb-12">
+              <span className="text-red-500 font-bold uppercase tracking-widest text-xs mb-2 block flex items-center justify-center gap-2">
+                <Youtube size={14} className="inline" /> YouTube
+              </span>
+              <h2 className="text-3xl font-black uppercase">Último Vídeo</h2>
+              <p className="text-slate-400 text-sm mt-2 font-medium line-clamp-2 max-w-xl mx-auto">{ultimoVideo.title}</p>
+            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="aspect-video rounded-[2rem] overflow-hidden shadow-2xl border-2 border-slate-800"
+            >
+              <iframe
+                width="100%"
+                height="100%"
+                src={`${ultimoVideo.embed_url}?rel=0&modestbranding=1`}
+                title={ultimoVideo.title}
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </motion.div>
+            <div className="text-center mt-6">
+              <a
+                href={ultimoVideo.watch_url}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-full transition-all text-sm shadow-lg shadow-red-900/30"
+              >
+                <Youtube size={18} /> Ver no YouTube
+              </a>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* --- ÚLTIMO POST INSTAGRAM --- */}
+      {config?.ultimo_post_instagram_url && (
+        <section className="py-20">
+          <div className="max-w-lg mx-auto px-6">
+            <div className="text-center mb-12">
+              <span className="text-pink-500 font-bold uppercase tracking-widest text-xs mb-2 block flex items-center justify-center gap-2">
+                <Instagram size={14} className="inline" /> Instagram
+              </span>
+              <h2 className="text-3xl font-black uppercase">Último Post</h2>
+            </div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="rounded-[2rem] overflow-hidden shadow-2xl border-2 border-slate-800 bg-slate-900"
+            >
+              <iframe
+                src={`${config.ultimo_post_instagram_url.replace(/\/$/, '')}/embed/captioned/`}
+                width="100%"
+                height="580"
+                frameBorder="0"
+                scrolling="no"
+                allowTransparency="true"
+                className="w-full"
+              />
+            </motion.div>
+            <div className="text-center mt-6">
+              <a
+                href={config.instagram_url}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-bold rounded-full transition-all text-sm shadow-lg"
+              >
+                <Instagram size={18} /> Ver no Instagram
+              </a>
             </div>
           </div>
         </section>

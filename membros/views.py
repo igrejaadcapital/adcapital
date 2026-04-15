@@ -1,9 +1,12 @@
 import threading
 import json
 import traceback
+import urllib.request
+import xml.etree.ElementTree as ET
 from django.core.mail import EmailMessage
 from django.conf import settings
 from django.core.files.base import ContentFile
+from django.core.cache import cache
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -13,6 +16,57 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from .utils import gerar_termo_lgpd_pdf, enviar_email_resend_api
 from .models import Membro, Parentesco, Funcao, ConfiguracaoPortal, ConfiguracaoSite, FotoGaleria
 from .serializers import MembroSerializer, ConfiguracaoPortalSerializer, ConfiguracaoSiteSerializer, FotoGaleriaSerializer
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+@authentication_classes([])
+def ultimo_video_youtube(request):
+    """Retorna o último vídeo do canal YouTube via RSS (sem API key). Cache de 1 hora."""
+    cache_key = 'yt_ultimo_video'
+    cached = cache.get(cache_key)
+    if cached:
+        return Response(cached)
+
+    try:
+        config = ConfiguracaoSite.objects.filter(id=1).first()
+        channel_id = config.youtube_channel_id if config else None
+        if not channel_id:
+            return Response({'error': 'Canal YouTube não configurado.'}, status=404)
+
+        rss_url = f'https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}'
+        req = urllib.request.Request(rss_url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            xml_data = resp.read()
+
+        ns = {
+            'atom': 'http://www.w3.org/2005/Atom',
+            'media': 'http://search.yahoo.com/mrss/',
+            'yt': 'http://www.youtube.com/xml/schemas/2015'
+        }
+        root = ET.fromstring(xml_data)
+        entry = root.find('atom:entry', ns)
+        if entry is None:
+            return Response({'error': 'Nenhum vídeo encontrado.'}, status=404)
+
+        video_id = entry.find('yt:videoId', ns).text
+        title = entry.find('atom:title', ns).text
+        published = entry.find('atom:published', ns).text
+        thumbnail = f'https://i.ytimg.com/vi/{video_id}/hqdefault.jpg'
+
+        data = {
+            'video_id': video_id,
+            'title': title,
+            'published': published,
+            'thumbnail': thumbnail,
+            'embed_url': f'https://www.youtube.com/embed/{video_id}',
+            'watch_url': f'https://www.youtube.com/watch?v={video_id}',
+        }
+        cache.set(cache_key, data, 3600)  # Cache por 1 hora
+        return Response(data)
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+
 
 @api_view(['GET'])
 @permission_classes([AllowAny])

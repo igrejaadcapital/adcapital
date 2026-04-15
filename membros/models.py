@@ -146,6 +146,8 @@ class ConfiguracaoSite(models.Model):
     instagram_url = models.URLField(default="https://instagram.com/adcapital.igreja", verbose_name="Instagram")
     youtube_url = models.URLField(default="https://www.youtube.com/@adcapital.church313", verbose_name="YouTube")
     facebook_url = models.URLField(blank=True, null=True, verbose_name="Facebook")
+    youtube_channel_id = models.CharField(max_length=50, blank=True, null=True, verbose_name="ID do Canal YouTube (UC...)")
+    ultimo_post_instagram_url = models.URLField(blank=True, null=True, verbose_name="URL do Último Post do Instagram")
     
     # Institucional
     video_sobre_nos_url = models.URLField(blank=True, null=True, verbose_name="Vídeo Sobre Nós (YouTube URL)")
