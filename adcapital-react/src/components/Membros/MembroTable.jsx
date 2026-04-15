@@ -65,11 +65,15 @@ export default function MembroTable({ membros, onEdit, onDelete, deletandoId }) 
                 </td>
                 <td className="px-6 py-4">
                   {m.lgpd_consentido ? (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 text-[10px] font-bold uppercase rounded border border-green-200" title={`Aceito em: ${m.lgpd_data_aceite ? new Date(m.lgpd_data_aceite).toLocaleString('pt-BR') : 'Data não registrada'}`}>
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 text-[10px] font-bold uppercase rounded border border-green-200" title={`Documento assinado recebido em: ${m.lgpd_data_aceite ? new Date(m.lgpd_data_aceite).toLocaleString('pt-BR') : 'Data não registrada'}`}>
                        ✅ Salvo
                     </span>
+                  ) : m.lgpd_documento ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 text-[10px] font-bold uppercase rounded border border-blue-200" title="Termo enviado por email — aguardando assinatura física e devolução">
+                       📧 Enviado
+                    </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-50 text-amber-700 text-[10px] font-bold uppercase rounded border border-amber-200" title="Termo não assinado">
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-50 text-amber-700 text-[10px] font-bold uppercase rounded border border-amber-200" title="Termo não gerado">
                        ⏳ Pendente
                     </span>
                   )}

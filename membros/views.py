@@ -241,16 +241,11 @@ def _executar_tarefas_pos_cadastro(membro_id, parentescos_data):
             else:
                 print("--- [BG-THREAD] AVISO: Falha no envio via Resend. Verifique logs acima.")
 
-        # 3. Salvamento no Cloudinary (Operação externa que pode ser lenta)
+        # 3. Salvamento do PDF não assinado no Cloudinary (para o membro baixar)
         print(f"--- [BG-THREAD] Salvando PDF no Cloudinary...")
         membro.lgpd_documento.save(nome_arquivo, ContentFile(pdf_bytes), save=True)
-        
-        membro.lgpd_consentido = True
-        from django.utils import timezone
-        if not membro.lgpd_data_aceite:
-            membro.lgpd_data_aceite = timezone.now()
-        membro.save()
-        print(f"--- [BG-THREAD] Dados LGPD atualizados no banco.")
+        # NÃO marca lgpd_consentido - o status permanece PENDENTE até o admin fazer upload do documento assinado
+        print(f"--- [BG-THREAD] PDF salvo no Cloudinary. Status: PENDENTE (aguardando assinatura física)")
 
         # 4. Lógica de Parentesco
         if parentescos_data:

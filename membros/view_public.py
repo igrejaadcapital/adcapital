@@ -94,16 +94,12 @@ def auto_cadastro_direto(request):
             
             # --- START LGPD LOGIC (Resilient) ---
             try:
-                # Set consent true as it's required in the frontend
-                membro.lgpd_consentido = True
-                if not membro.lgpd_data_aceite:
-                     from django.utils import timezone
-                     membro.lgpd_data_aceite = timezone.now()
-                
-                # Generate PDF if it doesn't exist
+                # Gera o PDF do termo não assinado para envio por email
+                # NÃO marca lgpd_consentido pois o termo ainda precisa ser assinado fisicamente
                 from .utils import gerar_termo_lgpd_pdf
                 nome_arquivo, pdf_file = gerar_termo_lgpd_pdf(membro)
                 membro.lgpd_documento.save(nome_arquivo, pdf_file, save=False)
+                # lgpd_consentido permanece False - será True apenas quando o admin fizer upload do documento assinado
                 membro.save()
 
                 # Enviar por e-mail via Resend API

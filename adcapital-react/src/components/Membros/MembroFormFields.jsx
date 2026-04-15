@@ -283,24 +283,48 @@ export default function MembroFormFields({ formData, handleChange, funcoes, apli
                         ) : (
                             <div className="space-y-4 pt-1">
                                 <p className="text-xs text-slate-600 leading-relaxed text-justify">
-                                    Neste ambiente administrativo, você pode atualizar ou anexar o Termo LGPD assinado por este membro.
+                                    Neste ambiente administrativo, você pode anexar o Termo LGPD <strong>assinado fisicamente</strong> pelo membro.
+                                    Após o upload, o status muda para <span className="text-green-700 font-bold">✅ Salvo</span>.
                                 </p>
-                                
+
+                                {/* Status atual */}
+                                {formData.lgpd_consentido ? (
+                                    <div className="flex items-center gap-2">
+                                        <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-green-50 text-green-700 text-[10px] font-black uppercase rounded-lg border border-green-200">
+                                            ✅ Documento Assinado Recebido
+                                        </span>
+                                    </div>
+                                ) : formData.lgpd_documento ? (
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-700 text-[10px] font-black uppercase rounded-lg border border-blue-200">
+                                            📧 Termo Enviado — Aguardando Assinatura Física
+                                        </span>
+                                        <a href={formData.lgpd_documento} target="_blank" rel="noreferrer"
+                                           className="text-[10px] font-bold text-blue-600 underline hover:text-blue-800">
+                                            Ver PDF enviado
+                                        </a>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-2">
+                                        <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-50 text-amber-700 text-[10px] font-black uppercase rounded-lg border border-amber-200">
+                                            ⏳ Pendente — Nenhum documento gerado
+                                        </span>
+                                    </div>
+                                )}
+
                                 <div className="flex flex-col">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase mb-2 ml-1 tracking-widest">Documento LGPD (PDF)</label>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase mb-2 ml-1 tracking-widest">
+                                        Upload do Documento Assinado (PDF)
+                                    </label>
                                     <input
                                         type="file"
                                         className="p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-[10px]"
-                                        accept=".pdf"
+                                        accept=".pdf,image/*"
                                         onChange={e => handleChange('lgpd_documento', e.target.files[0])}
                                     />
-                                    {formData.lgpd_consentido && (
-                                        <div className="mt-3 flex items-center gap-2">
-                                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 text-[10px] font-black uppercase rounded border border-green-200">
-                                                ✅ Termo Salvo Válido
-                                            </span>
-                                        </div>
-                                    )}
+                                    <p className="text-[9px] text-slate-400 mt-1 ml-1">
+                                        Aceita PDF ou foto legível do documento assinado. Ao salvar, o status passará para ✅ Salvo.
+                                    </p>
                                 </div>
                             </div>
                         )}
