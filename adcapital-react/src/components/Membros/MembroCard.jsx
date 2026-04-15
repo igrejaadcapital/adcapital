@@ -8,21 +8,43 @@ export default function MembroCard({ m, graus, onEdit, onDelete, deletandoId }) 
             <div>
                 {/* PRIMEIRA LINHA: Cabeçalho com fundo mais escuro */}
                 <div className={`px-6 py-4 border-b border-slate-100 flex justify-between items-start gap-4 transition-colors ${isDeleting ? 'bg-rose-50' : 'bg-slate-50'}`}>
-                    <div className="flex-1">
-                        <h3 className={`text-xl font-bold leading-tight transition-all ${isDeleting ? 'text-slate-400 italic' : 'text-blue-900'}`}>{m.nome}</h3>
-                        <div className="flex gap-2 items-center mt-1">
-                             <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest">
-                                 {m.funcao || 'Membro'}
-                             </p>
-                             {m.lgpd_consentido ? (
-                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-green-50 text-green-700 text-[9px] font-black uppercase rounded border border-green-200" title={`Aceito em: ${m.lgpd_data_aceite ? new Date(m.lgpd_data_aceite).toLocaleString('pt-BR') : 'Data não registrada'}`}>
-                                   ✅ LGPD OK
-                                </span>
-                             ) : (
-                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-amber-50 text-amber-700 text-[9px] font-black uppercase rounded border border-amber-200" title="Termo não assinado">
-                                   ⏳ LGPD
-                                </span>
-                             )}
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
+                        {/* Avatar */}
+                        <div className="shrink-0">
+                            {m.foto ? (
+                                <img
+                                    src={m.foto}
+                                    alt={m.nome}
+                                    className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
+                                />
+                            ) : (
+                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center border-2 border-white shadow-sm shrink-0">
+                                    <span className="text-white font-black text-lg leading-none">
+                                        {m.nome?.charAt(0) || '?'}
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <h3 className={`text-lg font-bold leading-tight transition-all truncate ${isDeleting ? 'text-slate-400 italic' : 'text-blue-900'}`}>{m.nome}</h3>
+                            <div className="flex gap-2 items-center mt-1 flex-wrap">
+                                 <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest">
+                                     {m.funcao || 'Membro'}
+                                 </p>
+                                 {m.lgpd_consentido ? (
+                                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-green-50 text-green-700 text-[9px] font-black uppercase rounded border border-green-200" title="Documento assinado recebido">
+                                       ✅ LGPD OK
+                                    </span>
+                                 ) : m.lgpd_documento ? (
+                                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-blue-50 text-blue-700 text-[9px] font-black uppercase rounded border border-blue-200" title="Termo enviado — aguardando assinatura">
+                                       📧 Enviado
+                                    </span>
+                                 ) : (
+                                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-amber-50 text-amber-700 text-[9px] font-black uppercase rounded border border-amber-200" title="Termo não assinado">
+                                       ⏳ Pendente
+                                    </span>
+                                 )}
+                            </div>
                         </div>
                     </div>
 

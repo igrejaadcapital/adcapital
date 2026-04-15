@@ -43,8 +43,20 @@ export default function MembroTable({ membros, onEdit, onDelete, deletandoId }) 
                   {formatarCPF(m.cpf)}
                 </td>
                 <td className="px-6 py-4">
-                  <div className={`text-sm font-bold uppercase transition-colors ${isDeleting ? 'text-slate-400' : 'text-blue-900'}`}>{m.nome}</div>
-                  <div className="text-[10px] text-slate-400 font-medium truncate max-w-[200px]">{m.email}</div>
+                  <div className="flex items-center gap-3">
+                    {/* Avatar */}
+                    {m.foto ? (
+                      <img src={m.foto} alt={m.nome} className="w-8 h-8 rounded-full object-cover border border-slate-200 shrink-0" />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shrink-0">
+                        <span className="text-white font-black text-xs leading-none">{m.nome?.charAt(0) || '?'}</span>
+                      </div>
+                    )}
+                    <div>
+                      <div className={`text-sm font-bold uppercase transition-colors ${isDeleting ? 'text-slate-400' : 'text-blue-900'}`}>{m.nome}</div>
+                      <div className="text-[10px] text-slate-400 font-medium truncate max-w-[180px]">{m.email}</div>
+                    </div>
+                  </div>
                 </td>
                 <td className="px-6 py-4 text-sm text-slate-600 font-medium whitespace-nowrap">
                   {m.telefone ? (
