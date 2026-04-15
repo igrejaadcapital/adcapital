@@ -113,7 +113,7 @@ def auto_cadastro_direto(request):
                         enviar_email_resend_api(
                             to=membro.email,
                             subject='Bem-vindo! Seu Termo de Ciência e Aceite (LGPD)',
-                            body=f'Olá {membro.nome},\n\nSeu cadastro no portal da Igreja Assembleia de Deus Ministério na Capital foi realizado com sucesso!\n\nEm anexo, enviamos a sua via do Termo de Consentimento de Dados Pessoais (LGPD) assine e nos envie no email igrejaadcapital@gmail.com.\n\nAtenção, não responda este email.\n\nAtenciosamente,\nEquipe AD Capital',
+                            body=f'Olá {membro.nome},\n\nSeu cadastro no portal da Igreja Assembleia de Deus Ministério na Capital foi realizado com sucesso!\n\nEm anexo, enviamos a sua via do Termo de Consentimento de Dados Pessoais (LGPD) assine e nos envie no email igrejaadcapital@gmail.com.\n\nAtenciosamente,\nEquipe AD Capital',
                             filename=nome_arquivo,
                             file_content=pdf_file.read()
                         )
