@@ -28,10 +28,23 @@ const processQueue = (error, token = null) => {
     failedQueue = [];
 };
 
+// Função auxiliar de delay para retry
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
+
+        // --- RETRY AUTOMÁTICO PARA 502/503 (Cold Start do Render) ---
+        const status = error.response?.status;
+        if ((status === 502 || status === 503) && (!originalRequest._retryCount || originalRequest._retryCount < 3)) {
+            originalRequest._retryCount = (originalRequest._retryCount || 0) + 1;
+            const waitTime = originalRequest._retryCount * 2000; // 2s, 4s, 6s
+            console.warn(`[Retry ${originalRequest._retryCount}/3] Servidor retornou ${status}. Tentando novamente em ${waitTime/1000}s...`);
+            await delay(waitTime);
+            return api(originalRequest);
+        }
 
         // Se for erro de timeout ou rede (sem resposta do servidor)
         if (error.code === 'ECONNABORTED' || !error.response) {
