@@ -59,6 +59,7 @@ def ultimo_video_youtube(request):
             'published': published,
             'thumbnail': thumbnail,
             'embed_url': f'https://www.youtube.com/embed/{video_id}',
+            'live_embed_url': f'https://www.youtube.com/embed/live?channel={channel_id}',
             'watch_url': f'https://www.youtube.com/watch?v={video_id}',
         }
         cache.set(cache_key, data, 3600)  # Cache por 1 hora

@@ -248,42 +248,68 @@ const LandingPage = () => {
         </section>
       )}
 
-      {/* --- ÚLTIMO VÍDEO YOUTUBE --- */}
+      {/* --- NOSSA TRANSMISSÃO / LIVE --- */}
       {ultimoVideo && (
-        <section className="py-20 bg-slate-900/50">
-          <div className="max-w-4xl mx-auto px-6">
-            <div className="text-center mb-12">
-              <span className="text-red-500 font-bold uppercase tracking-widest text-xs mb-2 block flex items-center justify-center gap-2">
-                <Youtube size={14} className="inline" /> YouTube
-              </span>
-              <h2 className="text-3xl font-black uppercase">Último Vídeo</h2>
-              <p className="text-slate-400 text-sm mt-2 font-medium line-clamp-2 max-w-xl mx-auto">{ultimoVideo.title}</p>
+        <section className="py-24 bg-slate-900/80 relative overflow-hidden">
+          {/* Decorative background for the live section */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-10 pointer-events-none">
+            <div className="absolute top-0 right-0 w-[40%] h-[40%] bg-red-600 rounded-full blur-[120px]" />
+          </div>
+
+          <div className="max-w-5xl mx-auto px-6 relative z-10">
+            <div className="text-center mb-16">
+              <div className="inline-flex items-center gap-2 mb-4 px-4 py-1.5 bg-red-500/10 border border-red-500/20 rounded-full">
+                <span className="relative flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                </span>
+                <span className="text-red-500 font-black uppercase tracking-widest text-[10px]">Transmissão ao Vivo</span>
+              </div>
+              <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-4 italic">Assista <span className="text-red-500 font-black">AD Capital</span></h2>
+              <p className="text-slate-400 text-lg font-medium max-w-2xl mx-auto">
+                Acompanhe nossos cultos e eventos em tempo real diretamente de Brasília para o mundo.
+              </p>
             </div>
+
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="aspect-video rounded-[2rem] overflow-hidden shadow-2xl border-2 border-slate-800"
+              initial={{ opacity: 0, scale: 0.98 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.7 }}
+              className="relative group"
             >
-              <iframe
-                width="100%"
-                height="100%"
-                src={`${ultimoVideo.embed_url}?rel=0&modestbranding=1`}
-                title={ultimoVideo.title}
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
+              {/* Decorative Frame */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-red-600 to-indigo-600 rounded-[2.5rem] blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+              
+              <div className="relative aspect-video rounded-[2.2rem] overflow-hidden shadow-2xl border-2 border-slate-800 bg-black">
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src={`${ultimoVideo.live_embed_url || ultimoVideo.embed_url}?rel=0&modestbranding=1&autoplay=0`}
+                  title="AD Capital Ao Vivo"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
             </motion.div>
-            <div className="text-center mt-6">
-              <a
-                href={ultimoVideo.watch_url}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-full transition-all text-sm shadow-lg shadow-red-900/30"
-              >
-                <Youtube size={18} /> Ver no YouTube
-              </a>
+
+            <div className="flex flex-col md:flex-row items-center justify-center gap-6 mt-12">
+              <div className="text-center md:text-left flex-1 max-w-xl">
+                 <h3 className="text-white font-bold text-xl mb-2 line-clamp-1">{ultimoVideo.title}</h3>
+                 <p className="text-slate-500 text-sm italic">
+                   Canal Oficial: <span className="text-slate-300 font-bold">@adcapital.church</span>
+                 </p>
+              </div>
+              <div className="flex gap-4">
+                <a
+                  href={ultimoVideo.watch_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 px-8 py-4 bg-red-600 hover:bg-red-500 text-white font-black rounded-full transition-all text-sm uppercase tracking-widest shadow-xl shadow-red-900/30"
+                >
+                  <Youtube size={20} /> Youtube
+                </a>
+              </div>
             </div>
           </div>
         </section>
