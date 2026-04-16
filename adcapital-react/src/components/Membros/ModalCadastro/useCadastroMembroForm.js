@@ -8,7 +8,7 @@ export function useCadastroMembroForm(membro, membros, graus, onClose, onSuccess
         telefone: '',
         funcao: 'Membro',
         cpf: '',
-        genero: 'VARAO',
+        genero: 'M',
         estado_civil: 'SOLTEIRO',
         naturalidade: '',
         data_nascimento: '',
@@ -39,7 +39,9 @@ export function useCadastroMembroForm(membro, membros, graus, onClose, onSuccess
                 busca_termo: p.nome_parente || '',
                 grau: p.grau || ''
             }));
-            setFormData({ ...membro, parentescos_novo: formatados });
+            // Normalização para M/F caso venha do banco como VARAO/VAROA
+            const generoNormalizado = (membro.genero === 'VARAO') ? 'M' : (membro.genero === 'VAROA' ? 'F' : membro.genero);
+            setFormData({ ...membro, genero: generoNormalizado, parentescos_novo: formatados });
         }
     }, [membro]);
 

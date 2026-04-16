@@ -47,7 +47,7 @@ export default function AutoCadastroPage() {
     
     const [formData, setFormData] = useState({
         nome: '', cpf: '', email: '', telefone: '',
-        genero: 'VARAO', estado_civil: 'SOLTEIRO',
+        genero: 'M', estado_civil: 'SOLTEIRO',
         data_nascimento: '', naturalidade: '',
         funcao: 'Membro', logradouro: '', numero: '',
         complemento: '', bairro: '', cidade: 'Brasília',

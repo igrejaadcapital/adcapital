@@ -70,11 +70,11 @@ export default function MembroFormFields({ formData, handleChange, funcoes, apli
                      <label className="text-[10px] font-black text-slate-400 uppercase mb-2 ml-1 tracking-widest">Gênero</label>
                      <select
                          className="p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white font-medium"
-                         value={formData.genero || 'VARAO'}
+                         value={formData.genero || 'M'}
                          onChange={e => handleChange('genero', e.target.value)}
                      >
-                         <option value="VARAO">Varão</option>
-                         <option value="VAROA">Varoa</option>
+                         <option value="M">Varão</option>
+                         <option value="F">Varoa</option>
                      </select>
                 </div>
 

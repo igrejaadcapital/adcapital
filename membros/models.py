@@ -19,7 +19,7 @@ class Membro(models.Model):
         ('COOPERADOR', 'Cooperador(a)'),
     ]
 
-    GENERO_CHOICES = [('VARAO', 'Varão'), ('VAROA', 'Varoa')]
+    GENERO_CHOICES = [('M', 'Varão'), ('F', 'Varoa')]
     STATUS_CHOICES = [('LIGADO', 'Ligado'), ('DESLIGADO', 'Desligado')]
     ESTADO_CIVIL_CHOICES = [
         ('SOLTEIRO', 'Solteiro(a)'),
@@ -34,7 +34,7 @@ class Membro(models.Model):
     foto = models.ImageField(upload_to='membros/fotos/', null=True, blank=True)
     email = models.EmailField(null=True, blank=True)
     telefone = models.CharField(max_length=20, null=True, blank=True)
-    genero = models.CharField(max_length=10, choices=GENERO_CHOICES, default='VARAO')
+    genero = models.CharField(max_length=10, choices=GENERO_CHOICES, default='M')
     estado_civil = models.CharField(max_length=20, choices=ESTADO_CIVIL_CHOICES, default='SOLTEIRO')
     data_nascimento = models.DateField(null=True, blank=True)
     naturalidade = models.CharField(max_length=2, blank=True, null=True, verbose_name="UF de Nascimento")
