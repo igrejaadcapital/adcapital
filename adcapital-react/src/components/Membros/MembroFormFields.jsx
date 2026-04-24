@@ -289,10 +289,16 @@ export default function MembroFormFields({ formData, handleChange, funcoes, apli
 
                                 {/* Status atual */}
                                 {formData.lgpd_consentido ? (
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 flex-wrap">
                                         <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-green-50 text-green-700 text-[10px] font-black uppercase rounded-lg border border-green-200">
                                             ✅ Documento Assinado Recebido
                                         </span>
+                                        {formData.lgpd_documento && typeof formData.lgpd_documento === 'string' && (
+                                            <a href={formData.lgpd_documento} target="_blank" rel="noreferrer"
+                                               className="text-[10px] font-bold text-green-600 underline hover:text-green-800">
+                                                Visualizar Documento
+                                            </a>
+                                        )}
                                     </div>
                                 ) : formData.lgpd_documento ? (
                                     <div className="flex items-center gap-2 flex-wrap">

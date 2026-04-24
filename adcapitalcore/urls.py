@@ -6,23 +6,24 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 from membros.view_public import (
-    portal_verificar_resposta_direto
+    portal_verificar_resposta_direto,
+    auto_cadastro_direto
 )
-from membros.views import AutoCadastroMembroView, run_migrations_debug
+from membros.views import run_migrations_debug
 
 urlpatterns = [
     # [PORTAL PUBLIC ROUTES - ROBUST MAPPING]
     # Mapeamento redundante para garantir que NUNCA dê 404 em produção
     path('v/', portal_verificar_resposta_direto, name='portal_v'),
-    path('c/', AutoCadastroMembroView.as_view(), name='portal_c'),
+    path('c/', auto_cadastro_direto, name='portal_c'),
     path('v', portal_verificar_resposta_direto), # Versão sem barra
-    path('c', AutoCadastroMembroView.as_view()),
+    path('c', auto_cadastro_direto),
     
     # Reforço de prefixo api/ na raiz (caso o include falhe ou demore)
     path('api/v/', portal_verificar_resposta_direto),
-    path('api/c/', AutoCadastroMembroView.as_view()),
+    path('api/c/', auto_cadastro_direto),
     path('api/v', portal_verificar_resposta_direto),
-    path('api/c', AutoCadastroMembroView.as_view()),
+    path('api/c', auto_cadastro_direto),
     path('api/debug/migrate/', run_migrations_debug),
 
     path('admin/', admin.site.urls),

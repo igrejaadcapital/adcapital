@@ -274,7 +274,8 @@ export default function SettingsPage() {
                <div className="p-8 space-y-10">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                      <div className="space-y-6">
-                        <Field label="Instagram URL" value={siteConfig.instagram_url} onChange={v => setSiteConfig({...siteConfig, instagram_url: v})} />
+                        <Field label="Instagram URL (Perfil)" value={siteConfig.instagram_url} onChange={v => setSiteConfig({...siteConfig, instagram_url: v})} />
+                        <Field label="URL do Último Post do Instagram (Feed/Reel)" value={siteConfig.ultimo_post_instagram_url} onChange={v => setSiteConfig({...siteConfig, ultimo_post_instagram_url: v})} />
                         <Field label="Youtube URL" value={siteConfig.youtube_url} onChange={v => setSiteConfig({...siteConfig, youtube_url: v})} />
                         <Field label="Chave PIX (Dízimos)" value={siteConfig.pix_chave} onChange={v => setSiteConfig({...siteConfig, pix_chave: v})} />
                      </div>

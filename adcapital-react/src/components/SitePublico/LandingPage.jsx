@@ -76,6 +76,11 @@ const LandingPage = () => {
     );
   }
 
+  const isInstagramPostUrl = (url) => {
+    if (!url) return false;
+    return url.includes('instagram.com') && (url.includes('/p/') || url.includes('/reel/') || url.includes('/tv/'));
+  };
+
   return (
     <div className="min-h-screen bg-[#0f172a] text-white selection:bg-blue-500 selection:text-white overflow-x-hidden">
       
@@ -237,7 +242,7 @@ const LandingPage = () => {
                <iframe 
                 width="100%" 
                 height="100%" 
-                src={`https://www.youtube.com/embed/${config.video_sobre_nos_url.split('v=')[1] || config.video_sobre_nos_url.split('/').pop()}`} 
+                src={`https://www.youtube.com/embed/${(config.video_sobre_nos_url.split('v=')[1] || config.video_sobre_nos_url.split('/').pop()).split('&')[0]}`} 
                 title="Um pouco sobre nós" 
                 frameBorder="0" 
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
@@ -284,7 +289,7 @@ const LandingPage = () => {
                 <iframe
                   width="100%"
                   height="100%"
-                  src={`${ultimoVideo.live_embed_url || ultimoVideo.embed_url}?rel=0&modestbranding=1&autoplay=0`}
+                  src={`${ultimoVideo.embed_url || ultimoVideo.live_embed_url}?rel=0&modestbranding=1&autoplay=0`}
                   title="AD Capital Ao Vivo"
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -316,7 +321,7 @@ const LandingPage = () => {
       )}
 
       {/* --- ÚLTIMO POST INSTAGRAM --- */}
-      {config?.ultimo_post_instagram_url && (
+      {config?.ultimo_post_instagram_url && isInstagramPostUrl(config.ultimo_post_instagram_url) && (
         <section className="py-20">
           <div className="max-w-lg mx-auto px-6">
             <div className="text-center mb-12">

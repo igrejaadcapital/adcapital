@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import api from '../../api/config';
 import StatusView from '../Common/StatusView';
 import MembroFormFields from './MembroFormFields';
+import { Loader2 } from 'lucide-react';
 
 // URL Base da API (FIXA para evitar confusão de domínios)
 const BASE_HOST = 'https://api.adcapitaligreja.com.br/api';
@@ -29,6 +30,7 @@ export default function AutoCadastroPage() {
     React.useEffect(() => {
         const fetchConfig = async () => {
             setLoading(true);
+            setError('');
             try {
                 const res = await api.get(`/configuracao-portal/publica/`);
                 if (res.data) {
@@ -58,6 +60,8 @@ export default function AutoCadastroPage() {
 
     const handleChallenge = async (e) => {
         e.preventDefault();
+        if (!resposta.trim()) return;
+        
         setLoading(true);
         setError('');
         try {
@@ -74,7 +78,7 @@ export default function AutoCadastroPage() {
             if (err.response?.status === 401) {
                 setError(err.response?.data?.error || "Resposta incorreta. Verifique e tente novamente.");
             } else {
-                setError("Erro ao conectar com o servidor. Tente novamente em instantes.");
+                setError("Erro ao conectar com o servidor. Verifique sua internet ou tente mais tarde.");
             }
         } finally {
             setLoading(false);
@@ -129,16 +133,24 @@ export default function AutoCadastroPage() {
                     window.open(res.data.lgpd_url, '_blank');
                 }
                 setStep('success');
+            } else {
+                setError(res.data.error || "Ocorreu um erro inesperado ao salvar.");
             }
         } catch (err) {
             console.error("Erro ao salvar:", err);
             const errorData = err.response?.data;
             if (errorData) {
                 // Formata os erros do Django para exibição legível
-                const details = Object.entries(errorData)
-                    .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(", ") : msgs}`)
-                    .join(" | ");
-                setError(`Erro na validação: ${details}`);
+                if (typeof errorData === 'object') {
+                    const details = Object.entries(errorData)
+                        .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(", ") : msgs}`)
+                        .join(" | ");
+                    setError(`Erro na validação: ${details}`);
+                } else {
+                    setError(`Erro do servidor: ${errorData}`);
+                }
+            } else if (err.message === 'Network Error') {
+                setError("Erro de Rede: Verifique sua conexão com a internet.");
             } else {
                 setError("Erro ao salvar cadastro. Verifique os campos ou se o CPF está correto.");
             }
@@ -156,7 +168,7 @@ export default function AutoCadastroPage() {
                     <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.2em] mb-8">Cadastro e Atualização de Dados</p>
                     
                     <div className="w-full space-y-4 relative min-h-[150px]">
-                        <StatusView loading={loading} />
+                        <StatusView loading={loading && !resposta} />
                         {!portalAtivo && <p className="text-rose-500 text-xs font-black text-center mb-4 uppercase">Portal Desativado no Momento</p>}
                         <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">{pergunta}</label>
                         <input 
@@ -170,8 +182,15 @@ export default function AutoCadastroPage() {
                         />
                         {error && <p className="text-rose-500 text-[10px] font-bold text-center mt-2 uppercase tracking-wide">{error}</p>}
                         
-                        <button type="submit" disabled={loading || !portalAtivo} className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-blue-200 active:scale-95 transition-all mt-4 disabled:opacity-50">
-                            {loading ? 'Verificando...' : 'Entrar no Formulário'}
+                        <button type="submit" disabled={loading || !portalAtivo} className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-blue-200 active:scale-95 transition-all mt-4 disabled:opacity-50 flex items-center justify-center gap-2">
+                            {loading ? (
+                                <>
+                                    <Loader2 className="animate-spin" size={20} />
+                                    <span>Verificando...</span>
+                                </>
+                            ) : (
+                                'Entrar no Formulário'
+                            )}
                         </button>
                     </div>
                 </form>
@@ -226,7 +245,9 @@ export default function AutoCadastroPage() {
                 </header>
                 
                 <form onSubmit={handleSave} className="bg-white p-10 rounded-[2.5rem] shadow-xl shadow-slate-200/40 border border-slate-100 relative">
-                    <StatusView loading={loading} />
+                    {/* StatusView oculto quando temos animação no botão, para não poluir visualmente, ou mantido como overlay sutil */}
+                    <StatusView loading={loading && !formData.nome} />
+                    
                     <MembroFormFields 
                         formData={formData}
                         handleChange={handleChange}
@@ -245,8 +266,18 @@ export default function AutoCadastroPage() {
                         <button type="button" onClick={() => window.location.reload()} className="order-2 md:order-1 flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black uppercase tracking-widest hover:bg-slate-200 transition-all">
                             Cancelar
                         </button>
-                        <button type="submit" disabled={loading} className="order-1 md:order-2 flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-blue-200 hover:bg-blue-700 transition-all disabled:opacity-50 text-sm">
-                            {loading ? 'Sincronizando...' : 'Finalizar Cadastro ✅'}
+                        <button type="submit" disabled={loading} className="order-1 md:order-2 flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-blue-200 hover:bg-blue-700 transition-all disabled:opacity-50 text-sm flex items-center justify-center gap-2">
+                            {loading ? (
+                                <>
+                                    <Loader2 className="animate-spin" size={20} />
+                                    <span>Sincronizando...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <span>Finalizar Cadastro</span>
+                                    <span>✅</span>
+                                </>
+                            )}
                         </button>
                     </div>
                 </form>
