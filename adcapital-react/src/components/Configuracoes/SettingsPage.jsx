@@ -508,6 +508,7 @@ export default function SettingsPage() {
                      <ServiceCard name="Cloudflare" role="DNS, CDN e Proteção" detail="Nameservers, Proxy, SSL, Cache" url="dash.cloudflare.com" color="orange" />
                      <ServiceCard name="Render" role="Hospedagem" detail="adcapital-api (Web Service) + adcapital-web (Static Site)" url="dashboard.render.com" color="blue" />
                      <ServiceCard name="Supabase" role="Banco de Dados PostgreSQL" detail="Região: sa-east-1 (São Paulo)" url="supabase.com/dashboard" color="emerald" />
+                     <ServiceCard name="Cron-Job.org" role="Keep-Alive / Pinger" detail="Evita suspensão do Banco de Dados e lentidão na API (Ping diário)" url="cron-job.org/en/" color="orange" />
                      <ServiceCard name="Cloudinary" role="Armazenamento de Mídia" detail="Fotos, galeria, termos LGPD (PDF)" url="console.cloudinary.com" color="blue" />
                      <ServiceCard name="Resend" role="E-mail Transacional" detail="Domínio: adcapitaligreja.com.br | noreply@adcapitaligreja.com.br" url="resend.com" color="slate" />
                      <ServiceCard name="GitHub" role="Repositório de Código" detail="igrejaadcapital/adcapital (main)" url="github.com/igrejaadcapital/adcapital" color="slate" />
@@ -652,7 +653,7 @@ export default function SettingsPage() {
                      <Info size={14} /> Notas Importantes
                   </h3>
                   <div className="space-y-3 text-[10px] font-bold text-amber-800/70 leading-relaxed">
-                     <p>• <strong>Cold Start:</strong> Render Free desliga após inatividade (~15min). Primeira requisição pode demorar até 50s.</p>
+                     <p>• <strong>Cold Start e Sleep:</strong> O Render Free (API) desliga após 15min e o Supabase Free (Banco) pausa após 7 dias de inatividade. Usamos o serviço externo <strong>cron-job.org</strong> para fazer um ping diário em <code>/api/configuracao-site/</code> e mantê-los ativos e rápidos.</p>
                      <p>• <strong>SMTP Bloqueado:</strong> Render Free bloqueia portas SMTP. Usamos API HTTPS do Resend.</p>
                      <p>• <strong>Limite de E-mail:</strong> Resend Free: 100 emails/dia, 3.000/mês.</p>
                      <p>• <strong>Armazenamento:</strong> Fotos e PDFs ficam no Cloudinary (servidor Render é efêmero).</p>

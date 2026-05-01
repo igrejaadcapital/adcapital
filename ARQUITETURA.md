@@ -94,6 +94,18 @@ erDiagram
 
 ---
 
+### ⏰ Keep-Alive (Prevenção de Inatividade)
+
+Devido às limitações dos planos gratuitos utilizados:
+1. **Render Free (API)**: Entra em modo de suspensão (*sleep*) após 15 minutos sem receber requisições, causando lentidão (*cold start*) no próximo acesso.
+2. **Supabase Free (Banco de Dados)**: Pausa o projeto inteiro após 7 dias ininterruptos de inatividade.
+
+**Solução Aplicada:**
+Utilizamos o serviço externo **[cron-job.org](https://cron-job.org/en/)** (agendado diariamente à meia-noite) para fazer requisições automatizadas na API pública (`https://api.adcapitaligreja.com.br/api/configuracao-site/`).
+Isso mantém tanto o servidor da API "acordado" quanto o Banco de Dados "ativo", impedindo que os dados fiquem inacessíveis.
+
+---
+
 ### 💾 Backup e Segurança de Dados
 
 Para garantir que a igreja nunca perca seus dados, existe um script de exportação rápida que gera um arquivo formatado (JSON).
