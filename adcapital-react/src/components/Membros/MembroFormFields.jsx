@@ -12,7 +12,7 @@ export default function MembroFormFields({ formData, handleChange, funcoes, apli
                         className="p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-medium uppercase"
                         value={formData.nome || ''}
                         onChange={e => handleChange('nome', e.target.value)}
-                        required
+                        required={!isPublic}
                     />
                 </div>
 
