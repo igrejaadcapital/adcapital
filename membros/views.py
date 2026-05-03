@@ -430,3 +430,20 @@ def download_termo_lgpd(request, pk):
         return redirect(membro.lgpd_documento.url)
     except Membro.DoesNotExist:
         return Response({"error": "Membro não encontrado."}, status=404)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+@authentication_classes([])
+def buscar_membros_autocomplete_publico(request):
+    """
+    Busca de membros para vínculo familiar no cadastro público.
+    Exige no mínimo 3 caracteres para não vazar a lista completa de membros.
+    Retorna apenas ID e Nome (limite de 10).
+    """
+    query = request.GET.get('q', '').strip()
+    if len(query) < 3:
+        return Response([])
+    
+    membros = Membro.objects.filter(nome__icontains=query).order_by('nome')[:10]
+    opcoes = [{'id': m.id, 'nome': m.nome} for m in membros]
+    return Response(opcoes)

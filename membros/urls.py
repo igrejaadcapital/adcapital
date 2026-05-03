@@ -11,7 +11,8 @@ from .views import (
     buscar_opcoes_parentesco,
     buscar_configuracao_publica,
     download_termo_lgpd,
-    ultimo_video_youtube
+    ultimo_video_youtube,
+    buscar_membros_autocomplete_publico
 )
 
 from .view_public import (
@@ -36,6 +37,7 @@ urlpatterns = [
     path('opcoes-parentesco/', buscar_opcoes_parentesco, name='opcoes-parentesco'),
     path('configuracao-portal/publica/', buscar_configuracao_publica, name='config-publica'),
     path('ultimo-video/', ultimo_video_youtube, name='ultimo-video-youtube'),
+    path('opcoes-membros-busca/', buscar_membros_autocomplete_publico, name='opcoes-membros-busca'),
 
     # Rotas Administrativas
     path('funcoes/', adicionar_funcao, name='adicionar-funcao-admin'),

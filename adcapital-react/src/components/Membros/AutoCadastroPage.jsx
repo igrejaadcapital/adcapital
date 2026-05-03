@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import api from '../../api/config';
 import StatusView from '../Common/StatusView';
 import MembroFormFields from './MembroFormFields';
+import ParentescoFormPublico from './ParentescoFormPublico';
 import { Loader2 } from 'lucide-react';
 
 // URL Base da API (FIXA para evitar confusão de domínios)
@@ -26,6 +27,7 @@ export default function AutoCadastroPage() {
     const [resposta, setResposta] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [graus, setGraus] = useState([]);
 
     React.useEffect(() => {
         const fetchConfig = async () => {
@@ -40,6 +42,13 @@ export default function AutoCadastroPage() {
             } catch (err) {
                 console.error("Erro ao carregar config:", err);
                 setError("O servidor está demorando a responder. Tente novamente em instantes.");
+            }
+            
+            try {
+                const resGraus = await api.get('/opcoes-parentesco/');
+                if (resGraus.data) setGraus(resGraus.data);
+            } catch (err) {
+                console.error("Erro ao carregar graus:", err);
             } finally {
                 setLoading(false);
             }
@@ -55,7 +64,7 @@ export default function AutoCadastroPage() {
         logradouro: '', numero: '',
         complemento: '', bairro: '', cidade: 'Brasília',
         uf: 'DF', cep: '', motivo_entrada: '', unidade: 'Sede',
-        foto: null
+        foto: null, parentescos_novo: []
     });
 
     const handleChallenge = async (e) => {
@@ -89,6 +98,29 @@ export default function AutoCadastroPage() {
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 
+    const adicionarParentesco = () => {
+        setFormData(prev => ({
+            ...prev,
+            parentescos_novo: [...(prev.parentescos_novo || []), { parente_id: null, grau: '', busca_termo: '' }]
+        }));
+    };
+
+    const removerParentesco = (index) => {
+        setFormData(prev => {
+            const novos = [...(prev.parentescos_novo || [])];
+            novos.splice(index, 1);
+            return { ...prev, parentescos_novo: novos };
+        });
+    };
+
+    const atualizarParentesco = (index, campo, valor) => {
+        setFormData(prev => {
+            const novos = [...(prev.parentescos_novo || [])];
+            novos[index][campo] = valor;
+            return { ...prev, parentescos_novo: novos };
+        });
+    };
+
     const aplicarMascaraTelefone = (value) => {
         const v = value.replace(/\D/g, "");
         if (v.length <= 10) return v.replace(/(\d{2})(\d{4})(\d{4})/, "($1) $2-$3");
@@ -112,6 +144,10 @@ export default function AutoCadastroPage() {
                     // Se for a foto, só adicionamos se houver um arquivo selecionado
                     if (key === 'foto') {
                         if (value instanceof File) data.append(key, value);
+                    } else if (key === 'parentescos_novo') {
+                        if (value && value.length > 0) {
+                            data.append(key, JSON.stringify(value));
+                        }
                     } else if (key === 'data_nascimento' && !value) {
                         // Ignora data de nascimento vazia
                     } else {
@@ -254,6 +290,14 @@ export default function AutoCadastroPage() {
                         funcoes={funcoes}
                         aplicarMascaraTelefone={aplicarMascaraTelefone}
                         isPublic={true}
+                    />
+                    
+                    <ParentescoFormPublico 
+                        formData={formData}
+                        graus={graus}
+                        atualizarParentesco={atualizarParentesco}
+                        adicionarParentesco={adicionarParentesco}
+                        removerParentesco={removerParentesco}
                     />
                     
                     {error && (
