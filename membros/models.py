@@ -117,6 +117,24 @@ class Parentesco(models.Model):
             # Apenas loga o erro no terminal, mas NÃO trava o salvamento do usuário
             print(f"Aviso: Não foi possível criar relação inversa: {e}")
 
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
+
+@receiver(post_delete, sender=Parentesco)
+def apagar_parentesco_inverso(sender, instance, **kwargs):
+    """
+    Sempre que um vínculo (A -> B) for deletado, apaga automaticamente o inverso (B -> A).
+    Isso previne 'órfãos' no banco quando o usuário apaga relações pela interface.
+    """
+    try:
+        # filter().delete() é seguro contra loop infinito porque se já não existir, não fará nada.
+        Parentesco.objects.filter(
+            membro_origem=instance.membro_destino,
+            membro_destino=instance.membro_origem
+        ).delete()
+    except Exception:
+        pass
+
 class ConfiguracaoPortal(models.Model):
     is_ativo = models.BooleanField(default=True, verbose_name="Portal Ativo")
     pergunta = models.CharField(max_length=255, default="Qual o seu melhor amigo?", verbose_name="Pergunta de Acesso")
