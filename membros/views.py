@@ -320,6 +320,13 @@ def _executar_tarefas_pos_cadastro(membro_id, parentescos_data):
     except Exception:
         print("--- [BG-THREAD] ERRO CRÍTICO EM TAREFAS DE BACKGROUND ---")
         traceback.print_exc()
+    finally:
+        from django.db import connection
+        try:
+            connection.close()
+            print("--- [BG-THREAD] Conexão com banco fechada.")
+        except:
+            pass
 
 class AutoCadastroMembroView(APIView):
     """

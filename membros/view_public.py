@@ -108,19 +108,23 @@ def auto_cadastro_direto(request):
                 # lgpd_consentido permanece False - será True apenas quando o admin fizer upload do documento assinado
                 membro.save()
 
-                # Enviar por e-mail via Resend API
+                # Enviar por e-mail via Resend API (Em Background para não travar o servidor)
                 if membro.email:
-                    try:
-                        from .utils import enviar_email_resend_api
-                        enviar_email_resend_api(
-                            to=membro.email,
-                            subject='Bem-vindo! Seu Termo de Ciência e Aceite (LGPD)',
-                            body=f'Olá {membro.nome},\n\nÉ com alegria que confirmamos o seu cadastro no portal da Igreja Assembleia de Deus Ministério na Capital.\n\nPara finalizarmos o processo administrativo, enviamos em anexo o Termo de Consentimento de Dados Pessoais (LGPD). Pedimos a gentileza de assinar o documento anexo e nos enviar uma cópia (digitalizada ou foto legível). Você pode responder diretamente a esta mensagem ou enviá-la para igrejaadcapital@gmail.com.\n\nFraternalmente,\nEquipe AD Capital',
-                            filename=nome_arquivo,
-                            file_content=pdf_bytes
-                        )
-                    except Exception as email_err:
-                        print(f"Erro ao enviar via Resend: {email_err}")
+                    import threading
+                    def enviar_bg():
+                        try:
+                            from .utils import enviar_email_resend_api
+                            enviar_email_resend_api(
+                                to=membro.email,
+                                subject='Bem-vindo! Seu Termo de Ciência e Aceite (LGPD)',
+                                body=f'Olá {membro.nome},\n\nÉ com alegria que confirmamos o seu cadastro no portal da Igreja Assembleia de Deus Ministério na Capital.\n\nPara finalizarmos o processo administrativo, enviamos em anexo o Termo de Consentimento de Dados Pessoais (LGPD). Pedimos a gentileza de assinar o documento anexo e nos enviar uma cópia (digitalizada ou foto legível). Você pode responder diretamente a esta mensagem ou enviá-la para igrejaadcapital@gmail.com.\n\nFraternalmente,\nEquipe AD Capital',
+                                filename=nome_arquivo,
+                                file_content=pdf_bytes
+                            )
+                        except Exception as email_err:
+                            print(f"Erro ao enviar via Resend (bg): {email_err}")
+                    
+                    threading.Thread(target=enviar_bg).start()
             except Exception as lgpd_err:
                 # Loga o erro mas NÃO quebra o request de cadastro
                 print(f"AVISO: Falha na lógica LGPD (Cadastro salvo no entanto): {lgpd_err}")
