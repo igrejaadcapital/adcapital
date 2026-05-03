@@ -84,7 +84,7 @@ def gerar_termo_lgpd_pdf(membro):
         {"text": "AUTORIZAÇÃO ESPECÍFICA PARA USO DE IMAGEM E SOM", "bold": True},
         {"text": "De forma separada e específica, o Titular pode autorizar o uso de sua imagem e voz. Esta autorização é opcional e não condiciona sua afiliação como membro.", "bold": False},
         {"text": "", "bold": False},
-        {"text": "(   ) AUTORIZO, de forma gratuita, o uso de minha imagem e/ou voz, captadas durante cultos, eventos e atividades da AD Capital, para fins de divulgação institucional em mídias sociais, transmissões online (ao vivo ou gravadas), site oficial e materiais de comunicação da igreja, por tempo indeterminado.", "bold": False},
+        {"text": "( X ) AUTORIZO, de forma gratuita, o uso de minha imagem e/ou voz, captadas durante cultos, eventos e atividades da AD Capital, para fins de divulgação institucional em mídias sociais, transmissões online (ao vivo ou gravadas), site oficial e materiais de comunicação da igreja, por tempo indeterminado.", "bold": False},
         {"text": "", "bold": False},
         {"text": "________________________________________________________________________________", "bold": False},
         {"text": "", "bold": False},

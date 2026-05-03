@@ -101,7 +101,10 @@ def auto_cadastro_direto(request):
                 # NÃO marca lgpd_consentido pois o termo ainda precisa ser assinado fisicamente
                 from .utils import gerar_termo_lgpd_pdf
                 nome_arquivo, pdf_file = gerar_termo_lgpd_pdf(membro)
-                membro.lgpd_documento.save(nome_arquivo, pdf_file, save=False)
+                pdf_bytes = pdf_file.read()
+                
+                from django.core.files.base import ContentFile
+                membro.lgpd_documento.save(nome_arquivo, ContentFile(pdf_bytes), save=False)
                 # lgpd_consentido permanece False - será True apenas quando o admin fizer upload do documento assinado
                 membro.save()
 
@@ -112,9 +115,9 @@ def auto_cadastro_direto(request):
                         enviar_email_resend_api(
                             to=membro.email,
                             subject='Bem-vindo! Seu Termo de Ciência e Aceite (LGPD)',
-                            body=f'Olá {membro.nome},\n\nÉ com alegria que confirmamos o seu cadastro no portal da Igreja Assembleia de Deus Ministério na Capital.\n\nPara finalizarmos o processo administrativo, enviamos em anexo o Termo de Consentimento de Dados Pessoais (LGPD). Pedimos a gentileza de assinar o documento e nos encaminhar uma cópia (digitalizada ou foto legível) para este e-mail.\n\nFraternalmente,\nEquipe AD Capital',
+                            body=f'Olá {membro.nome},\n\nÉ com alegria que confirmamos o seu cadastro no portal da Igreja Assembleia de Deus Ministério na Capital.\n\nPara finalizarmos o processo administrativo, enviamos em anexo o Termo de Consentimento de Dados Pessoais (LGPD). Pedimos a gentileza de assinar o documento e nos encaminhar uma cópia (digitalizada ou foto legível) para este e-mail (igrejaadcapital@gmail.com) ou responda a este.\n\nFraternalmente,\nEquipe AD Capital',
                             filename=nome_arquivo,
-                            file_content=pdf_file.read()
+                            file_content=pdf_bytes
                         )
                     except Exception as email_err:
                         print(f"Erro ao enviar via Resend: {email_err}")

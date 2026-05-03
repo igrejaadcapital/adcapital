@@ -101,7 +101,7 @@ Devido às limitações dos planos gratuitos utilizados:
 2. **Supabase Free (Banco de Dados)**: Pausa o projeto inteiro após 7 dias ininterruptos de inatividade.
 
 **Solução Aplicada:**
-Utilizamos o serviço externo **[cron-job.org](https://cron-job.org/en/)** (agendado diariamente à meia-noite) para fazer requisições automatizadas na API pública (`https://api.adcapitaligreja.com.br/api/configuracao-site/`).
+Utilizamos o serviço externo **[cron-job.org](https://cron-job.org/en/)** (agendado **a cada 10 minutos**) para fazer requisições automatizadas na API pública (`https://api.adcapitaligreja.com.br/api/configuracao-site/`).
 Isso mantém tanto o servidor da API "acordado" quanto o Banco de Dados "ativo", impedindo que os dados fiquem inacessíveis.
 
 ---

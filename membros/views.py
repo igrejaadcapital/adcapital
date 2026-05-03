@@ -287,7 +287,7 @@ def _executar_tarefas_pos_cadastro(membro_id, parentescos_data):
             sucesso = enviar_email_resend_api(
                 to=membro.email,
                 subject='Bem-vindo! Seu Termo de Ciência e Aceite (LGPD)',
-                body=f'Olá {membro.nome},\n\nÉ com alegria que confirmamos o seu cadastro no portal da Igreja Assembleia de Deus Ministério na Capital.\n\nPara finalizarmos o processo administrativo, enviamos em anexo o Termo de Consentimento de Dados Pessoais (LGPD). Pedimos a gentileza de assinar o documento e nos encaminhar uma cópia (digitalizada ou foto legível) para este e-mail.\n\nFraternalmente,\nEquipe AD Capital',
+                body=f'Olá {membro.nome},\n\nÉ com alegria que confirmamos o seu cadastro no portal da Igreja Assembleia de Deus Ministério na Capital.\n\nPara finalizarmos o processo administrativo, enviamos em anexo o Termo de Consentimento de Dados Pessoais (LGPD). Pedimos a gentileza de assinar o documento e nos encaminhar uma cópia (digitalizada ou foto legível) para este e-mail (igrejaadcapital@gmail.com) ou responda a este.\n\nFraternalmente,\nEquipe AD Capital',
                 filename=nome_arquivo,
                 file_content=pdf_bytes
             )
