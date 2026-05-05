@@ -1,8 +1,9 @@
-import React from 'react';
-import { Loader2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Loader2, ArrowUpDown, ChevronUp, ChevronDown } from 'lucide-react';
 
 export default function MembroTable({ membros, onEdit, onDelete, deletandoId }) {
-  
+  const [sortOrder, setSortOrder] = useState('asc'); // 'asc' ou 'desc'
+
   const formatarCPF = (cpf) => {
     if (!cpf) return '---';
     const clean = cpf.replace(/\D/g, "");
@@ -20,13 +21,39 @@ export default function MembroTable({ membros, onEdit, onDelete, deletandoId }) 
     }
   };
 
+  const toggleSort = () => {
+    setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+  };
+
+  const membrosOrdenados = [...membros].sort((a, b) => {
+    const nomeA = a.nome || '';
+    const nomeB = b.nome || '';
+    if (sortOrder === 'asc') {
+      return nomeA.localeCompare(nomeB);
+    } else {
+      return nomeB.localeCompare(nomeA);
+    }
+  });
+
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mt-6 overflow-x-auto relative">
       <table className="w-full text-left border-collapse min-w-[800px]">
         <thead>
           <tr className="bg-slate-50 border-b border-slate-200">
             <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">CPF</th>
-            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest w-full min-w-[300px]">Nome</th>
+            <th 
+              className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest w-full min-w-[300px] cursor-pointer hover:bg-slate-100 transition-colors group"
+              onClick={toggleSort}
+            >
+              <div className="flex items-center gap-2">
+                Nome
+                {sortOrder === 'asc' ? (
+                  <ChevronUp size={14} className="text-blue-600" />
+                ) : (
+                  <ChevronDown size={14} className="text-blue-600" />
+                )}
+              </div>
+            </th>
             <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Telefone</th>
             <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Função</th>
             <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Nascimento</th>
@@ -35,7 +62,7 @@ export default function MembroTable({ membros, onEdit, onDelete, deletandoId }) 
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
-          {membros.map((m) => {
+          {membrosOrdenados.map((m) => {
             const isDeleting = deletandoId === m.id;
             return (
               <tr key={m.id} className={`transition-colors group ${isDeleting ? 'bg-rose-50 opacity-50 italic' : 'hover:bg-blue-50/30'}`}>
