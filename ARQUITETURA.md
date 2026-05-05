@@ -22,6 +22,7 @@ Este documento consolida todos os serviços e endereços que compõem o ecossist
 | `cadastro.adcapitaligreja.com.br` | **Portal de Membros** | Novos Membros |
 | `api.adcapitaligreja.com.br/admin` | **Django Admin (Manual)** | Superusuário / TI |
 | `api.adcapitaligreja.com.br` | **Comunicação Interna** (Backend) | Invisível ao usuário |
+| `sistema.adcapitaligreja.com.br/#/portal` | **Portal do Membro** (Auto-serviço) | Membros da Igreja |
 
 ---
 
@@ -91,6 +92,30 @@ erDiagram
         datetime data_fim
     }
 ```
+
+---
+
+### 🔐 Gestão de Acessos (RBAC)
+
+O sistema implementa um controle de acesso rigoroso baseado em cargos:
+
+| Nível de Acesso | Permissões Principais |
+| :--- | :--- |
+| **ADMIN** | Controle total do sistema, configurações e gestão de usuários. |
+| **SECRETARIO** | Gestão completa de membros, geração de documentos (LGPD) e agenda. |
+| **TESOUREIRO** | Gestão financeira, entradas/saídas e relatórios de caixa. |
+| **MEMBRO** | Acesso exclusivo ao seu próprio perfil para atualização de dados cadastrais. |
+
+**Segurança:** Todas as rotas da API são protegidas por tokens **JWT (JSON Web Token)** com validade de 24 horas, garantindo que apenas usuários autenticados acessem os dados.
+
+---
+
+### 👤 Portal do Membro (Auto-serviço)
+
+Uma das maiores inovações do sistema é o portal onde o próprio membro gerencia sua ficha:
+*   **Acesso Simplificado:** Login via CPF e senha pessoal.
+*   **Atualização em Tempo Real:** O membro pode corrigir telefone, e-mail, endereço e cargo eclesiástico.
+*   **Transparência:** Visualização de vínculos familiares e status de regularidade.
 
 ---
 
