@@ -13,7 +13,8 @@ from .views import (
     download_termo_lgpd,
     ultimo_video_youtube,
     buscar_membros_autocomplete_publico,
-    MeusDadosView
+    MeusDadosView,
+    UsuariosView
 )
 
 from .view_public import (
@@ -46,5 +47,7 @@ urlpatterns = [
     path('membros/<int:pk>/download-lgpd/', download_termo_lgpd, name='download-lgpd'),
     
     path('membros/meus-dados/', MeusDadosView.as_view(), name='meus-dados'),
+    path('usuarios/', UsuariosView.as_view(), name='usuarios-lista'),
+    path('usuarios/<int:pk>/', UsuariosView.as_view(), name='usuario-detalhe'),
     path('', include(router.urls)),
 ]

@@ -31,6 +31,10 @@ const configuracaoService = {
   getProgramacao: () => api.get('/agenda/programacao-semanal/'),
   saveProgramacao: (data) => api.post('/agenda/programacao-semanal/', data),
   deleteProgramacao: (id) => api.delete(`/agenda/programacao-semanal/${id}/`),
+  
+  // Gestão de Usuários (RBAC)
+  listarUsuarios: () => api.get('/usuarios/'),
+  atualizarPapelUsuario: (id, role) => api.patch(`/usuarios/${id}/`, { role }),
 };
 
 export default configuracaoService;

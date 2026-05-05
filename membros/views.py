@@ -32,7 +32,8 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 from .utils import gerar_termo_lgpd_pdf, enviar_email_resend_api
 
-from .models import Membro, Parentesco, Funcao, ConfiguracaoPortal, ConfiguracaoSite, FotoGaleria
+from django.contrib.auth.models import User
+from .models import Membro, Parentesco, Funcao, ConfiguracaoPortal, ConfiguracaoSite, FotoGaleria, Perfil
 
 from .serializers import MembroSerializer, ConfiguracaoPortalSerializer, ConfiguracaoSiteSerializer, FotoGaleriaSerializer
 
@@ -863,4 +864,38 @@ class MeusDadosView(APIView):
             return Response(serializer.data)
 
         return Response(serializer.errors, status=400)
+
+class UsuariosView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not hasattr(request.user, 'perfil') or request.user.perfil.role != 'ADMIN':
+            return Response({'error': 'Acesso negado'}, status=403)
+        
+        usuarios = User.objects.all().select_related('perfil').order_by('username')
+        data = []
+        for u in usuarios:
+            data.append({
+                'id': u.id,
+                'username': u.username,
+                'nome': u.get_full_name() or u.username,
+                'role': u.perfil.role if hasattr(u, 'perfil') else 'MEMBRO',
+                'is_active': u.is_active
+            })
+        return Response(data)
+
+    def patch(self, request, pk):
+        if not hasattr(request.user, 'perfil') or request.user.perfil.role != 'ADMIN':
+            return Response({'error': 'Acesso negado'}, status=403)
+        
+        try:
+            u = User.objects.get(pk=pk)
+            role = request.data.get('role')
+            if role in ['ADMIN', 'SECRETARIO', 'TESOUREIRO', 'MEMBRO']:
+                u.perfil.role = role
+                u.perfil.save()
+                return Response({'success': True})
+            return Response({'error': 'Papel inválido'}, status=400)
+        except User.DoesNotExist:
+            return Response({'error': 'Usuário não encontrado'}, status=404)
 
