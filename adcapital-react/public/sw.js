@@ -1,5 +1,5 @@
 // Simple Service Worker for AD Capital PWA
-const CACHE_NAME = 'adcapital-v1';
+const CACHE_NAME = 'adcapital-v2';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -16,6 +16,11 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  // Ignorar requisições de API para evitar problemas de CORS e autenticação
+  if (event.request.url.includes('/api/')) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then((response) => {
       return response || fetch(event.request);

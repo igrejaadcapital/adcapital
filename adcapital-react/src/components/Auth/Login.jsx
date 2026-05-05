@@ -58,7 +58,6 @@ export default function Login() {
           <button
             type="submit"
             disabled={carregando}
-            onClick={handleSubmit}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 px-6 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
           >
             {carregando ? (
