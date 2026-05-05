@@ -82,56 +82,95 @@ const LandingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-white selection:bg-blue-500 selection:text-white overflow-x-hidden">
+    <div className="min-h-screen bg-[#020617] text-white selection:bg-blue-500 selection:text-white overflow-x-hidden font-sans">
       
+      {/* --- STICKY NAVBAR --- */}
+      <nav className="fixed top-0 left-0 w-full z-50 px-6 py-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between bg-white/5 backdrop-blur-xl border border-white/10 px-6 py-3 rounded-2xl shadow-2xl">
+          <div className="flex items-center gap-3">
+            <img src="/logo.png" alt="Logo" className="w-8 h-8 rounded-full" />
+            <span className="font-black tracking-tighter text-lg uppercase italic">AD CAPITAL</span>
+          </div>
+          <div className="hidden md:flex items-center gap-8 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+            <a href="#programacao" className="hover:text-blue-400 transition-colors">Programação</a>
+            <a href="#galeria" className="hover:text-blue-400 transition-colors">Galeria</a>
+            <a href="#transmissao" className="hover:text-blue-400 transition-colors">Ao Vivo</a>
+          </div>
+          <a 
+            href="/#/portal" 
+            className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-900/20"
+          >
+            Portal do Membro
+          </a>
+        </div>
+      </nav>
+
       {/* --- HERO SECTION --- */}
-      <section className="relative min-h-[80vh] flex flex-col items-center justify-center p-6 text-center overflow-hidden">
-        {/* Background Gradients */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full opacity-30 pointer-events-none">
-          <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-600 rounded-full blur-[120px]" />
-          <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-700 rounded-full blur-[120px]" />
+      <section className="relative min-h-[85vh] flex flex-col items-center justify-center pt-32 pb-20 px-6 text-center overflow-hidden">
+        {/* Background Sophisticated Gradients */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-blue-600/20 rounded-full blur-[140px] animate-pulse" />
+          <div className="absolute bottom-[10%] right-[-10%] w-[50%] h-[50%] bg-indigo-700/20 rounded-full blur-[140px]" />
+          <div className="absolute top-[40%] left-[30%] w-[20%] h-[20%] bg-blue-400/10 rounded-full blur-[100px]" />
         </div>
 
         <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1, ease: "easeOut" }}
           className="z-10 flex flex-col items-center"
         >
-          <img src="/logo.png" alt="Logo AD Capital" className="w-24 h-24 mb-6 drop-shadow-2xl rounded-full object-cover" />
-          <h1 className="text-4xl md:text-6xl font-black tracking-tighter mb-4">
-            IGREJA <span className="text-blue-400">AD CAPITAL</span>
-          </h1>
-          <p className="text-lg md:text-2xl text-slate-400 max-w-2xl font-light italic">
-            "Lugar de Restauração, Vida e Paz."
-          </p>
-
-          <div className="flex gap-4 mt-8">
-             <a href={config?.instagram_url} target="_blank" className="p-4 bg-white/10 rounded-full hover:bg-blue-600 transition-all text-white backdrop-blur-md border border-white/10 shadow-xl group">
-               <Instagram size={24} className="group-hover:scale-110 transition-transform" />
-             </a>
-             <a href={config?.youtube_url} target="_blank" className="p-4 bg-white/10 rounded-full hover:bg-red-600 transition-all text-white backdrop-blur-md border border-white/10 shadow-xl group">
-               <Youtube size={24} className="group-hover:scale-110 transition-transform" />
-             </a>
+          <div className="relative mb-8">
+            <div className="absolute -inset-4 bg-blue-500/20 rounded-full blur-2xl animate-pulse"></div>
+            <img src="/logo.png" alt="Logo AD Capital" className="relative w-28 h-28 drop-shadow-2xl rounded-full object-cover border-4 border-white/5" />
           </div>
-          
-          <motion.button 
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => window.open(config?.google_maps_url || '#', '_blank')}
-            className="mt-8 px-10 py-4 bg-blue-600 hover:bg-blue-500 text-white font-black rounded-full transition-all shadow-2xl shadow-blue-900/40 flex items-center gap-3 uppercase tracking-widest text-sm"
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
           >
-            <MapPin size={22} />
-            COMO CHEGAR
-          </motion.button>
+            <h1 className="text-5xl md:text-8xl font-black tracking-tighter mb-6 leading-[0.9]">
+              IGREJA <br className="md:hidden" />
+              <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-blue-500 bg-clip-text text-transparent">
+                AD CAPITAL
+              </span>
+            </h1>
+            <p className="text-base md:text-xl text-slate-400 max-w-xl mx-auto font-medium tracking-tight leading-relaxed opacity-80 uppercase italic">
+              "Lugar de Restauração, Vida e Paz."
+            </p>
+          </motion.div>
+
+          <div className="flex flex-col md:flex-row items-center gap-6 mt-12">
+            <motion.button 
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => window.open(config?.google_maps_url || '#', '_blank')}
+              className="px-10 py-5 bg-white text-slate-950 font-black rounded-2xl transition-all shadow-2xl flex items-center gap-3 uppercase tracking-widest text-[11px]"
+            >
+              <MapPin size={18} className="text-blue-600" />
+              Como Chegar
+            </motion.button>
+
+            <div className="flex gap-4">
+               <a href={config?.instagram_url} target="_blank" className="w-14 h-14 flex items-center justify-center bg-white/5 rounded-2xl hover:bg-white/10 transition-all text-white border border-white/10 group backdrop-blur-sm">
+                 <Instagram size={20} className="group-hover:text-pink-500 transition-colors" />
+               </a>
+               <a href={config?.youtube_url} target="_blank" className="w-14 h-14 flex items-center justify-center bg-white/5 rounded-2xl hover:bg-white/10 transition-all text-white border border-white/10 group backdrop-blur-sm">
+                 <Youtube size={20} className="group-hover:text-red-500 transition-colors" />
+               </a>
+            </div>
+          </div>
         </motion.div>
 
         <motion.div 
-          animate={{ y: [0, 10, 0] }}
-          transition={{ repeat: Infinity, duration: 2 }}
-          className="absolute bottom-10"
+          animate={{ y: [0, 8, 0] }}
+          transition={{ repeat: Infinity, duration: 2.5 }}
+          className="absolute bottom-10 opacity-30"
         >
-          <ChevronDown className="text-slate-500" />
+          <div className="w-6 h-10 border-2 border-slate-500 rounded-full flex justify-center p-1">
+            <div className="w-1 h-2 bg-slate-500 rounded-full" />
+          </div>
         </motion.div>
       </section>
 
