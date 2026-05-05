@@ -62,7 +62,7 @@ export default function MemberPortal() {
   );
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in duration-500">
+    <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in duration-500">
       <div className="bg-blue-900 rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden">
         <h1 className="text-3xl font-black italic">Olá, {dados.nome}! 👋</h1>
         <p className="text-blue-200">Bem-vindo ao seu portal de membro.</p>
@@ -74,7 +74,7 @@ export default function MemberPortal() {
         </div>
       )}
 
-      <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
+      <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6 overflow-hidden">
         <div className="flex justify-between items-center">
           <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">📋 Meus Dados Cadastrais</h3>
           {!editando && (
@@ -278,10 +278,11 @@ export default function MemberPortal() {
 
           <div className="space-y-1">
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Cidade / UF</label>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-4 gap-2">
                <input 
                 type="text" 
-                className="flex-[3] p-3 bg-slate-50 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500/10" 
+                placeholder="Cidade"
+                className="col-span-3 w-full p-3 bg-slate-50 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500/10" 
                 value={formData.cidade || ''} 
                 disabled={!editando}
                 onChange={e => setFormData({...formData, cidade: e.target.value})}
@@ -289,7 +290,8 @@ export default function MemberPortal() {
               <input 
                 type="text" 
                 maxLength="2"
-                className="flex-1 p-3 bg-slate-50 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500/10 text-center" 
+                placeholder="UF"
+                className="col-span-1 w-full p-3 bg-slate-50 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500/10 text-center" 
                 value={formData.uf || ''} 
                 disabled={!editando}
                 onChange={e => setFormData({...formData, uf: e.target.value.toUpperCase()})}
