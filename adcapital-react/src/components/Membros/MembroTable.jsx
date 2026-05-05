@@ -26,7 +26,7 @@ export default function MembroTable({ membros, onEdit, onDelete, deletandoId }) 
         <thead>
           <tr className="bg-slate-50 border-b border-slate-200">
             <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">CPF</th>
-            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Nome</th>
+            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest w-full min-w-[300px]">Nome</th>
             <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Telefone</th>
             <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Função</th>
             <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Nascimento</th>
@@ -54,7 +54,7 @@ export default function MembroTable({ membros, onEdit, onDelete, deletandoId }) 
                     )}
                     <div>
                       <div className={`text-sm font-bold uppercase transition-colors ${isDeleting ? 'text-slate-400' : 'text-blue-900'}`}>{m.nome}</div>
-                      <div className="text-[10px] text-slate-400 font-medium truncate max-w-[180px]">{m.email}</div>
+                      <div className="text-[10px] text-slate-400 font-medium truncate">{m.email}</div>
                     </div>
                   </div>
                 </td>

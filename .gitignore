@@ -23,3 +23,6 @@ google_credentials.json
 tmp/
 .DS_Store
 Thumbs.db
+
+# Backup data
+backup_adcapital.json
