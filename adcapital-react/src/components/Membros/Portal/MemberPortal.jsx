@@ -15,7 +15,7 @@ export default function MemberPortal() {
     try {
       const [res, resFuncoes] = await Promise.all([
         api.get('/membros/meus-dados/'),
-        api.get('/membros/funcoes/')
+        api.get('/opcoes-funcao/')
       ]);
       setDados(res.data);
       setFormData(res.data);
