@@ -73,9 +73,13 @@ export default function MembroTable({ membros, onEdit, onDelete, deletandoId }) 
                   <div className="flex items-center gap-3">
                     {/* Avatar */}
                     {m.foto ? (
-                      <img src={m.foto} alt={m.nome} className="w-8 h-8 rounded-full object-cover border border-slate-200 shrink-0" />
+                      <img 
+                        src={m.foto} 
+                        alt={m.nome} 
+                        className="w-8 h-8 rounded-full object-cover border border-slate-200 shrink-0 transition-all duration-300 hover:scale-[3] hover:z-50 relative hover:shadow-xl cursor-zoom-in" 
+                      />
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shrink-0">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shrink-0 transition-all duration-300 hover:scale-110">
                         <span className="text-white font-black text-xs leading-none">{m.nome?.charAt(0) || '?'}</span>
                       </div>
                     )}

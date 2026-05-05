@@ -15,10 +15,10 @@ export default function MembroCard({ m, graus, onEdit, onDelete, deletandoId }) 
                                 <img
                                     src={m.foto}
                                     alt={m.nome}
-                                    className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
+                                    className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm transition-all duration-300 hover:scale-[2.5] hover:z-50 relative hover:shadow-xl cursor-zoom-in"
                                 />
                             ) : (
-                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center border-2 border-white shadow-sm shrink-0">
+                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center border-2 border-white shadow-sm shrink-0 transition-all duration-300 hover:scale-110">
                                     <span className="text-white font-black text-lg leading-none">
                                         {m.nome?.charAt(0) || '?'}
                                     </span>
