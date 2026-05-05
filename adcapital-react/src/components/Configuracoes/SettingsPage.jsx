@@ -119,9 +119,6 @@ export default function SettingsPage() {
     setLoading(false);
   };
 
-    setLoading(false);
-  };
-
   const salvarSeguranca = async () => {
     setLoading(true);
     try {
