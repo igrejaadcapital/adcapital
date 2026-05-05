@@ -108,7 +108,7 @@ DATABASES = {
 
 if 'DATABASE_URL' in os.environ:
     DATABASES['default'] = dj_database_url.config(
-        conn_max_age=600, # Aumenta performance ao manter conexões abertas
+        conn_max_age=0, # Desativado para compatibilidade total com o Supabase Pooler
         conn_health_checks=True,
         ssl_require=True,
     )
