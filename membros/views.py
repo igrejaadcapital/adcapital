@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import threading
 import json
 import traceback
@@ -41,7 +42,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 @permission_classes([AllowAny])
 @authentication_classes([])
 def ultimo_video_youtube(request):
-    """Retorna o último vídeo do canal YouTube via RSS (sem API key). Cache de 1 hora."""
+    """Retorna o Ãºltimo vÃ­deo do canal YouTube via RSS (sem API key). Cache de 1 hora."""
     cache_key = 'yt_ultimo_video'
     cached = cache.get(cache_key)
     if cached:
@@ -51,7 +52,7 @@ def ultimo_video_youtube(request):
         config = ConfiguracaoSite.objects.filter(id=1).first()
         channel_id = config.youtube_channel_id if config else None
         if not channel_id:
-            return Response({'error': 'Canal YouTube não configurado.'}, status=404)
+            return Response({'error': 'Canal YouTube nÃ£o configurado.'}, status=404)
 
         rss_url = f'https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}'
         req = urllib.request.Request(rss_url, headers={'User-Agent': 'Mozilla/5.0'})
@@ -66,7 +67,7 @@ def ultimo_video_youtube(request):
         root = ET.fromstring(xml_data)
         entry = root.find('atom:entry', ns)
         if entry is None:
-            return Response({'error': 'Nenhum vídeo encontrado.'}, status=404)
+            return Response({'error': 'Nenhum vÃ­deo encontrado.'}, status=404)
 
         video_id = entry.find('yt:videoId', ns).text
         title = entry.find('atom:title', ns).text
@@ -93,7 +94,7 @@ def ultimo_video_youtube(request):
 @permission_classes([AllowAny])
 @authentication_classes([])
 def buscar_opcoes_funcao(request):
-    """Retorna a lista dinâmica de funções da tabela Funcao"""
+    """Retorna a lista dinÃ¢mica de funÃ§Ãµes da tabela Funcao"""
     try:
         funcoes = Funcao.objects.all().order_by('nome')
         opcoes = [{'id': f.id, 'nome': f.nome} for f in funcoes]
@@ -104,7 +105,7 @@ def buscar_opcoes_funcao(request):
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def excluir_funcao(request, pk):
-    """Exclui uma função pelo ID (Apenas Admin)"""
+    """Exclui uma funÃ§Ã£o pelo ID (Apenas Admin)"""
     try:
         funcao = Funcao.objects.get(pk=pk)
         funcao.delete()
@@ -115,13 +116,13 @@ def excluir_funcao(request, pk):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def adicionar_funcao(request):
-    """Cria uma nova função manualmente (Apenas Admin)"""
+    """Cria uma nova funÃ§Ã£o manualmente (Apenas Admin)"""
     try:
         nome = request.data.get('nome')
         if not nome or not str(nome).strip():
-            return Response({'error': 'Nome é obrigatório'}, status=400)
+            return Response({'error': 'Nome Ã© obrigatÃ³rio'}, status=400)
         
-        # Limpa o nome para evitar espaços extras e padroniza
+        # Limpa o nome para evitar espaÃ§os extras e padroniza
         nome_limpo = str(nome).strip().upper()
         
         funcao, created = Funcao.objects.get_or_create(nome=nome_limpo)
@@ -132,18 +133,18 @@ def adicionar_funcao(request):
             'success': True
         }, status=201)
     except Exception as e:
-        # Se der erro 500, agora retornamos o motivo real em vez de uma página HTML genérica
+        # Se der erro 500, agora retornamos o motivo real em vez de uma pÃ¡gina HTML genÃ©rica
         print(f"ERRO AO ADICIONAR FUNCAO: {str(e)}")
         return Response({
             'error': f"Erro no servidor: {str(e)}",
-            'detail': "Verifique se a tabela de funções existe no banco de dados."
+            'detail': "Verifique se a tabela de funÃ§Ãµes existe no banco de dados."
         }, status=500)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 @authentication_classes([])
 def buscar_opcoes_parentesco(request):
-    """Retorna a lista dinâmica de graus de parentesco extraída do models"""
+    """Retorna a lista dinÃ¢mica de graus de parentesco extraÃ­da do models"""
     opcoes = [{'id': f[0], 'nome': f[1]} for f in Parentesco.GRAU_CHOICES]
     return Response(opcoes)
 
@@ -151,11 +152,11 @@ def buscar_opcoes_parentesco(request):
 @permission_classes([AllowAny])
 @authentication_classes([])
 def buscar_configuracao_publica(request):
-    """Retorna apenas o status e a pergunta do portal para o público"""
-    # Usamos filter(id=1).first() para evitar escrita desnecessária e deadlock
+    """Retorna apenas o status e a pergunta do portal para o pÃºblico"""
+    # Usamos filter(id=1).first() para evitar escrita desnecessÃ¡ria e deadlock
     config = ConfiguracaoPortal.objects.filter(id=1).first()
     if not config:
-        # Fallback em memória se o registro sumir
+        # Fallback em memÃ³ria se o registro sumir
         return Response({
             "is_ativo": True,
             "pergunta": "Qual o seu melhor amigo?"
@@ -169,23 +170,23 @@ def buscar_configuracao_publica(request):
 @permission_classes([AllowAny])
 @authentication_classes([])
 def verificar_resposta_portal(request):
-    """Verifica se a resposta do membro está correta para liberar o formulário"""
+    """Verifica se a resposta do membro estÃ¡ correta para liberar o formulÃ¡rio"""
     resposta_user = request.data.get('resposta', '').strip().lower()
     config = ConfiguracaoPortal.objects.filter(id=1).first()
     
-    # Se por algum motivo a resposta no banco estiver vazia ou objeto inexistente, usamos o padrão "Jesus"
+    # Se por algum motivo a resposta no banco estiver vazia ou objeto inexistente, usamos o padrÃ£o "Jesus"
     resposta_correta = (config.resposta if config else "Jesus").strip().lower()
     is_ativo = config.is_ativo if config else True
 
     if not is_ativo:
-        return Response({"error": "O portal de cadastro está desativado no momento."}, status=403)
+        return Response({"error": "O portal de cadastro estÃ¡ desativado no momento."}, status=403)
         
     if resposta_user == resposta_correta:
         return Response({"success": True})
     return Response({"success": False, "error": "Resposta incorreta. Dica: Tente 'Jesus'."}, status=401)
 
 class ConfiguracaoPortalViewSet(viewsets.ModelViewSet):
-    """Gerenciamento da configuração pelo Admin (id fixo = 1)"""
+    """Gerenciamento da configuraÃ§Ã£o pelo Admin (id fixo = 1)"""
     queryset = ConfiguracaoPortal.objects.all()
     serializer_class = ConfiguracaoPortalSerializer
     permission_classes = [IsAuthenticated]
@@ -205,7 +206,7 @@ class ConfiguracaoPortalViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 class ConfiguracaoSiteViewSet(viewsets.ModelViewSet):
-    """Gestão da configuração do site institucional (id fixo = 1)"""
+    """GestÃ£o da configuraÃ§Ã£o do site institucional (id fixo = 1)"""
     queryset = ConfiguracaoSite.objects.all()
     serializer_class = ConfiguracaoSiteSerializer
     
@@ -229,7 +230,7 @@ class ConfiguracaoSiteViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 class FotoGaleriaViewSet(viewsets.ModelViewSet):
-    """Gestão da galeria de fotos do site"""
+    """GestÃ£o da galeria de fotos do site"""
     queryset = FotoGaleria.objects.all().order_by('ordem', '-criado_em')
     serializer_class = FotoGaleriaSerializer
     
@@ -295,7 +296,7 @@ def _executar_tarefas_pos_cadastro(membro_id, parentescos_data):
         from .models import Membro, Parentesco
         membro = Membro.objects.get(id=membro_id)
 
-        # 1. Geração de PDF e Captura Imediata de Bytes
+        # 1. GeraÃ§Ã£o de PDF e Captura Imediata de Bytes
         print(f"--- [BG-THREAD] Iniciando processamento para {membro.nome} ---")
         nome_arquivo, pdf_file = gerar_termo_lgpd_pdf(membro)
         pdf_bytes = pdf_file.read()
@@ -306,8 +307,8 @@ def _executar_tarefas_pos_cadastro(membro_id, parentescos_data):
             print(f"--- [BG-THREAD] Usando Resend API para {membro.email}...")
             sucesso = enviar_email_resend_api(
                 to=membro.email,
-                subject='Bem-vindo! Seu Termo de Ciência e Aceite (LGPD)',
-                body=f'Olá {membro.nome},\n\nÉ com alegria que confirmamos o seu cadastro no portal da Igreja Assembleia de Deus Ministério na Capital.\n\nPara finalizarmos o processo administrativo, enviamos em anexo o Termo de Consentimento de Dados Pessoais (LGPD). Pedimos a gentileza de assinar o documento anexo e nos enviar uma cópia (digitalizada ou foto legível). Você pode responder diretamente a esta mensagem ou enviá-la para igrejaadcapital@gmail.com.\n\nFraternalmente,\nEquipe AD Capital',
+                subject='Bem-vindo! Seu Termo de CiÃªncia e Aceite (LGPD)',
+                body=f'OlÃ¡ {membro.nome},\n\nÃ com alegria que confirmamos o seu cadastro no portal da Igreja Assembleia de Deus MinistÃ©rio na Capital.\n\nPara finalizarmos o processo administrativo, enviamos em anexo o Termo de Consentimento de Dados Pessoais (LGPD). Pedimos a gentileza de assinar o documento anexo e nos enviar uma cÃ³pia (digitalizada ou foto legÃ­vel). VocÃª pode responder diretamente a esta mensagem ou enviÃ¡-la para igrejaadcapital@gmail.com.\n\nFraternalmente,\nEquipe AD Capital',
                 filename=nome_arquivo,
                 file_content=pdf_bytes
             )
@@ -316,13 +317,13 @@ def _executar_tarefas_pos_cadastro(membro_id, parentescos_data):
             else:
                 print("--- [BG-THREAD] AVISO: Falha no envio via Resend. Verifique logs acima.")
 
-        # 3. Salvamento do PDF não assinado no Cloudinary (para o membro baixar)
+        # 3. Salvamento do PDF nÃ£o assinado no Cloudinary (para o membro baixar)
         print(f"--- [BG-THREAD] Salvando PDF no Cloudinary...")
         membro.lgpd_documento.save(nome_arquivo, ContentFile(pdf_bytes), save=True)
-        # NÃO marca lgpd_consentido - o status permanece PENDENTE até o admin fazer upload do documento assinado
-        print(f"--- [BG-THREAD] PDF salvo no Cloudinary. Status: PENDENTE (aguardando assinatura física)")
+        # NÃO marca lgpd_consentido - o status permanece PENDENTE atÃ© o admin fazer upload do documento assinado
+        print(f"--- [BG-THREAD] PDF salvo no Cloudinary. Status: PENDENTE (aguardando assinatura fÃ­sica)")
 
-        # 4. Lógica de Parentesco
+        # 4. LÃ³gica de Parentesco
         if parentescos_data:
             print("--- [BG-THREAD] Processando parentescos...")
             for item in parentescos_data:
@@ -338,23 +339,23 @@ def _executar_tarefas_pos_cadastro(membro_id, parentescos_data):
             print("--- [BG-THREAD] Parentescos processados.")
 
     except Exception:
-        print("--- [BG-THREAD] ERRO CRÍTICO EM TAREFAS DE BACKGROUND ---")
+        print("--- [BG-THREAD] ERRO CRÃTICO EM TAREFAS DE BACKGROUND ---")
         traceback.print_exc()
     finally:
         from django.db import connection
         try:
             connection.close()
-            print("--- [BG-THREAD] Conexão com banco fechada.")
+            print("--- [BG-THREAD] ConexÃ£o com banco fechada.")
         except:
             pass
 
 class AutoCadastroMembroView(APIView):
     """
     Endpoint para auto-cadastro de membros.
-    Permite criar ou editar (se CPF já existir e resposta estiver correta).
+    Permite criar ou editar (se CPF jÃ¡ existir e resposta estiver correta).
     """
     permission_classes = [AllowAny]
-    authentication_classes = [] # Desativa autenticação para o portal público
+    authentication_classes = [] # Desativa autenticaÃ§Ã£o para o portal pÃºblico
     parser_classes = [MultiPartParser, FormParser, JSONParser] # Suporte a diversos formatos de dados
 
     def post(self, request):
@@ -373,7 +374,7 @@ class AutoCadastroMembroView(APIView):
 
             cpf_original = request.data.get('cpf')
             if not cpf_original:
-                return Response({"error": "CPF é obrigatório"}, status=400)
+                return Response({"error": "CPF Ã© obrigatÃ³rio"}, status=400)
 
             cpf_limpo = "".join(filter(str.isdigit, cpf_original))
             membro_existente = Membro.objects.filter(cpf=cpf_limpo).first()
@@ -384,7 +385,7 @@ class AutoCadastroMembroView(APIView):
                 serializer = MembroSerializer(data=request.data)
 
             if serializer.is_valid():
-                # SALVAMENTO IMEDIATO DO DISCO/INFOS BÁSICAS
+                # SALVAMENTO IMEDIATO DO DISCO/INFOS BÃSICAS
                 membro = serializer.save()
                 
                 # Dados de parentesco
@@ -407,7 +408,7 @@ class AutoCadastroMembroView(APIView):
 
                 return Response({
                     "success": True, 
-                    "message": "Cadastro recebido! O processamento do seu termo LGPD está sendo finalizado em segundo plano.",
+                    "message": "Cadastro recebido! O processamento do seu termo LGPD estÃ¡ sendo finalizado em segundo plano.",
                     "id": membro.id,
                     "is_update": membro_existente is not None
                 })
@@ -415,7 +416,7 @@ class AutoCadastroMembroView(APIView):
             return Response(serializer.errors, status=400)
         
         except Exception as e:
-            print(f"--- [DEBUG] !!! ERRO CRÍTICO !!!: {str(e)}")
+            print(f"--- [DEBUG] !!! ERRO CRÃTICO !!!: {str(e)}")
             return Response({
                 "error": "Erro interno no servidor.",
                 "detail": str(e)
@@ -425,11 +426,11 @@ class AutoCadastroMembroView(APIView):
 @permission_classes([AllowAny])
 @authentication_classes([])
 def run_migrations_debug(request):
-    """View temporária para forçar migrações e ver o log no navegador"""
+    """View temporÃ¡ria para forÃ§ar migraÃ§Ãµes e ver o log no navegador"""
     from django.core.management import call_command
     from io import StringIO
     out = StringIO()
-    print("--- [DEBUG] Rodando migrações manualmente via endpoint ---")
+    print("--- [DEBUG] Rodando migraÃ§Ãµes manualmente via endpoint ---")
     try:
         call_command('migrate', stdout=out, stderr=out)
         result = out.getvalue()
@@ -451,20 +452,20 @@ def download_termo_lgpd(request, pk):
         from django.shortcuts import redirect
         membro = Membro.objects.get(pk=pk)
         if not membro.lgpd_documento:
-             return Response({"error": "Termo não encontrado para este membro."}, status=404)
+             return Response({"error": "Termo nÃ£o encontrado para este membro."}, status=404)
         
         # Como estamos usando Cloudinary, retornamos a URL direta para download
         return redirect(membro.lgpd_documento.url)
     except Membro.DoesNotExist:
-        return Response({"error": "Membro não encontrado."}, status=404)
+        return Response({"error": "Membro nÃ£o encontrado."}, status=404)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 @authentication_classes([])
 def buscar_membros_autocomplete_publico(request):
     """
-    Busca de membros para vínculo familiar no cadastro público.
-    Exige no mínimo 3 caracteres para não vazar a lista completa de membros.
+    Busca de membros para vÃ­nculo familiar no cadastro pÃºblico.
+    Exige no mÃ­nimo 3 caracteres para nÃ£o vazar a lista completa de membros.
     Retorna apenas ID e Nome (limite de 10).
     """
     query = request.GET.get('q', '').strip()
@@ -481,7 +482,7 @@ class MeusDadosView(APIView):
     def get(self, request):
         perfil = getattr(request.user, 'perfil', None)
         if not perfil or not perfil.membro:
-            return Response({'error': 'Perfil de membro n�o encontrado.'}, status=404)
+            return Response({'error': 'Perfil de membro não encontrado.'}, status=404)
         
         serializer = MembroSerializer(perfil.membro)
         return Response(serializer.data)
@@ -489,9 +490,9 @@ class MeusDadosView(APIView):
     def patch(self, request):
         perfil = getattr(request.user, 'perfil', None)
         if not perfil or not perfil.membro:
-            return Response({'error': 'Perfil de membro n�o encontrado.'}, status=404)
+            return Response({'error': 'Perfil de membro não encontrado.'}, status=404)
         
-        # Permitir apenas alguns campos (Endere�o, Telefone, Email)
+        # Permitir apenas alguns campos (Endereço, Telefone, Email)
         campos_permitidos = ['telefone', 'email', 'logradouro', 'numero', 'complemento', 'bairro', 'cidade', 'uf', 'cep']
         data = {k: v for k, v in request.data.items() if k in campos_permitidos}
         
@@ -499,4 +500,4 @@ class MeusDadosView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return Response(serializer.errors, status=400)
+        return Response(serializer.errors, status=400)
