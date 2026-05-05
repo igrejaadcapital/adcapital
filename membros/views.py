@@ -850,7 +850,7 @@ class MeusDadosView(APIView):
 
         # Permitir apenas alguns campos (Endereço, Telefone, Email)
 
-        campos_permitidos = ['telefone', 'email', 'logradouro', 'numero', 'complemento', 'bairro', 'cidade', 'uf', 'cep', 'data_nascimento', 'genero', 'estado_civil', 'naturalidade']
+        campos_permitidos = ['telefone', 'email', 'logradouro', 'numero', 'complemento', 'bairro', 'cidade', 'uf', 'cep', 'data_nascimento', 'genero', 'estado_civil', 'naturalidade', 'data_entrada', 'unidade', 'departamento', 'motivo_entrada', 'observacoes']
 
         data = {k: v for k, v in request.data.items() if k in campos_permitidos}
 

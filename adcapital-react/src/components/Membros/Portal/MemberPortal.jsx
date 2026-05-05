@@ -149,6 +149,53 @@ export default function MemberPortal() {
             />
           </div>
 
+          {/* Dados Eclesiásticos */}
+          <div className="md:col-span-2 pt-4 border-t border-slate-50">
+            <h4 className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] mb-4">Informações Eclesiásticas</h4>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Data de Entrada</label>
+            <input 
+              type="date" 
+              className="w-full p-3 bg-slate-50 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500/10" 
+              value={formData.data_entrada || ''} 
+              disabled={!editando}
+              onChange={e => setFormData({...formData, data_entrada: e.target.value})}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Unidade</label>
+            <input 
+              type="text" 
+              className="w-full p-3 bg-slate-50 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500/10" 
+              value={formData.unidade || ''} 
+              disabled={!editando}
+              onChange={e => setFormData({...formData, unidade: e.target.value})}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Departamento</label>
+            <input 
+              type="text" 
+              className="w-full p-3 bg-slate-50 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500/10" 
+              value={formData.departamento || ''} 
+              disabled={!editando}
+              onChange={e => setFormData({...formData, departamento: e.target.value})}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Motivo da Entrada</label>
+            <input 
+              type="text" 
+              className="w-full p-3 bg-slate-50 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500/10" 
+              value={formData.motivo_entrada || ''} 
+              disabled={!editando}
+              onChange={e => setFormData({...formData, motivo_entrada: e.target.value})}
+            />
+          </div>
+
           {/* Endereço */}
           <div className="md:col-span-2 pt-4 border-t border-slate-50">
             <h4 className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] mb-4">Endereço Residencial</h4>
@@ -230,6 +277,16 @@ export default function MemberPortal() {
             </div>
           </div>
 
+          <div className="md:col-span-2 space-y-1">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Observações</label>
+            <textarea 
+              className="w-full p-3 bg-slate-50 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500/10 min-h-[80px]" 
+              value={formData.observacoes || ''} 
+              disabled={!editando}
+              onChange={e => setFormData({...formData, observacoes: e.target.value})}
+            />
+          </div>
+
           {editando && (
             <div className="md:col-span-2 flex gap-4 pt-4">
               <button type="submit" className="flex-1 bg-blue-900 text-white py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg">Salvar Alterações</button>
@@ -238,6 +295,23 @@ export default function MemberPortal() {
           )}
         </form>
       </div>
+
+      {/* Vínculos Familiares */}
+      {dados.parentes && dados.parentes.length > 0 && (
+        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-4">
+          <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">👨‍👩‍👧‍👦 Vínculos Familiares</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {dados.parentes.map(parente => (
+              <div key={parente.id} className="bg-slate-50 p-4 rounded-2xl flex items-center justify-between border border-slate-100/50">
+                <span className="font-bold text-slate-700 text-sm">{parente.nome_parente}</span>
+                <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest bg-blue-50 px-2 py-1 rounded-lg">
+                  {parente.grau === 'PAI_MAE' ? 'Pai/Mãe' : parente.grau === 'FILHO_A' ? 'Filho(a)' : parente.grau === 'CONJUGE' ? 'Cônjuge' : parente.grau === 'IRMAO_A' ? 'Irmão(ã)' : 'Parente'}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="bg-emerald-50 p-8 rounded-[2.5rem] border border-emerald-100 flex items-center justify-between">
         <div>
