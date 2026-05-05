@@ -9,7 +9,7 @@ from membros.view_public import (
     portal_verificar_resposta_direto,
     auto_cadastro_direto
 )
-from membros.views import run_migrations_debug
+from membros.views import run_migrations_debug, CustomTokenObtainPairView
 
 urlpatterns = [
     # [PORTAL PUBLIC ROUTES - ROBUST MAPPING]
@@ -27,11 +27,12 @@ urlpatterns = [
     path('api/debug/migrate/', run_migrations_debug),
 
     path('admin/', admin.site.urls),
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     
     # [LEGACY API ROUTES]
     path('api/financeiro/', include('financeiro.urls')),
     path('api/agenda/', include('agenda.urls')),
+    path('api/analytics/', include('analytics.urls')),
     path('api/', include('membros.urls')),
 ]

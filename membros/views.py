@@ -16,6 +16,26 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from .utils import gerar_termo_lgpd_pdf, enviar_email_resend_api
 from .models import Membro, Parentesco, Funcao, ConfiguracaoPortal, ConfiguracaoSite, FotoGaleria
 from .serializers import MembroSerializer, ConfiguracaoPortalSerializer, ConfiguracaoSiteSerializer, FotoGaleriaSerializer
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token['username'] = user.username
+        token['role'] = user.perfil.role if hasattr(user, 'perfil') else 'MEMBRO'
+        token['nome'] = user.get_full_name() or user.username
+        return token
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        data['role'] = self.user.perfil.role if hasattr(self.user, 'perfil') else 'MEMBRO'
+        data['nome'] = self.user.get_full_name() or self.user.username
+        return data
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -454,3 +474,29 @@ def buscar_membros_autocomplete_publico(request):
     membros = Membro.objects.filter(nome__icontains=query).order_by('nome')[:10]
     opcoes = [{'id': m.id, 'nome': m.nome} for m in membros]
     return Response(opcoes)
+
+class MeusDadosView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        perfil = getattr(request.user, 'perfil', None)
+        if not perfil or not perfil.membro:
+            return Response({'error': 'Perfil de membro não encontrado.'}, status=404)
+        
+        serializer = MembroSerializer(perfil.membro)
+        return Response(serializer.data)
+
+    def patch(self, request):
+        perfil = getattr(request.user, 'perfil', None)
+        if not perfil or not perfil.membro:
+            return Response({'error': 'Perfil de membro não encontrado.'}, status=404)
+        
+        # Permitir apenas alguns campos (Endereço, Telefone, Email)
+        campos_permitidos = ['telefone', 'email', 'logradouro', 'numero', 'complemento', 'bairro', 'cidade', 'uf', 'cep']
+        data = {k: v for k, v in request.data.items() if k in campos_permitidos}
+        
+        serializer = MembroSerializer(perfil.membro, data=data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)

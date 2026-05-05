@@ -11,10 +11,13 @@ import Login from './components/Auth/Login'
 import { useAuth } from './components/Auth/AuthProvider'
 import AutoCadastroPage from './components/Membros/AutoCadastroPage'
 import LandingPage from './components/SitePublico/LandingPage'
+import AnalyticsPage from './components/Analytics/AnalyticsPage'
+import MemberPortal from './components/Membros/Portal/MemberPortal'
 
 function MainApp({ logout }) {
+  const { user } = useAuth();
   const { membros, membrosFiltrados, busca, setBusca, funcoes, graus, carregarDados, loading, error } = useMembros();
-  const [telaAtiva, setTelaAtiva] = useState('home');
+  const [telaAtiva, setTelaAtiva] = useState(user?.role === 'MEMBRO' ? 'portal' : 'home');
 
   const {
     transacoes,
@@ -45,11 +48,28 @@ function MainApp({ logout }) {
              <span className="font-black text-slate-800 tracking-tighter text-lg">AD CAPITAL</span>
           </div>
           <div className="flex gap-6 font-black text-[10px] uppercase tracking-[0.2em]">
-          <button onClick={() => setTelaAtiva('home')} className={`pb-1 transition-all ${telaAtiva === 'home' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Início</button>
-          <button onClick={() => setTelaAtiva('membros')} className={`pb-1 transition-all ${telaAtiva === 'membros' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Membros</button>
-          <button onClick={() => setTelaAtiva('financeiro')} className={`pb-1 transition-all ${telaAtiva === 'financeiro' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Financeiro</button>
-          <button onClick={() => setTelaAtiva('agenda')} className={`pb-1 transition-all ${telaAtiva === 'agenda' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Agenda</button>
-          <button onClick={() => setTelaAtiva('config')} className={`pb-1 transition-all ${telaAtiva === 'config' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Configurações</button>
+          {user?.role === 'MEMBRO' ? (
+            <button onClick={() => setTelaAtiva('portal')} className={`pb-1 transition-all ${telaAtiva === 'portal' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Meu Perfil</button>
+          ) : (
+            <>
+              <button onClick={() => setTelaAtiva('home')} className={`pb-1 transition-all ${telaAtiva === 'home' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Início</button>
+              
+              {(user?.role === 'ADMIN' || user?.role === 'SECRETARIO') && (
+                <button onClick={() => setTelaAtiva('membros')} className={`pb-1 transition-all ${telaAtiva === 'membros' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Membros</button>
+              )}
+
+              {(user?.role === 'ADMIN' || user?.role === 'TESOUREIRO') && (
+                <button onClick={() => setTelaAtiva('financeiro')} className={`pb-1 transition-all ${telaAtiva === 'financeiro' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Financeiro</button>
+              )}
+
+              <button onClick={() => setTelaAtiva('agenda')} className={`pb-1 transition-all ${telaAtiva === 'agenda' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Agenda</button>
+              <button onClick={() => setTelaAtiva('analytics')} className={`pb-1 transition-all ${telaAtiva === 'analytics' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Estatísticas</button>
+              
+              {user?.role === 'ADMIN' && (
+                <button onClick={() => setTelaAtiva('config')} className={`pb-1 transition-all ${telaAtiva === 'config' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Configurações</button>
+              )}
+            </>
+          )}
           
           <button onClick={logout} className="ml-4 font-black uppercase text-rose-500 hover:text-rose-600 transition-colors border border-rose-100 hover:border-rose-200 bg-rose-50 px-3 py-1 rounded">Sair</button>
           </div>
@@ -57,6 +77,9 @@ function MainApp({ logout }) {
       </nav>
 
       <main className="max-w-6xl mx-auto p-4">
+        {telaAtiva === 'portal' && (
+          <MemberPortal />
+        )}
         {telaAtiva === 'home' && (
           <DashboardHome
             totalMembros={membros.length}
@@ -108,6 +131,10 @@ function MainApp({ logout }) {
 
         {telaAtiva === 'agenda' && (
           <AgendaPage />
+        )}
+
+        {telaAtiva === 'analytics' && (
+          <AnalyticsPage />
         )}
 
         {telaAtiva === 'config' && (

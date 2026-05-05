@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'membros', 
     'financeiro',
     'agenda',
+    'analytics',
 ]
 
 MIDDLEWARE = [

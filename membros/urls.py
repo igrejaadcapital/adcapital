@@ -12,7 +12,8 @@ from .views import (
     buscar_configuracao_publica,
     download_termo_lgpd,
     ultimo_video_youtube,
-    buscar_membros_autocomplete_publico
+    buscar_membros_autocomplete_publico,
+    MeusDadosView
 )
 
 from .view_public import (
@@ -43,5 +44,7 @@ urlpatterns = [
     path('funcoes/', adicionar_funcao, name='adicionar-funcao-admin'),
     path('funcoes/<int:pk>/', excluir_funcao, name='excluir-funcao-admin'),
     path('membros/<int:pk>/download-lgpd/', download_termo_lgpd, name='download-lgpd'),
+    path('', include(router.urls)),
+    path('meus-dados/', MeusDadosView.as_view(), name='meus-dados'),
     path('', include(router.urls)),
 ]

@@ -6,6 +6,10 @@ const API_URL = import.meta.env.VITE_API_URL || 'https://api.adcapitaligreja.com
 
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => localStorage.getItem('access_token'));
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem('user_data');
+    return saved ? JSON.parse(saved) : null;
+  });
   const [error, setError] = useState(null);
   const [carregando, setCarregando] = useState(false);
 
@@ -25,7 +29,10 @@ export function AuthProvider({ children }) {
         const data = await response.json();
         localStorage.setItem('access_token', data.access);
         localStorage.setItem('refresh_token', data.refresh);
+        const userData = { role: data.role, nome: data.nome };
+        localStorage.setItem('user_data', JSON.stringify(userData));
         setToken(data.access);
+        setUser(userData);
         return true;
       } else {
         setError('Credenciais incorretas ou sem permissão.');
@@ -62,11 +69,13 @@ export function AuthProvider({ children }) {
   const logout = () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user_data');
     setToken(null);
+    setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ token, login, logout, error, carregando }}>
+    <AuthContext.Provider value={{ token, user, login, logout, error, carregando }}>
       {children}
     </AuthContext.Provider>
   );

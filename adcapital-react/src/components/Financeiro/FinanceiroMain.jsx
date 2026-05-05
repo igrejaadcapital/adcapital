@@ -3,6 +3,7 @@ import { useState } from 'react';
 import LancamentoFinanceiroFormModal from './ModalLancamentosFinanceiro/LancamentoFinanceiroFormModal';
 import financeiroService from '../../api/financeiroService';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import ImportarOFXModal from './ImportarOFXModal';
 
 export default function FinanceiroMain({
     transacoes,
@@ -23,6 +24,7 @@ export default function FinanceiroMain({
     const [mostrarModal, setMostrarModal] = useState(false);
     const [tipoLancamento, setTipoLancamento] = useState('ENTRADA');
     const [lancamentoParaEditar, setLancamentoParaEditar] = useState(null);
+    const [mostrarImportarOFX, setMostrarImportarOFX] = useState(false);
 
     const abrirModalNovo = (tipo) => {
         setLancamentoParaEditar(null);
@@ -181,12 +183,20 @@ export default function FinanceiroMain({
                 </div>
             </div>
 
-            <div className="flex gap-4">
-                <button onClick={() => abrirModalNovo('ENTRADA')} className="bg-emerald-500 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-emerald-600 transition-all">
-                    + Novo Depósito
-                </button>
-                <button onClick={() => abrirModalNovo('SAIDA')} className="bg-red-500 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-red-600 transition-all">
-                    - Novo Saque
+            <div className="flex flex-wrap gap-4 items-center">
+                <div className="flex gap-4">
+                    <button onClick={() => abrirModalNovo('ENTRADA')} className="bg-emerald-500 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-emerald-600 transition-all flex items-center gap-2">
+                        <span>+</span> Novo Depósito
+                    </button>
+                    <button onClick={() => abrirModalNovo('SAIDA')} className="bg-red-500 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-red-600 transition-all flex items-center gap-2">
+                        <span>-</span> Novo Saque
+                    </button>
+                </div>
+                <button 
+                    onClick={() => setMostrarImportarOFX(true)}
+                    className="bg-slate-800 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:scale-105 transition-all flex items-center gap-2"
+                >
+                    <span>🏦</span> Importar Extrato (OFX)
                 </button>
             </div>
 
@@ -256,6 +266,14 @@ export default function FinanceiroMain({
                     onSave={handleSave}
                 />
             )}
+
+            <ImportarOFXModal 
+                isOpen={mostrarImportarOFX}
+                onClose={() => setMostrarImportarOFX(false)}
+                onSuccess={atualizarTransacoes}
+                categoriasEntrada={categoriasEntrada}
+                categoriasSaida={categoriasSaida}
+            />
         </div>
     );
 }
