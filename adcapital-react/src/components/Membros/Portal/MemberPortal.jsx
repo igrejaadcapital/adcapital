@@ -8,13 +8,18 @@ export default function MemberPortal() {
   const [editando, setEditando] = useState(false);
   const [formData, setFormData] = useState({});
   const [mensagem, setMensagem] = useState(null);
+  const [opcoesFuncao, setOpcoesFuncao] = useState([]);
 
   const carregarDados = async () => {
     setLoading(true);
     try {
-      const res = await api.get('/membros/meus-dados/');
+      const [res, resFuncoes] = await Promise.all([
+        api.get('/membros/meus-dados/'),
+        api.get('/membros/funcoes/')
+      ]);
       setDados(res.data);
       setFormData(res.data);
+      setOpcoesFuncao(resFuncoes.data);
     } catch (err) {
       const msg = err.response?.data?.error || 'Erro ao carregar dados.';
       setMensagem({ type: 'error', text: msg });
@@ -59,7 +64,7 @@ export default function MemberPortal() {
   return (
     <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in duration-500">
       <div className="bg-blue-900 rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden">
-        <h1 className="text-3xl font-black italic">Olá, {dados.nome.split(' ')[0]}! 👋</h1>
+        <h1 className="text-3xl font-black italic">Olá, {dados.nome}! 👋</h1>
         <p className="text-blue-200">Bem-vindo ao seu portal de membro.</p>
       </div>
 
@@ -152,6 +157,21 @@ export default function MemberPortal() {
           {/* Dados Eclesiásticos */}
           <div className="md:col-span-2 pt-4 border-t border-slate-50">
             <h4 className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] mb-4">Informações Eclesiásticas</h4>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Função na Igreja</label>
+            <select 
+              className="w-full p-3 bg-slate-50 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500/10" 
+              value={formData.funcao || ''} 
+              disabled={!editando}
+              onChange={e => setFormData({...formData, funcao: e.target.value})}
+            >
+              <option value="">Selecione...</option>
+              {opcoesFuncao.map(f => (
+                <option key={f.id} value={f.nome}>{f.nome}</option>
+              ))}
+            </select>
           </div>
 
           <div className="space-y-1">
@@ -317,9 +337,6 @@ export default function MemberPortal() {
         <div>
           <h4 className="font-black text-emerald-800 tracking-tight">Status de Membro</h4>
           <p className="text-emerald-600 text-sm font-medium">{dados.status === 'LIGADO' ? '✅ Você está com cadastro ativo e regular.' : '⚠️ Cadastro em revisão.'}</p>
-        </div>
-        <div className="bg-white p-3 rounded-2xl shadow-sm text-emerald-700 font-black text-xs uppercase tracking-widest">
-          {dados.funcao || 'Membro'}
         </div>
       </div>
     </div>
