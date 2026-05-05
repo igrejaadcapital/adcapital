@@ -44,7 +44,7 @@ urlpatterns = [
     path('funcoes/', adicionar_funcao, name='adicionar-funcao-admin'),
     path('funcoes/<int:pk>/', excluir_funcao, name='excluir-funcao-admin'),
     path('membros/<int:pk>/download-lgpd/', download_termo_lgpd, name='download-lgpd'),
-    path('', include(router.urls)),
-    path('meus-dados/', MeusDadosView.as_view(), name='meus-dados'),
+    
+    path('membros/meus-dados/', MeusDadosView.as_view(), name='meus-dados'),
     path('', include(router.urls)),
 ]
