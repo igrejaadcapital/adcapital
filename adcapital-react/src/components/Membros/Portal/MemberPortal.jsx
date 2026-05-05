@@ -16,6 +16,8 @@ export default function MemberPortal() {
       setDados(res.data);
       setFormData(res.data);
     } catch (err) {
+      const msg = err.response?.data?.error || 'Erro ao carregar dados.';
+      setMensagem({ type: 'error', text: msg });
       console.error(err);
     } finally {
       setLoading(false);
@@ -42,7 +44,17 @@ export default function MemberPortal() {
   };
 
   if (loading && !dados) return <StatusView loading={true} />;
-  if (!dados) return <div className="p-8 text-center">Nenhum dado de membro vinculado a este usuário.</div>;
+  if (!dados) return (
+    <div className="p-8 text-center space-y-4">
+      <div className="text-slate-400 font-bold">Nenhum dado de membro vinculado a este usuário.</div>
+      {mensagem && (
+        <div className="text-xs text-rose-500 bg-rose-50 p-3 rounded-xl inline-block border border-rose-100">
+          Detalhe: {mensagem.text}
+        </div>
+      )}
+      <button onClick={() => window.location.reload()} className="block mx-auto text-xs font-black text-blue-600 uppercase">Tentar Novamente</button>
+    </div>
+  );
 
   return (
     <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in duration-500">
@@ -135,7 +147,7 @@ export default function MemberPortal() {
           <p className="text-emerald-600 text-sm font-medium">{dados.status === 'LIGADO' ? '✅ Você está com cadastro ativo e regular.' : '⚠️ Cadastro em revisão.'}</p>
         </div>
         <div className="bg-white p-3 rounded-2xl shadow-sm text-emerald-700 font-black text-xs uppercase tracking-widest">
-          {dados.funcao_nome || 'Membro'}
+          {dados.funcao || 'Membro'}
         </div>
       </div>
     </div>

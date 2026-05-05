@@ -1,503 +1,1007 @@
-# -*- coding: utf-8 -*-
-import threading
-import json
-import traceback
-import urllib.request
-import xml.etree.ElementTree as ET
-from django.core.mail import EmailMessage
-from django.conf import settings
-from django.core.files.base import ContentFile
-from django.core.cache import cache
-from rest_framework.decorators import api_view, permission_classes, authentication_classes
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework import viewsets
-from rest_framework.views import APIView
-from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from .utils import gerar_termo_lgpd_pdf, enviar_email_resend_api
-from .models import Membro, Parentesco, Funcao, ConfiguracaoPortal, ConfiguracaoSite, FotoGaleria
-from .serializers import MembroSerializer, ConfiguracaoPortalSerializer, ConfiguracaoSiteSerializer, FotoGaleriaSerializer
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
-
-class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    @classmethod
-    def get_token(cls, user):
-        token = super().get_token(user)
-        token['username'] = user.username
-        token['role'] = user.perfil.role if hasattr(user, 'perfil') else 'MEMBRO'
-        token['nome'] = user.get_full_name() or user.username
-        return token
-
-    def validate(self, attrs):
-        data = super().validate(attrs)
-        data['role'] = self.user.perfil.role if hasattr(self.user, 'perfil') else 'MEMBRO'
-        data['nome'] = self.user.get_full_name() or self.user.username
-        return data
-
-class CustomTokenObtainPairView(TokenObtainPairView):
-    serializer_class = CustomTokenObtainPairSerializer
-
-@api_view(['GET'])
-@permission_classes([AllowAny])
-@authentication_classes([])
-def ultimo_video_youtube(request):
-    """Retorna o íºltimo ví­deo do canal YouTube via RSS (sem API key). Cache de 1 hora."""
-    cache_key = 'yt_ultimo_video'
-    cached = cache.get(cache_key)
-    if cached:
-        return Response(cached)
-
-    try:
-        config = ConfiguracaoSite.objects.filter(id=1).first()
-        channel_id = config.youtube_channel_id if config else None
-        if not channel_id:
-            return Response({'error': 'Canal YouTube ní£o configurado.'}, status=404)
-
-        rss_url = f'https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}'
-        req = urllib.request.Request(rss_url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            xml_data = resp.read()
-
-        ns = {
-            'atom': 'http://www.w3.org/2005/Atom',
-            'media': 'http://search.yahoo.com/mrss/',
-            'yt': 'http://www.youtube.com/xml/schemas/2015'
-        }
-        root = ET.fromstring(xml_data)
-        entry = root.find('atom:entry', ns)
-        if entry is None:
-            return Response({'error': 'Nenhum ví­deo encontrado.'}, status=404)
-
-        video_id = entry.find('yt:videoId', ns).text
-        title = entry.find('atom:title', ns).text
-        published = entry.find('atom:published', ns).text
-        thumbnail = f'https://i.ytimg.com/vi/{video_id}/hqdefault.jpg'
-
-        data = {
-            'video_id': video_id,
-            'title': title,
-            'published': published,
-            'thumbnail': thumbnail,
-            'embed_url': f'https://www.youtube.com/embed/{video_id}',
-            'live_embed_url': f'https://www.youtube.com/embed/live?channel={channel_id}',
-            'watch_url': f'https://www.youtube.com/watch?v={video_id}',
-        }
-        cache.set(cache_key, data, 3600)  # Cache por 1 hora
-        return Response(data)
-    except Exception as e:
-        return Response({'error': str(e)}, status=500)
-
-
-
-@api_view(['GET'])
-@permission_classes([AllowAny])
-@authentication_classes([])
-def buscar_opcoes_funcao(request):
-    """Retorna a lista diní¢mica de funções da tabela Funcao"""
-    try:
-        funcoes = Funcao.objects.all().order_by('nome')
-        opcoes = [{'id': f.id, 'nome': f.nome} for f in funcoes]
-        return Response(opcoes)
-    except Exception:
-        return Response([{'id': 1, 'nome': 'Membro'}])
-
-@api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
-def excluir_funcao(request, pk):
-    """Exclui uma função pelo ID (Apenas Admin)"""
-    try:
-        funcao = Funcao.objects.get(pk=pk)
-        funcao.delete()
-        return Response({'success': True})
-    except Exception as e:
-        return Response({'error': str(e)}, status=400)
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def adicionar_funcao(request):
-    """Cria uma nova função manualmente (Apenas Admin)"""
-    try:
-        nome = request.data.get('nome')
-        if not nome or not str(nome).strip():
-            return Response({'error': 'Nome é obrigatí³rio'}, status=400)
-        
-        # Limpa o nome para evitar espaí§os extras e padroniza
-        nome_limpo = str(nome).strip().upper()
-        
-        funcao, created = Funcao.objects.get_or_create(nome=nome_limpo)
-        return Response({
-            'id': funcao.id, 
-            'nome': funcao.nome, 
-            'created': created,
-            'success': True
-        }, status=201)
-    except Exception as e:
-        # Se der erro 500, agora retornamos o motivo real em vez de uma página HTML genérica
-        print(f"ERRO AO ADICIONAR FUNCAO: {str(e)}")
-        return Response({
-            'error': f"Erro no servidor: {str(e)}",
-            'detail': "Verifique se a tabela de funções existe no banco de dados."
-        }, status=500)
-
-@api_view(['GET'])
-@permission_classes([AllowAny])
-@authentication_classes([])
-def buscar_opcoes_parentesco(request):
-    """Retorna a lista diní¢mica de graus de parentesco extraí­da do models"""
-    opcoes = [{'id': f[0], 'nome': f[1]} for f in Parentesco.GRAU_CHOICES]
-    return Response(opcoes)
-
-@api_view(['GET'])
-@permission_classes([AllowAny])
-@authentication_classes([])
-def buscar_configuracao_publica(request):
-    """Retorna apenas o status e a pergunta do portal para o píºblico"""
-    # Usamos filter(id=1).first() para evitar escrita desnecessária e deadlock
-    config = ConfiguracaoPortal.objects.filter(id=1).first()
-    if not config:
-        # Fallback em memí³ria se o registro sumir
-        return Response({
-            "is_ativo": True,
-            "pergunta": "Qual o seu melhor amigo?"
-        })
-    return Response({
-        "is_ativo": config.is_ativo,
-        "pergunta": config.pergunta
-    })
-
-@api_view(['POST'])
-@permission_classes([AllowAny])
-@authentication_classes([])
-def verificar_resposta_portal(request):
-    """Verifica se a resposta do membro está correta para liberar o formulário"""
-    resposta_user = request.data.get('resposta', '').strip().lower()
-    config = ConfiguracaoPortal.objects.filter(id=1).first()
-    
-    # Se por algum motivo a resposta no banco estiver vazia ou objeto inexistente, usamos o padrí£o "Jesus"
-    resposta_correta = (config.resposta if config else "Jesus").strip().lower()
-    is_ativo = config.is_ativo if config else True
-
-    if not is_ativo:
-        return Response({"error": "O portal de cadastro está desativado no momento."}, status=403)
-        
-    if resposta_user == resposta_correta:
-        return Response({"success": True})
-    return Response({"success": False, "error": "Resposta incorreta. Dica: Tente 'Jesus'."}, status=401)
-
-class ConfiguracaoPortalViewSet(viewsets.ModelViewSet):
-    """Gerenciamento da configuração pelo Admin (id fixo = 1)"""
-    queryset = ConfiguracaoPortal.objects.all()
-    serializer_class = ConfiguracaoPortalSerializer
-    permission_classes = [IsAuthenticated]
-
-    def list(self, request, *args, **kwargs):
-        config = ConfiguracaoPortal.objects.filter(id=1).first()
-        if not config:
-            config, _ = ConfiguracaoPortal.objects.get_or_create(id=1)
-        serializer = self.get_serializer(config)
-        return Response(serializer.data)
-
-    def update(self, request, *args, **kwargs):
-        config, _ = ConfiguracaoPortal.objects.get_or_create(id=1)
-        serializer = self.get_serializer(config, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
-
-class ConfiguracaoSiteViewSet(viewsets.ModelViewSet):
-    """Gestí£o da configuração do site institucional (id fixo = 1)"""
-    queryset = ConfiguracaoSite.objects.all()
-    serializer_class = ConfiguracaoSiteSerializer
-    
-    def get_permissions(self):
-        if self.action in ['list', 'retrieve']:
-            return [AllowAny()]
-        return [IsAuthenticated()]
-
-    def list(self, request, *args, **kwargs):
-        config = ConfiguracaoSite.objects.filter(id=1).first()
-        if not config:
-             config, _ = ConfiguracaoSite.objects.get_or_create(id=1)
-        serializer = self.get_serializer(config)
-        return Response(serializer.data)
-
-    def update(self, request, *args, **kwargs):
-        config, _ = ConfiguracaoSite.objects.get_or_create(id=1)
-        serializer = self.get_serializer(config, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
-
-class FotoGaleriaViewSet(viewsets.ModelViewSet):
-    """Gestí£o da galeria de fotos do site"""
-    queryset = FotoGaleria.objects.all().order_by('ordem', '-criado_em')
-    serializer_class = FotoGaleriaSerializer
-    
-    def get_permissions(self):
-        if self.action in ['list', 'retrieve']:
-            return [AllowAny()]
-        return [IsAuthenticated()]
-
-class MembroViewSet(viewsets.ModelViewSet):
-    """CRUD administrativo completo para Membros"""
-    queryset = Membro.objects.all()
-    serializer_class = MembroSerializer
-    permission_classes = [IsAuthenticated]
-
-    def perform_create(self, serializer):
-        self._salvar_com_parentescos(serializer)
-
-    def perform_update(self, serializer):
-        self._salvar_com_parentescos(serializer)
-
-    def _salvar_com_parentescos(self, serializer):
-        membro = serializer.save()
-        
-        # Se um documento LGPD foi enviado pelo admin, atualiza o status de consentimento
-        try:
-            if 'lgpd_documento' in self.request.data and self.request.data['lgpd_documento']:
-                 membro.lgpd_consentido = True
-                 if not membro.lgpd_data_aceite:
-                      from django.utils import timezone
-                      membro.lgpd_data_aceite = timezone.now()
-                 membro.save()
-        except Exception as e:
-            print(f"Aviso: Erro ao salvar status LGPD no Admin: {e}")
-
-        parentescos_data = self.request.data.get('parentescos_novo', [])
-        
-        # Se vier de um FormData como string JSON
-        if isinstance(parentescos_data, str):
-            try:
-                parentescos_data = json.loads(parentescos_data)
-            except:
-                parentescos_data = []
-        
-        if self.action in ['update', 'partial_update']:
-            Parentesco.objects.filter(membro_origem=membro).delete()
-
-        for item in parentescos_data:
-            p_id = item.get('parente_id') or item.get('membro_destino')
-            grau = item.get('grau')
-            if p_id and grau and str(p_id) != str(membro.id):
-                Parentesco.objects.get_or_create(
-                    membro_origem=membro,
-                    membro_destino_id=p_id,
-                    defaults={'grau': grau}
-                )
-
-def _executar_tarefas_pos_cadastro(membro_id, parentescos_data):
-    """
-    Executa tarefas pesadas em background. 
-    Prioriza o E-mail e captura os bytes do PDF imediatamente para evitar erros de arquivo fechado.
-    """
-    try:
-        from .models import Membro, Parentesco
-        membro = Membro.objects.get(id=membro_id)
-
-        # 1. Geração de PDF e Captura Imediata de Bytes
-        print(f"--- [BG-THREAD] Iniciando processamento para {membro.nome} ---")
-        nome_arquivo, pdf_file = gerar_termo_lgpd_pdf(membro)
-        pdf_bytes = pdf_file.read()
-        print(f"--- [BG-THREAD] PDF Gerado ({len(pdf_bytes)} bytes)")
-
-        # 2. Envio de E-mail via Resend API (Bypass SMTP Block)
-        if membro.email:
-            print(f"--- [BG-THREAD] Usando Resend API para {membro.email}...")
-            sucesso = enviar_email_resend_api(
-                to=membro.email,
-                subject='Bem-vindo! Seu Termo de Ciíªncia e Aceite (LGPD)',
-                body=f'Olá {membro.nome},\n\ní com alegria que confirmamos o seu cadastro no portal da Igreja Assembleia de Deus Ministério na Capital.\n\nPara finalizarmos o processo administrativo, enviamos em anexo o Termo de Consentimento de Dados Pessoais (LGPD). Pedimos a gentileza de assinar o documento anexo e nos enviar uma cí³pia (digitalizada ou foto legí­vel). Vocíª pode responder diretamente a esta mensagem ou enviá-la para igrejaadcapital@gmail.com.\n\nFraternalmente,\nEquipe AD Capital',
-                filename=nome_arquivo,
-                file_content=pdf_bytes
-            )
-            if sucesso:
-                print("--- [BG-THREAD] E-mail enviado com sucesso via Resend.")
-            else:
-                print("--- [BG-THREAD] AVISO: Falha no envio via Resend. Verifique logs acima.")
-
-        # 3. Salvamento do PDF ní£o assinado no Cloudinary (para o membro baixar)
-        print(f"--- [BG-THREAD] Salvando PDF no Cloudinary...")
-        membro.lgpd_documento.save(nome_arquivo, ContentFile(pdf_bytes), save=True)
-        # NíO marca lgpd_consentido - o status permanece PENDENTE até o admin fazer upload do documento assinado
-        print(f"--- [BG-THREAD] PDF salvo no Cloudinary. Status: PENDENTE (aguardando assinatura fí­sica)")
-
-        # 4. Lí³gica de Parentesco
-        if parentescos_data:
-            print("--- [BG-THREAD] Processando parentescos...")
-            for item in parentescos_data:
-                p_id = item.get('parente_id') or item.get('membro_destino')
-                grau = item.get('grau')
-                if p_id and grau and str(p_id) != str(membro.id):
-                    if Membro.objects.filter(id=p_id).exists():
-                        Parentesco.objects.get_or_create(
-                            membro_origem=membro,
-                            membro_destino_id=p_id,
-                            defaults={'grau': grau}
-                        )
-            print("--- [BG-THREAD] Parentescos processados.")
-
-    except Exception:
-        print("--- [BG-THREAD] ERRO CRíTICO EM TAREFAS DE BACKGROUND ---")
-        traceback.print_exc()
-    finally:
-        from django.db import connection
-        try:
-            connection.close()
-            print("--- [BG-THREAD] Conexí£o com banco fechada.")
-        except:
-            pass
-
-class AutoCadastroMembroView(APIView):
-    """
-    Endpoint para auto-cadastro de membros.
-    Permite criar ou editar (se CPF já existir e resposta estiver correta).
-    """
-    permission_classes = [AllowAny]
-    authentication_classes = [] # Desativa autenticação para o portal píºblico
-    parser_classes = [MultiPartParser, FormParser, JSONParser] # Suporte a diversos formatos de dados
-
-    def post(self, request):
-        print("--- [DEBUG] Iniciando AutoCadastroMembroView.post ---")
-        try:
-            config = ConfiguracaoPortal.objects.filter(id=1).first()
-            is_ativo = config.is_ativo if config else True
-            if not is_ativo:
-                return Response({"error": "Portal desativado"}, status=403)
-
-            resposta_user = request.data.get('sync_resposta', '').strip().lower()
-            resposta_correta = (config.resposta if config else "Jesus").strip().lower()
-
-            if resposta_user != resposta_correta:
-                 return Response({"error": "Acesso negado: Resposta incorreta."}, status=401)
-
-            cpf_original = request.data.get('cpf')
-            if not cpf_original:
-                return Response({"error": "CPF é obrigatí³rio"}, status=400)
-
-            cpf_limpo = "".join(filter(str.isdigit, cpf_original))
-            membro_existente = Membro.objects.filter(cpf=cpf_limpo).first()
-            
-            if membro_existente:
-                serializer = MembroSerializer(membro_existente, data=request.data, partial=True)
-            else:
-                serializer = MembroSerializer(data=request.data)
-
-            if serializer.is_valid():
-                # SALVAMENTO IMEDIATO DO DISCO/INFOS BíSICAS
-                membro = serializer.save()
-                
-                # Dados de parentesco
-                parentescos_raw = request.data.get('parentescos_novo', [])
-                if isinstance(parentescos_raw, str) and parentescos_raw:
-                    try:
-                        parentescos_data = json.loads(parentescos_raw)
-                    except:
-                        parentescos_data = []
-                else:
-                    parentescos_data = parentescos_raw
-
-                # DISPARA TAREFAS PESADAS EM THREAD SEPARADA
-                print(f"--- [DEBUG] Disparando tarefas de background para membro {membro.id} ---")
-                thread = threading.Thread(
-                    target=_executar_tarefas_pos_cadastro,
-                    args=(membro.id, parentescos_data)
-                )
-                thread.start()
-
-                return Response({
-                    "success": True, 
-                    "message": "Cadastro recebido! O processamento do seu termo LGPD está sendo finalizado em segundo plano.",
-                    "id": membro.id,
-                    "is_update": membro_existente is not None
-                })
-            
-            return Response(serializer.errors, status=400)
-        
-        except Exception as e:
-            print(f"--- [DEBUG] !!! ERRO CRíTICO !!!: {str(e)}")
-            return Response({
-                "error": "Erro interno no servidor.",
-                "detail": str(e)
-            }, status=500)
-
-@api_view(['GET'])
-@permission_classes([AllowAny])
-@authentication_classes([])
-def run_migrations_debug(request):
-    """View temporária para forí§ar migrações e ver o log no navegador"""
-    from django.core.management import call_command
-    from io import StringIO
-    out = StringIO()
-    print("--- [DEBUG] Rodando migrações manualmente via endpoint ---")
-    try:
-        call_command('migrate', stdout=out, stderr=out)
-        result = out.getvalue()
-        return Response({"success": True, "output": result})
-    except Exception as e:
-        import traceback
-        return Response({
-            "success": False, 
-            "error": str(e), 
-            "traceback": traceback.format_exc(),
-            "output": out.getvalue()
-        }, status=500)
-
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def download_termo_lgpd(request, pk):
-    """Endpoint para baixar o termo de LGPD via API usando o Cloudinary"""
-    try:
-        from django.shortcuts import redirect
-        membro = Membro.objects.get(pk=pk)
-        if not membro.lgpd_documento:
-             return Response({"error": "Termo ní£o encontrado para este membro."}, status=404)
-        
-        # Como estamos usando Cloudinary, retornamos a URL direta para download
-        return redirect(membro.lgpd_documento.url)
-    except Membro.DoesNotExist:
-        return Response({"error": "Membro ní£o encontrado."}, status=404)
-
-@api_view(['GET'])
-@permission_classes([AllowAny])
-@authentication_classes([])
-def buscar_membros_autocomplete_publico(request):
-    """
-    Busca de membros para ví­nculo familiar no cadastro píºblico.
-    Exige no mí­nimo 3 caracteres para ní£o vazar a lista completa de membros.
-    Retorna apenas ID e Nome (limite de 10).
-    """
-    query = request.GET.get('q', '').strip()
-    if len(query) < 3:
-        return Response([])
-    
-    membros = Membro.objects.filter(nome__icontains=query).order_by('nome')[:10]
-    opcoes = [{'id': m.id, 'nome': m.nome} for m in membros]
-    return Response(opcoes)
-
-class MeusDadosView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        perfil = getattr(request.user, 'perfil', None)
-        if not perfil or not perfil.membro:
-            return Response({'error': 'Perfil de membro não encontrado.'}, status=404)
-        
-        serializer = MembroSerializer(perfil.membro)
-        return Response(serializer.data)
-
-    def patch(self, request):
-        perfil = getattr(request.user, 'perfil', None)
-        if not perfil or not perfil.membro:
-            return Response({'error': 'Perfil de membro não encontrado.'}, status=404)
-        
-        # Permitir apenas alguns campos (Endereço, Telefone, Email)
-        campos_permitidos = ['telefone', 'email', 'logradouro', 'numero', 'complemento', 'bairro', 'cidade', 'uf', 'cep']
-        data = {k: v for k, v in request.data.items() if k in campos_permitidos}
-        
-        serializer = MembroSerializer(perfil.membro, data=data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=400)
+# -*- coding: utf-8 -*-
+
+import threading
+
+import json
+
+import traceback
+
+import urllib.request
+
+import xml.etree.ElementTree as ET
+
+from django.core.mail import EmailMessage
+
+from django.conf import settings
+
+from django.core.files.base import ContentFile
+
+from django.core.cache import cache
+
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+
+from rest_framework.response import Response
+
+from rest_framework.permissions import AllowAny, IsAuthenticated
+
+from rest_framework import viewsets
+
+from rest_framework.views import APIView
+
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+
+from .utils import gerar_termo_lgpd_pdf, enviar_email_resend_api
+
+from .models import Membro, Parentesco, Funcao, ConfiguracaoPortal, ConfiguracaoSite, FotoGaleria
+
+from .serializers import MembroSerializer, ConfiguracaoPortalSerializer, ConfiguracaoSiteSerializer, FotoGaleriaSerializer
+
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+
+    @classmethod
+
+    def get_token(cls, user):
+
+        token = super().get_token(user)
+
+        token['username'] = user.username
+
+        token['role'] = user.perfil.role if hasattr(user, 'perfil') else 'MEMBRO'
+
+        token['nome'] = user.get_full_name() or user.username
+
+        return token
+
+
+
+    def validate(self, attrs):
+
+        data = super().validate(attrs)
+
+        data['role'] = self.user.perfil.role if hasattr(self.user, 'perfil') else 'MEMBRO'
+
+        data['nome'] = self.user.get_full_name() or self.user.username
+
+        return data
+
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+
+    serializer_class = CustomTokenObtainPairSerializer
+
+
+
+@api_view(['GET'])
+
+@permission_classes([AllowAny])
+
+@authentication_classes([])
+
+def ultimo_video_youtube(request):
+
+    """Retorna o íºltimo ví­deo do canal YouTube via RSS (sem API key). Cache de 1 hora."""
+
+    cache_key = 'yt_ultimo_video'
+
+    cached = cache.get(cache_key)
+
+    if cached:
+
+        return Response(cached)
+
+
+
+    try:
+
+        config = ConfiguracaoSite.objects.filter(id=1).first()
+
+        channel_id = config.youtube_channel_id if config else None
+
+        if not channel_id:
+
+            return Response({'error': 'Canal YouTube ní£o configurado.'}, status=404)
+
+
+
+        rss_url = f'https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}'
+
+        req = urllib.request.Request(rss_url, headers={'User-Agent': 'Mozilla/5.0'})
+
+        with urllib.request.urlopen(req, timeout=10) as resp:
+
+            xml_data = resp.read()
+
+
+
+        ns = {
+
+            'atom': 'http://www.w3.org/2005/Atom',
+
+            'media': 'http://search.yahoo.com/mrss/',
+
+            'yt': 'http://www.youtube.com/xml/schemas/2015'
+
+        }
+
+        root = ET.fromstring(xml_data)
+
+        entry = root.find('atom:entry', ns)
+
+        if entry is None:
+
+            return Response({'error': 'Nenhum ví­deo encontrado.'}, status=404)
+
+
+
+        video_id = entry.find('yt:videoId', ns).text
+
+        title = entry.find('atom:title', ns).text
+
+        published = entry.find('atom:published', ns).text
+
+        thumbnail = f'https://i.ytimg.com/vi/{video_id}/hqdefault.jpg'
+
+
+
+        data = {
+
+            'video_id': video_id,
+
+            'title': title,
+
+            'published': published,
+
+            'thumbnail': thumbnail,
+
+            'embed_url': f'https://www.youtube.com/embed/{video_id}',
+
+            'live_embed_url': f'https://www.youtube.com/embed/live?channel={channel_id}',
+
+            'watch_url': f'https://www.youtube.com/watch?v={video_id}',
+
+        }
+
+        cache.set(cache_key, data, 3600)  # Cache por 1 hora
+
+        return Response(data)
+
+    except Exception as e:
+
+        return Response({'error': str(e)}, status=500)
+
+
+
+
+
+
+
+@api_view(['GET'])
+
+@permission_classes([AllowAny])
+
+@authentication_classes([])
+
+def buscar_opcoes_funcao(request):
+
+    """Retorna a lista diní¢mica de funções da tabela Funcao"""
+
+    try:
+
+        funcoes = Funcao.objects.all().order_by('nome')
+
+        opcoes = [{'id': f.id, 'nome': f.nome} for f in funcoes]
+
+        return Response(opcoes)
+
+    except Exception:
+
+        return Response([{'id': 1, 'nome': 'Membro'}])
+
+
+
+@api_view(['DELETE'])
+
+@permission_classes([IsAuthenticated])
+
+def excluir_funcao(request, pk):
+
+    """Exclui uma função pelo ID (Apenas Admin)"""
+
+    try:
+
+        funcao = Funcao.objects.get(pk=pk)
+
+        funcao.delete()
+
+        return Response({'success': True})
+
+    except Exception as e:
+
+        return Response({'error': str(e)}, status=400)
+
+
+
+@api_view(['POST'])
+
+@permission_classes([IsAuthenticated])
+
+def adicionar_funcao(request):
+
+    """Cria uma nova função manualmente (Apenas Admin)"""
+
+    try:
+
+        nome = request.data.get('nome')
+
+        if not nome or not str(nome).strip():
+
+            return Response({'error': 'Nome é obrigatí³rio'}, status=400)
+
+        
+
+        # Limpa o nome para evitar espaí§os extras e padroniza
+
+        nome_limpo = str(nome).strip().upper()
+
+        
+
+        funcao, created = Funcao.objects.get_or_create(nome=nome_limpo)
+
+        return Response({
+
+            'id': funcao.id, 
+
+            'nome': funcao.nome, 
+
+            'created': created,
+
+            'success': True
+
+        }, status=201)
+
+    except Exception as e:
+
+        # Se der erro 500, agora retornamos o motivo real em vez de uma página HTML genérica
+
+        print(f"ERRO AO ADICIONAR FUNCAO: {str(e)}")
+
+        return Response({
+
+            'error': f"Erro no servidor: {str(e)}",
+
+            'detail': "Verifique se a tabela de funções existe no banco de dados."
+
+        }, status=500)
+
+
+
+@api_view(['GET'])
+
+@permission_classes([AllowAny])
+
+@authentication_classes([])
+
+def buscar_opcoes_parentesco(request):
+
+    """Retorna a lista diní¢mica de graus de parentesco extraí­da do models"""
+
+    opcoes = [{'id': f[0], 'nome': f[1]} for f in Parentesco.GRAU_CHOICES]
+
+    return Response(opcoes)
+
+
+
+@api_view(['GET'])
+
+@permission_classes([AllowAny])
+
+@authentication_classes([])
+
+def buscar_configuracao_publica(request):
+
+    """Retorna apenas o status e a pergunta do portal para o píºblico"""
+
+    # Usamos filter(id=1).first() para evitar escrita desnecessária e deadlock
+
+    config = ConfiguracaoPortal.objects.filter(id=1).first()
+
+    if not config:
+
+        # Fallback em memí³ria se o registro sumir
+
+        return Response({
+
+            "is_ativo": True,
+
+            "pergunta": "Qual o seu melhor amigo?"
+
+        })
+
+    return Response({
+
+        "is_ativo": config.is_ativo,
+
+        "pergunta": config.pergunta
+
+    })
+
+
+
+@api_view(['POST'])
+
+@permission_classes([AllowAny])
+
+@authentication_classes([])
+
+def verificar_resposta_portal(request):
+
+    """Verifica se a resposta do membro está correta para liberar o formulário"""
+
+    resposta_user = request.data.get('resposta', '').strip().lower()
+
+    config = ConfiguracaoPortal.objects.filter(id=1).first()
+
+    
+
+    # Se por algum motivo a resposta no banco estiver vazia ou objeto inexistente, usamos o padrí£o "Jesus"
+
+    resposta_correta = (config.resposta if config else "Jesus").strip().lower()
+
+    is_ativo = config.is_ativo if config else True
+
+
+
+    if not is_ativo:
+
+        return Response({"error": "O portal de cadastro está desativado no momento."}, status=403)
+
+        
+
+    if resposta_user == resposta_correta:
+
+        return Response({"success": True})
+
+    return Response({"success": False, "error": "Resposta incorreta. Dica: Tente 'Jesus'."}, status=401)
+
+
+
+class ConfiguracaoPortalViewSet(viewsets.ModelViewSet):
+
+    """Gerenciamento da configuração pelo Admin (id fixo = 1)"""
+
+    queryset = ConfiguracaoPortal.objects.all()
+
+    serializer_class = ConfiguracaoPortalSerializer
+
+    permission_classes = [IsAuthenticated]
+
+
+
+    def list(self, request, *args, **kwargs):
+
+        config = ConfiguracaoPortal.objects.filter(id=1).first()
+
+        if not config:
+
+            config, _ = ConfiguracaoPortal.objects.get_or_create(id=1)
+
+        serializer = self.get_serializer(config)
+
+        return Response(serializer.data)
+
+
+
+    def update(self, request, *args, **kwargs):
+
+        config, _ = ConfiguracaoPortal.objects.get_or_create(id=1)
+
+        serializer = self.get_serializer(config, data=request.data, partial=True)
+
+        serializer.is_valid(raise_exception=True)
+
+        serializer.save()
+
+        return Response(serializer.data)
+
+
+
+class ConfiguracaoSiteViewSet(viewsets.ModelViewSet):
+
+    """Gestí£o da configuração do site institucional (id fixo = 1)"""
+
+    queryset = ConfiguracaoSite.objects.all()
+
+    serializer_class = ConfiguracaoSiteSerializer
+
+    
+
+    def get_permissions(self):
+
+        if self.action in ['list', 'retrieve']:
+
+            return [AllowAny()]
+
+        return [IsAuthenticated()]
+
+
+
+    def list(self, request, *args, **kwargs):
+
+        config = ConfiguracaoSite.objects.filter(id=1).first()
+
+        if not config:
+
+             config, _ = ConfiguracaoSite.objects.get_or_create(id=1)
+
+        serializer = self.get_serializer(config)
+
+        return Response(serializer.data)
+
+
+
+    def update(self, request, *args, **kwargs):
+
+        config, _ = ConfiguracaoSite.objects.get_or_create(id=1)
+
+        serializer = self.get_serializer(config, data=request.data, partial=True)
+
+        serializer.is_valid(raise_exception=True)
+
+        serializer.save()
+
+        return Response(serializer.data)
+
+
+
+class FotoGaleriaViewSet(viewsets.ModelViewSet):
+
+    """Gestí£o da galeria de fotos do site"""
+
+    queryset = FotoGaleria.objects.all().order_by('ordem', '-criado_em')
+
+    serializer_class = FotoGaleriaSerializer
+
+    
+
+    def get_permissions(self):
+
+        if self.action in ['list', 'retrieve']:
+
+            return [AllowAny()]
+
+        return [IsAuthenticated()]
+
+
+
+class MembroViewSet(viewsets.ModelViewSet):
+
+    """CRUD administrativo completo para Membros"""
+
+    queryset = Membro.objects.all()
+
+    serializer_class = MembroSerializer
+
+    permission_classes = [IsAuthenticated]
+
+
+
+    def perform_create(self, serializer):
+
+        self._salvar_com_parentescos(serializer)
+
+
+
+    def perform_update(self, serializer):
+
+        self._salvar_com_parentescos(serializer)
+
+
+
+    def _salvar_com_parentescos(self, serializer):
+
+        membro = serializer.save()
+
+        
+
+        # Se um documento LGPD foi enviado pelo admin, atualiza o status de consentimento
+
+        try:
+
+            if 'lgpd_documento' in self.request.data and self.request.data['lgpd_documento']:
+
+                 membro.lgpd_consentido = True
+
+                 if not membro.lgpd_data_aceite:
+
+                      from django.utils import timezone
+
+                      membro.lgpd_data_aceite = timezone.now()
+
+                 membro.save()
+
+        except Exception as e:
+
+            print(f"Aviso: Erro ao salvar status LGPD no Admin: {e}")
+
+
+
+        parentescos_data = self.request.data.get('parentescos_novo', [])
+
+        
+
+        # Se vier de um FormData como string JSON
+
+        if isinstance(parentescos_data, str):
+
+            try:
+
+                parentescos_data = json.loads(parentescos_data)
+
+            except:
+
+                parentescos_data = []
+
+        
+
+        if self.action in ['update', 'partial_update']:
+
+            Parentesco.objects.filter(membro_origem=membro).delete()
+
+
+
+        for item in parentescos_data:
+
+            p_id = item.get('parente_id') or item.get('membro_destino')
+
+            grau = item.get('grau')
+
+            if p_id and grau and str(p_id) != str(membro.id):
+
+                Parentesco.objects.get_or_create(
+
+                    membro_origem=membro,
+
+                    membro_destino_id=p_id,
+
+                    defaults={'grau': grau}
+
+                )
+
+
+
+def _executar_tarefas_pos_cadastro(membro_id, parentescos_data):
+
+    """
+
+    Executa tarefas pesadas em background. 
+
+    Prioriza o E-mail e captura os bytes do PDF imediatamente para evitar erros de arquivo fechado.
+
+    """
+
+    try:
+
+        from .models import Membro, Parentesco
+
+        membro = Membro.objects.get(id=membro_id)
+
+
+
+        # 1. Geração de PDF e Captura Imediata de Bytes
+
+        print(f"--- [BG-THREAD] Iniciando processamento para {membro.nome} ---")
+
+        nome_arquivo, pdf_file = gerar_termo_lgpd_pdf(membro)
+
+        pdf_bytes = pdf_file.read()
+
+        print(f"--- [BG-THREAD] PDF Gerado ({len(pdf_bytes)} bytes)")
+
+
+
+        # 2. Envio de E-mail via Resend API (Bypass SMTP Block)
+
+        if membro.email:
+
+            print(f"--- [BG-THREAD] Usando Resend API para {membro.email}...")
+
+            sucesso = enviar_email_resend_api(
+
+                to=membro.email,
+
+                subject='Bem-vindo! Seu Termo de Ciíªncia e Aceite (LGPD)',
+
+                body=f'Olá {membro.nome},\n\ní com alegria que confirmamos o seu cadastro no portal da Igreja Assembleia de Deus Ministério na Capital.\n\nPara finalizarmos o processo administrativo, enviamos em anexo o Termo de Consentimento de Dados Pessoais (LGPD). Pedimos a gentileza de assinar o documento anexo e nos enviar uma cí³pia (digitalizada ou foto legí­vel). Vocíª pode responder diretamente a esta mensagem ou enviá-la para igrejaadcapital@gmail.com.\n\nFraternalmente,\nEquipe AD Capital',
+
+                filename=nome_arquivo,
+
+                file_content=pdf_bytes
+
+            )
+
+            if sucesso:
+
+                print("--- [BG-THREAD] E-mail enviado com sucesso via Resend.")
+
+            else:
+
+                print("--- [BG-THREAD] AVISO: Falha no envio via Resend. Verifique logs acima.")
+
+
+
+        # 3. Salvamento do PDF ní£o assinado no Cloudinary (para o membro baixar)
+
+        print(f"--- [BG-THREAD] Salvando PDF no Cloudinary...")
+
+        membro.lgpd_documento.save(nome_arquivo, ContentFile(pdf_bytes), save=True)
+
+        # NíO marca lgpd_consentido - o status permanece PENDENTE até o admin fazer upload do documento assinado
+
+        print(f"--- [BG-THREAD] PDF salvo no Cloudinary. Status: PENDENTE (aguardando assinatura fí­sica)")
+
+
+
+        # 4. Lí³gica de Parentesco
+
+        if parentescos_data:
+
+            print("--- [BG-THREAD] Processando parentescos...")
+
+            for item in parentescos_data:
+
+                p_id = item.get('parente_id') or item.get('membro_destino')
+
+                grau = item.get('grau')
+
+                if p_id and grau and str(p_id) != str(membro.id):
+
+                    if Membro.objects.filter(id=p_id).exists():
+
+                        Parentesco.objects.get_or_create(
+
+                            membro_origem=membro,
+
+                            membro_destino_id=p_id,
+
+                            defaults={'grau': grau}
+
+                        )
+
+            print("--- [BG-THREAD] Parentescos processados.")
+
+
+
+    except Exception:
+
+        print("--- [BG-THREAD] ERRO CRíTICO EM TAREFAS DE BACKGROUND ---")
+
+        traceback.print_exc()
+
+    finally:
+
+        from django.db import connection
+
+        try:
+
+            connection.close()
+
+            print("--- [BG-THREAD] Conexí£o com banco fechada.")
+
+        except:
+
+            pass
+
+
+
+class AutoCadastroMembroView(APIView):
+
+    """
+
+    Endpoint para auto-cadastro de membros.
+
+    Permite criar ou editar (se CPF já existir e resposta estiver correta).
+
+    """
+
+    permission_classes = [AllowAny]
+
+    authentication_classes = [] # Desativa autenticação para o portal píºblico
+
+    parser_classes = [MultiPartParser, FormParser, JSONParser] # Suporte a diversos formatos de dados
+
+
+
+    def post(self, request):
+
+        print("--- [DEBUG] Iniciando AutoCadastroMembroView.post ---")
+
+        try:
+
+            config = ConfiguracaoPortal.objects.filter(id=1).first()
+
+            is_ativo = config.is_ativo if config else True
+
+            if not is_ativo:
+
+                return Response({"error": "Portal desativado"}, status=403)
+
+
+
+            resposta_user = request.data.get('sync_resposta', '').strip().lower()
+
+            resposta_correta = (config.resposta if config else "Jesus").strip().lower()
+
+
+
+            if resposta_user != resposta_correta:
+
+                 return Response({"error": "Acesso negado: Resposta incorreta."}, status=401)
+
+
+
+            cpf_original = request.data.get('cpf')
+
+            if not cpf_original:
+
+                return Response({"error": "CPF é obrigatí³rio"}, status=400)
+
+
+
+            cpf_limpo = "".join(filter(str.isdigit, cpf_original))
+
+            membro_existente = Membro.objects.filter(cpf=cpf_limpo).first()
+
+            
+
+            if membro_existente:
+
+                serializer = MembroSerializer(membro_existente, data=request.data, partial=True)
+
+            else:
+
+                serializer = MembroSerializer(data=request.data)
+
+
+
+            if serializer.is_valid():
+
+                # SALVAMENTO IMEDIATO DO DISCO/INFOS BíSICAS
+
+                membro = serializer.save()
+
+                
+
+                # Dados de parentesco
+
+                parentescos_raw = request.data.get('parentescos_novo', [])
+
+                if isinstance(parentescos_raw, str) and parentescos_raw:
+
+                    try:
+
+                        parentescos_data = json.loads(parentescos_raw)
+
+                    except:
+
+                        parentescos_data = []
+
+                else:
+
+                    parentescos_data = parentescos_raw
+
+
+
+                # DISPARA TAREFAS PESADAS EM THREAD SEPARADA
+
+                print(f"--- [DEBUG] Disparando tarefas de background para membro {membro.id} ---")
+
+                thread = threading.Thread(
+
+                    target=_executar_tarefas_pos_cadastro,
+
+                    args=(membro.id, parentescos_data)
+
+                )
+
+                thread.start()
+
+
+
+                return Response({
+
+                    "success": True, 
+
+                    "message": "Cadastro recebido! O processamento do seu termo LGPD está sendo finalizado em segundo plano.",
+
+                    "id": membro.id,
+
+                    "is_update": membro_existente is not None
+
+                })
+
+            
+
+            return Response(serializer.errors, status=400)
+
+        
+
+        except Exception as e:
+
+            print(f"--- [DEBUG] !!! ERRO CRíTICO !!!: {str(e)}")
+
+            return Response({
+
+                "error": "Erro interno no servidor.",
+
+                "detail": str(e)
+
+            }, status=500)
+
+
+
+@api_view(['GET'])
+
+@permission_classes([AllowAny])
+
+@authentication_classes([])
+
+def run_migrations_debug(request):
+
+    """View temporária para forí§ar migrações e ver o log no navegador"""
+
+    from django.core.management import call_command
+
+    from io import StringIO
+
+    out = StringIO()
+
+    print("--- [DEBUG] Rodando migrações manualmente via endpoint ---")
+
+    try:
+
+        call_command('migrate', stdout=out, stderr=out)
+
+        result = out.getvalue()
+
+        return Response({"success": True, "output": result})
+
+    except Exception as e:
+
+        import traceback
+
+        return Response({
+
+            "success": False, 
+
+            "error": str(e), 
+
+            "traceback": traceback.format_exc(),
+
+            "output": out.getvalue()
+
+        }, status=500)
+
+
+
+@api_view(['GET'])
+
+@permission_classes([AllowAny])
+
+def download_termo_lgpd(request, pk):
+
+    """Endpoint para baixar o termo de LGPD via API usando o Cloudinary"""
+
+    try:
+
+        from django.shortcuts import redirect
+
+        membro = Membro.objects.get(pk=pk)
+
+        if not membro.lgpd_documento:
+
+             return Response({"error": "Termo ní£o encontrado para este membro."}, status=404)
+
+        
+
+        # Como estamos usando Cloudinary, retornamos a URL direta para download
+
+        return redirect(membro.lgpd_documento.url)
+
+    except Membro.DoesNotExist:
+
+        return Response({"error": "Membro ní£o encontrado."}, status=404)
+
+
+
+@api_view(['GET'])
+
+@permission_classes([AllowAny])
+
+@authentication_classes([])
+
+def buscar_membros_autocomplete_publico(request):
+
+    """
+
+    Busca de membros para ví­nculo familiar no cadastro píºblico.
+
+    Exige no mí­nimo 3 caracteres para ní£o vazar a lista completa de membros.
+
+    Retorna apenas ID e Nome (limite de 10).
+
+    """
+
+    query = request.GET.get('q', '').strip()
+
+    if len(query) < 3:
+
+        return Response([])
+
+    
+
+    membros = Membro.objects.filter(nome__icontains=query).order_by('nome')[:10]
+
+    opcoes = [{'id': m.id, 'nome': m.nome} for m in membros]
+
+    return Response(opcoes)
+
+
+
+class MeusDadosView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+
+
+    def get(self, request):
+
+        perfil = getattr(request.user, 'perfil', None)
+
+        if not perfil or not perfil.membro:
+
+            return Response({'error': f'Perfil de membro não encontrado para: {request.user.username}'}, status=404)
+
+        
+
+        serializer = MembroSerializer(perfil.membro)
+
+        return Response(serializer.data)
+
+
+
+    def patch(self, request):
+
+        perfil = getattr(request.user, 'perfil', None)
+
+        if not perfil or not perfil.membro:
+
+            return Response({'error': f'Perfil de membro não encontrado para: {request.user.username}'}, status=404)
+
+        
+
+        # Permitir apenas alguns campos (Endereço, Telefone, Email)
+
+        campos_permitidos = ['telefone', 'email', 'logradouro', 'numero', 'complemento', 'bairro', 'cidade', 'uf', 'cep']
+
+        data = {k: v for k, v in request.data.items() if k in campos_permitidos}
+
+        
+
+        serializer = MembroSerializer(perfil.membro, data=data, partial=True)
+
+        if serializer.is_valid():
+
+            serializer.save()
+
+            return Response(serializer.data)
+
+        return Response(serializer.errors, status=400)
+
+
