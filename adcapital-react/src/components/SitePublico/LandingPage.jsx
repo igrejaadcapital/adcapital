@@ -53,6 +53,13 @@ const LandingPage = () => {
     };
     fetchData();
   }, []);
+  
+  const scrollTo = (id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   const diasSemana = [
     { id: 0, label: 'Domingo' },
@@ -85,19 +92,19 @@ const LandingPage = () => {
     <div className="min-h-screen bg-[#020617] text-white selection:bg-blue-500 selection:text-white overflow-x-hidden font-sans">
       
       {/* --- STICKY NAVBAR --- */}
-      <nav className="fixed top-0 left-0 w-full z-50 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between bg-white/5 backdrop-blur-xl border border-white/10 px-6 py-3 rounded-2xl shadow-2xl">
+      <nav className="fixed top-0 left-0 w-full z-50 px-6 py-2">
+        <div className="max-w-7xl mx-auto flex items-center justify-between bg-white/5 backdrop-blur-xl border border-white/10 px-6 py-2 rounded-2xl shadow-2xl">
           <div className="flex items-center gap-3">
             <img src="/logo.png" alt="Logo" className="w-8 h-8 rounded-full" />
             <span className="font-black tracking-tighter text-lg uppercase italic">AD CAPITAL</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-            <a href="#programacao" className="hover:text-blue-400 transition-colors">Programação</a>
-            <a href="#galeria" className="hover:text-blue-400 transition-colors">Galeria</a>
-            <a href="#transmissao" className="hover:text-blue-400 transition-colors">Ao Vivo</a>
+            <button onClick={() => scrollTo('programacao')} className="hover:text-blue-400 transition-colors uppercase">Programação</button>
+            <button onClick={() => scrollTo('galeria')} className="hover:text-blue-400 transition-colors uppercase">Galeria</button>
+            <button onClick={() => scrollTo('transmissao')} className="hover:text-blue-400 transition-colors uppercase">Ao Vivo</button>
           </div>
           <a 
-            href="/#/portal" 
+            href="#/portal" 
             className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-900/20"
           >
             Portal do Membro
@@ -106,7 +113,7 @@ const LandingPage = () => {
       </nav>
 
       {/* --- HERO SECTION --- */}
-      <section className="relative min-h-[85vh] flex flex-col items-center justify-center pt-32 pb-20 px-6 text-center overflow-hidden">
+      <section className="relative min-h-[75vh] flex flex-col items-center justify-center pt-24 pb-12 px-6 text-center overflow-hidden">
         {/* Background Sophisticated Gradients */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-blue-600/20 rounded-full blur-[140px] animate-pulse" />
@@ -200,7 +207,7 @@ const LandingPage = () => {
       )}
 
       {/* --- PROGRAMAÇÃO --- */}
-      <section className="py-20 bg-slate-900/30">
+      <section id="programacao" className="py-20 bg-slate-900/30">
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex items-center justify-center gap-3 mb-16">
             <div className="h-px w-12 bg-blue-500/30" />
@@ -242,7 +249,7 @@ const LandingPage = () => {
 
       {/* --- GALERIA DE FOTOS --- */}
       {galeria.length > 0 && (
-        <section className="py-20 max-w-7xl mx-auto px-6">
+        <section id="galeria" className="py-20 max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-center gap-3 mb-16">
             <h2 className="text-3xl font-black tracking-tight text-center uppercase flex items-center gap-2">
               <ImageIcon className="text-blue-500" /> Nossa Galeria
@@ -294,7 +301,7 @@ const LandingPage = () => {
 
       {/* --- NOSSA TRANSMISSÃO / LIVE --- */}
       {ultimoVideo && (
-        <section className="py-24 bg-slate-900/80 relative overflow-hidden">
+        <section id="transmissao" className="py-24 bg-slate-900/80 relative overflow-hidden">
           {/* Decorative background for the live section */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-10 pointer-events-none">
             <div className="absolute top-0 right-0 w-[40%] h-[40%] bg-red-600 rounded-full blur-[120px]" />
