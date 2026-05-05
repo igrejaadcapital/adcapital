@@ -78,6 +78,7 @@ export default function MemberPortal() {
         </div>
 
         <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Dados Pessoais */}
           <div className="space-y-1">
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">E-mail</label>
             <input 
@@ -99,7 +100,72 @@ export default function MemberPortal() {
             />
           </div>
 
-          <div className="md:col-span-2 space-y-1">
+          <div className="space-y-1">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Data de Nascimento</label>
+            <input 
+              type="date" 
+              className="w-full p-3 bg-slate-50 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500/10" 
+              value={formData.data_nascimento || ''} 
+              disabled={!editando}
+              onChange={e => setFormData({...formData, data_nascimento: e.target.value})}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Gênero</label>
+            <select 
+              className="w-full p-3 bg-slate-50 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500/10" 
+              value={formData.genero || ''} 
+              disabled={!editando}
+              onChange={e => setFormData({...formData, genero: e.target.value})}
+            >
+              <option value="M">Varão</option>
+              <option value="F">Varoa</option>
+            </select>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Estado Civil</label>
+            <select 
+              className="w-full p-3 bg-slate-50 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500/10" 
+              value={formData.estado_civil || ''} 
+              disabled={!editando}
+              onChange={e => setFormData({...formData, estado_civil: e.target.value})}
+            >
+              <option value="SOLTEIRO">Solteiro(a)</option>
+              <option value="CASADO">Casado(a)</option>
+              <option value="DIVORCIADO">Divorciado(a)</option>
+              <option value="VIUVO">Viúvo(a)</option>
+            </select>
+          </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Naturalidade (UF)</label>
+            <input 
+              type="text" 
+              maxLength="2"
+              className="w-full p-3 bg-slate-50 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500/10" 
+              value={formData.naturalidade || ''} 
+              disabled={!editando}
+              onChange={e => setFormData({...formData, naturalidade: e.target.value.toUpperCase()})}
+            />
+          </div>
+
+          {/* Endereço */}
+          <div className="md:col-span-2 pt-4 border-t border-slate-50">
+            <h4 className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] mb-4">Endereço Residencial</h4>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">CEP</label>
+            <input 
+              type="text" 
+              className="w-full p-3 bg-slate-50 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500/10" 
+              value={formData.cep || ''} 
+              disabled={!editando}
+              onChange={e => setFormData({...formData, cep: e.target.value})}
+            />
+          </div>
+
+          <div className="space-y-1">
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Logradouro</label>
             <input 
               type="text" 
@@ -107,6 +173,28 @@ export default function MemberPortal() {
               value={formData.logradouro || ''} 
               disabled={!editando}
               onChange={e => setFormData({...formData, logradouro: e.target.value})}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Número</label>
+            <input 
+              type="text" 
+              className="w-full p-3 bg-slate-50 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500/10" 
+              value={formData.numero || ''} 
+              disabled={!editando}
+              onChange={e => setFormData({...formData, numero: e.target.value})}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Complemento</label>
+            <input 
+              type="text" 
+              className="w-full p-3 bg-slate-50 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500/10" 
+              value={formData.complemento || ''} 
+              disabled={!editando}
+              onChange={e => setFormData({...formData, complemento: e.target.value})}
             />
           </div>
 
@@ -122,20 +210,30 @@ export default function MemberPortal() {
           </div>
 
           <div className="space-y-1">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Cidade</label>
-            <input 
-              type="text" 
-              className="w-full p-3 bg-slate-50 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500/10" 
-              value={formData.cidade || ''} 
-              disabled={!editando}
-              onChange={e => setFormData({...formData, cidade: e.target.value})}
-            />
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Cidade / UF</label>
+            <div className="flex gap-2">
+               <input 
+                type="text" 
+                className="flex-[3] p-3 bg-slate-50 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500/10" 
+                value={formData.cidade || ''} 
+                disabled={!editando}
+                onChange={e => setFormData({...formData, cidade: e.target.value})}
+              />
+              <input 
+                type="text" 
+                maxLength="2"
+                className="flex-1 p-3 bg-slate-50 rounded-xl font-bold text-sm outline-none focus:ring-2 focus:ring-blue-500/10 text-center" 
+                value={formData.uf || ''} 
+                disabled={!editando}
+                onChange={e => setFormData({...formData, uf: e.target.value.toUpperCase()})}
+              />
+            </div>
           </div>
 
           {editando && (
             <div className="md:col-span-2 flex gap-4 pt-4">
               <button type="submit" className="flex-1 bg-blue-900 text-white py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg">Salvar Alterações</button>
-              <button type="button" onClick={() => setEditando(false)} className="flex-1 bg-slate-100 text-slate-400 py-3 rounded-2xl font-black text-xs uppercase tracking-widest">Cancelar</button>
+              <button type="button" onClick={() => { setEditando(false); setFormData(dados); }} className="flex-1 bg-slate-100 text-slate-400 py-3 rounded-2xl font-black text-xs uppercase tracking-widest">Cancelar</button>
             </div>
           )}
         </form>
