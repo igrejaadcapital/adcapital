@@ -33,9 +33,6 @@ ALLOWED_HOSTS = [
     'sistema.adcapitaligreja.com.br',
     'cadastro.adcapitaligreja.com.br',
     'api.adcapitaligreja.com.br',
-    'adcapital.tilx.com.br',
-    'api.tilx.com.br',
-    '.tilx.com.br',
     'localhost',
     '127.0.0.1'
 ]
@@ -178,9 +175,7 @@ CSRF_TRUSTED_ORIGINS = [
     "https://adcapitaligreja.com.br",
     "https://sistema.adcapitaligreja.com.br",
     "https://cadastro.adcapitaligreja.com.br",
-    "https://api.adcapitaligreja.com.br",
-    "https://adcapital.tilx.com.br",
-    "https://api.tilx.com.br"
+    "https://api.adcapitaligreja.com.br"
 ]
 
 # Cloudinary Credentials
