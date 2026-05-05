@@ -165,21 +165,26 @@ function App() {
   // 1. Sanitização do Token (Evita strings "null" ou "undefined" que quebram o fluxo)
   const isValidToken = token && token !== 'null' && token !== 'undefined' && token.length > 10;
   
-  // 1. Detecção de Portal de Cadastro (Prioridade para o subdomínio ou hash específico)
   const isPortal = 
     currentHost.startsWith('cadastro.') || 
     currentHash.includes('cadastro');
+
+  const isSystemRoute = 
+    currentHost.startsWith('sistema.') || 
+    currentHash.includes('portal') || 
+    currentHash.includes('admin') || 
+    currentHash.includes('sistema');
 
   if (isPortal) {
     return <AutoCadastroPage />;
   }
 
   // 2. Detecção de Site Institucional (Landing Page)
-  // Só entra aqui se for o domínio principal EXATO ou se for forçado via hash /#/site
+  // Só entra aqui se for o domínio principal e NÃO for uma rota de sistema
   const isLandingPage = 
-    currentHost === 'adcapitaligreja.com.br' || 
-    currentHost === 'www.adcapitaligreja.com.br' ||
-    currentHash.includes('site');
+    (currentHost === 'adcapitaligreja.com.br' || 
+     currentHost === 'www.adcapitaligreja.com.br' ||
+     currentHash.includes('site')) && !isSystemRoute;
 
   if (isLandingPage) {
     return <LandingPage />;
@@ -187,9 +192,8 @@ function App() {
 
   // 3. Sistema Administrativo (Exige Login)
   if (!isValidToken) {
-    // Se o usuário estiver no subdomínio sistema, mostra login. 
-    // Caso contrário (domínios genéricos ou IP), mostra o site por segurança/SEO.
-    if (currentHost.startsWith('sistema.') || currentHost === 'localhost' || currentHash.includes('sistema') || currentHash.includes('admin')) {
+    // Se for uma rota de sistema ou localhost, mostra login.
+    if (isSystemRoute || currentHost === 'localhost') {
        return <Login />;
     }
     return <LandingPage />;
