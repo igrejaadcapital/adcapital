@@ -19,7 +19,7 @@ export default function MembrosPage({
 }) {
   const [mostrarModal, setMostrarModal] = useState(false);
   const [membroParaEditar, setMembroParaEditar] = useState(null);
-  const [viewType, setViewType] = useState('grid'); // 'grid' ou 'list'
+  const [viewType, setViewType] = useState('list'); // 'list' ou 'grid'
   const [deletandoId, setDeletandoId] = useState(null);
 
   const abrirNovo = () => {
@@ -73,16 +73,6 @@ export default function MembrosPage({
         {/* Barra de Ações da Lista */}
         <div className="flex justify-start items-center gap-1 bg-white/50 backdrop-blur p-1 rounded-xl border border-slate-200 w-fit">
           <button
-            onClick={() => setViewType('grid')}
-            className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${
-              viewType === 'grid'
-                ? 'bg-blue-900 text-white shadow-md'
-                : 'text-slate-400 hover:text-blue-900 hover:bg-slate-100'
-            }`}
-          >
-            🔲 Grade
-          </button>
-          <button
             onClick={() => setViewType('list')}
             className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${
               viewType === 'list'
@@ -91,6 +81,16 @@ export default function MembrosPage({
             }`}
           >
             📜 Lista
+          </button>
+          <button
+            onClick={() => setViewType('grid')}
+            className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${
+              viewType === 'grid'
+                ? 'bg-blue-900 text-white shadow-md'
+                : 'text-slate-400 hover:text-blue-900 hover:bg-slate-100'
+            }`}
+          >
+            🔲 Grade
           </button>
         </div>
 

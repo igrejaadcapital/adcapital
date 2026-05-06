@@ -2,18 +2,18 @@
 import api from './config';
 
 const membroService = {
-    // Busca a lista completa de membros do Django (/api/membros/)
-    listar: () => api.get('/membros/'),
+    // Busca a lista completa de membros do Django (/api/membros/lista/)
+    listar: () => api.get('/membros/lista/'),
 
-    // Envia um novo membro (POST) ou atualiza um existente (PUT)
+    // Envia um novo membro ou atualiza um existente usando endpoints descritivos
     salvar: (id, dados) => {
         if (id) {
-            return api.put(`/membros/${id}/`, dados);
+            return api.put(`/membros/${id}/salvar/`, dados);
         }
-        return api.post('/membros/', dados);
+        return api.post('/membros/cadastrar/', dados);
     },
 
-    // Remove um membro pelo ID (/api/membros/1/)
+    // Remove um membro pelo ID
     excluir: (id) => api.delete(`/membros/${id}/`),
 
     // Administração de Funções

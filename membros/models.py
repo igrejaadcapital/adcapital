@@ -9,24 +9,24 @@ class Funcao(models.Model):
         return self.nome
 
 class Membro(models.Model):
-    # Opções que vocíª já tinha definido (Mantido do adcapitalapp)
+    # Opções que você já tinha definido (Mantido do adcapitalapp)
     FUNCOES_CHOICES = [
         ('MEMBRO', 'Membro'),
         ('PASTOR', 'Pastor(a)'),
-        ('PRESBITERO', 'Presbí­tero'),
+        ('PRESBITERO', 'Presbítero'),
         ('DIACONO', 'Diácono/Diaconisa'),
         ('EVANGELISTA', 'Evangelista'),
         ('MISSIONARIO', 'Missionário(a)'),
         ('COOPERADOR', 'Cooperador(a)'),
     ]
 
-    GENERO_CHOICES = [('M', 'Varí£o'), ('F', 'Varoa')]
+    GENERO_CHOICES = [('M', 'Varão'), ('F', 'Varoa')]
     STATUS_CHOICES = [('LIGADO', 'Ligado'), ('DESLIGADO', 'Desligado')]
     ESTADO_CIVIL_CHOICES = [
         ('SOLTEIRO', 'Solteiro(a)'),
         ('CASADO', 'Casado(a)'),
         ('DIVORCIADO', 'Divorciado(a)'),
-        ('VIUVO', 'Viíºvo(a)'),
+        ('VIUVO', 'Viúvo(a)'),
     ]
 
     # Dados Pessoais
@@ -45,12 +45,12 @@ class Membro(models.Model):
     departamento = models.CharField(max_length=100, blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='LIGADO')
     
-    # Endereí§o (Visto no seu formulário)
+    # Endereço (Visto no seu formulário)
     logradouro = models.CharField(max_length=255, blank=True)
     numero = models.CharField(max_length=20, blank=True)
     complemento = models.CharField(max_length=100, blank=True)
     bairro = models.CharField(max_length=100, blank=True)
-    cidade = models.CharField(max_length=100, default='Brasí­lia')
+    cidade = models.CharField(max_length=100, default='Brasília')
     uf = models.CharField(max_length=2, default='DF')
     cep = models.CharField(max_length=10, blank=True)
     
@@ -78,10 +78,10 @@ class Membro(models.Model):
         
 class Parentesco(models.Model):
     GRAU_CHOICES = [
-        ('PAI_MAE', 'Pai/Mí£e'),
+        ('PAI_MAE', 'Pai/Mãe'),
         ('FILHO_A', 'Filho(a)'),
-        ('CONJUGE', 'Cí´njuge'),
-        ('IRMAO_A', 'Irmí£o(í£)'),
+        ('CONJUGE', 'Cônjuge'),
+        ('IRMAO_A', 'Irmão(ã)'),
         ('OUTRO', 'Outro'),
     ]
     membro_origem = models.ForeignKey(Membro, related_name='parentescos', on_delete=models.CASCADE)
@@ -92,7 +92,7 @@ class Parentesco(models.Model):
         unique_together = ('membro_origem', 'membro_destino')
 
     def save(self, *args, **kwargs):
-        # 1. Salva a relação original (O que vocíª preencheu no formulário)
+        # 1. Salva a relação original (O que você preencheu no formulário)
         super().save(*args, **kwargs)
 
         # 2. Mapeamento para criar o inverso
@@ -116,7 +116,7 @@ class Parentesco(models.Model):
             )
         except Exception as e:
             # Apenas loga o erro no terminal, mas NíO trava o salvamento do usuário
-            print(f"Aviso: Ní£o foi possí­vel criar relação inversa: {e}")
+            print(f"Aviso: Não foi possível criar relação inversa: {e}")
 
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
@@ -124,11 +124,11 @@ from django.dispatch import receiver
 @receiver(post_delete, sender=Parentesco)
 def apagar_parentesco_inverso(sender, instance, **kwargs):
     """
-    Sempre que um ví­nculo (A -> B) for deletado, apaga automaticamente o inverso (B -> A).
-    Isso previne 'í³rfí£os' no banco quando o usuário apaga relações pela interface.
+    Sempre que um vínculo (A -> B) for deletado, apaga automaticamente o inverso (B -> A).
+    Isso previne 'órfãos' no banco quando o usuário apaga relações pela interface.
     """
     try:
-        # filter().delete() é seguro contra loop infinito porque se já ní£o existir, ní£o fará nada.
+        # filter().delete() é seguro contra loop infinito porque se já não existir, não fará nada.
         Parentesco.objects.filter(
             membro_origem=instance.membro_destino,
             membro_destino=instance.membro_origem
@@ -148,7 +148,7 @@ class ConfiguracaoPortal(models.Model):
     def __str__(self):
         return f"Configuração Portal - {'Ativo' if self.is_ativo else 'Inativo'}"
 
-    # Garante que sí³ exista uma íºnica configuração no banco
+    # Garante que só exista uma única configuração no banco
     def save(self, *args, **kwargs):
         if not self.pk and ConfiguracaoPortal.objects.exists():
             # Se já existe uma, impede a criação de outra
@@ -156,7 +156,7 @@ class ConfiguracaoPortal(models.Model):
         super().save(*args, **kwargs)
 
 class ConfiguracaoSite(models.Model):
-    # Dí­zimos e Ofertas
+    # Dízimos e Ofertas
     pix_chave = models.CharField(max_length=255, default="adcapital.church@gmail.com", verbose_name="Chave PIX")
     banco_nome = models.CharField(max_length=100, default="BANCO DO BRASIL", verbose_name="Nome do Banco")
     beneficiario = models.CharField(max_length=255, default="IGREJA EVANGELICA ASSEMBLEIA DE DEUS MINISTERIO NA CAPITAL", verbose_name="Beneficiário")
@@ -169,13 +169,13 @@ class ConfiguracaoSite(models.Model):
     ultimo_post_instagram_url = models.URLField(blank=True, null=True, verbose_name="URL do íltimo Post do Instagram")
     
     # Institucional
-    video_sobre_nos_url = models.URLField(blank=True, null=True, verbose_name="Ví­deo Sobre Ní³s (YouTube URL)")
-    endereco_completo = models.TextField(default="Ch 18 Lt 6/7 Setor de Mansíµes IAPI - Guará 2 - Brasí­lia - DF - 71.081-245", verbose_name="Endereí§o Completo")
+    video_sobre_nos_url = models.URLField(blank=True, null=True, verbose_name="Vídeo Sobre Nós (YouTube URL)")
+    endereco_completo = models.TextField(default="Ch 18 Lt 6/7 Setor de Mansões IAPI - Guará 2 - Brasília - DF - 71.081-245", verbose_name="Endereço Completo")
     google_maps_url = models.URLField(blank=True, null=True, verbose_name="URL do Google Maps")
     
     # Palavra Pastoral
     pastor_nome = models.CharField(max_length=255, default="Pastor Responsável", verbose_name="Nome do Pastor")
-    pastoral_titulo = models.CharField(max_length=255, default="Uma Palavra de Fé", verbose_name="Tí­tulo da Mensagem")
+    pastoral_titulo = models.CharField(max_length=255, default="Uma Palavra de Fé", verbose_name="Título da Mensagem")
     pastoral_texto = models.TextField(blank=True, verbose_name="Texto da Palavra Pastoral")
     pastor_foto = models.ImageField(upload_to='site/pastor/', blank=True, null=True, verbose_name="Foto do Pastor")
 

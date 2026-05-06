@@ -30,6 +30,7 @@ export function useCadastroMembroForm(membro, membros, graus, onClose, onSuccess
     });
 
     const [indiceFoco, setIndiceFoco] = useState(null);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (membro) {
@@ -80,6 +81,7 @@ export function useCadastroMembroForm(membro, membros, graus, onClose, onSuccess
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
 
         try {
             const parentescosValidos = formData.parentescos_novo
@@ -115,6 +117,8 @@ export function useCadastroMembroForm(membro, membros, graus, onClose, onSuccess
         } catch (err) {
             console.error("Erro ao salvar:", err.response?.data);
             alert("Erro ao salvar: " + JSON.stringify(err.response?.data || "Erro de conexão"));
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -134,6 +138,7 @@ export function useCadastroMembroForm(membro, membros, graus, onClose, onSuccess
         indiceFoco,
         setIndiceFoco,
         handleSubmit,
-        getNomeGrau
+        getNomeGrau,
+        loading
     };
 }

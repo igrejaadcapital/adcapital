@@ -18,7 +18,7 @@ from django.core.files.base import ContentFile
 
 from django.core.cache import cache
 
-from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.decorators import api_view, permission_classes, authentication_classes, action
 
 from rest_framework.response import Response
 
@@ -79,7 +79,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
 def ultimo_video_youtube(request):
 
-    """Retorna o íºltimo ví­deo do canal YouTube via RSS (sem API key). Cache de 1 hora."""
+    """Retorna o último vídeo do canal YouTube via RSS (sem API key). Cache de 1 hora."""
 
     cache_key = 'yt_ultimo_video'
 
@@ -97,7 +97,7 @@ def ultimo_video_youtube(request):
 
         if not channel_id:
 
-            return Response({'error': 'Canal YouTube ní£o configurado.'}, status=404)
+            return Response({'error': 'Canal YouTube não configurado.'}, status=404)
 
         rss_url = f'https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}'
 
@@ -123,7 +123,7 @@ def ultimo_video_youtube(request):
 
         if entry is None:
 
-            return Response({'error': 'Nenhum ví­deo encontrado.'}, status=404)
+            return Response({'error': 'Nenhum vídeo encontrado.'}, status=404)
 
         video_id = entry.find('yt:videoId', ns).text
 
@@ -167,7 +167,7 @@ def ultimo_video_youtube(request):
 
 def buscar_opcoes_funcao(request):
 
-    """Retorna a lista diní¢mica de funções da tabela Funcao"""
+    """Retorna a lista dinâmica de funções da tabela Funcao"""
 
     try:
 
@@ -215,9 +215,9 @@ def adicionar_funcao(request):
 
         if not nome or not str(nome).strip():
 
-            return Response({'error': 'Nome é obrigatí³rio'}, status=400)
+            return Response({'error': 'Nome é obrigatório'}, status=400)
 
-        # Limpa o nome para evitar espaí§os extras e padroniza
+        # Limpa o nome para evitar espaços extras e padroniza
 
         nome_limpo = str(nome).strip().upper()
 
@@ -257,7 +257,7 @@ def adicionar_funcao(request):
 
 def buscar_opcoes_parentesco(request):
 
-    """Retorna a lista diní¢mica de graus de parentesco extraí­da do models"""
+    """Retorna a lista dinâmica de graus de parentesco extraída do models"""
 
     opcoes = [{'id': f[0], 'nome': f[1]} for f in Parentesco.GRAU_CHOICES]
 
@@ -279,7 +279,7 @@ def buscar_configuracao_publica(request):
 
     if not config:
 
-        # Fallback em memí³ria se o registro sumir
+        # Fallback em memória se o registro sumir
 
         return Response({
 
@@ -311,7 +311,7 @@ def verificar_resposta_portal(request):
 
     config = ConfiguracaoPortal.objects.filter(id=1).first()
 
-    # Se por algum motivo a resposta no banco estiver vazia ou objeto inexistente, usamos o padrí£o "Jesus"
+    # Se por algum motivo a resposta no banco estiver vazia ou objeto inexistente, usamos o padrão "Jesus"
 
     resposta_correta = (config.resposta if config else "Jesus").strip().lower()
 
@@ -363,7 +363,7 @@ class ConfiguracaoPortalViewSet(viewsets.ModelViewSet):
 
 class ConfiguracaoSiteViewSet(viewsets.ModelViewSet):
 
-    """Gestí£o da configuração do site institucional (id fixo = 1)"""
+    """Gestão da configuração do site institucional (id fixo = 1)"""
 
     queryset = ConfiguracaoSite.objects.all()
 
@@ -403,7 +403,7 @@ class ConfiguracaoSiteViewSet(viewsets.ModelViewSet):
 
 class FotoGaleriaViewSet(viewsets.ModelViewSet):
 
-    """Gestí£o da galeria de fotos do site"""
+    """Gestão da galeria de fotos do site"""
 
     queryset = FotoGaleria.objects.all().order_by('ordem', '-criado_em')
 
@@ -421,11 +421,31 @@ class MembroViewSet(viewsets.ModelViewSet):
 
     """CRUD administrativo completo para Membros"""
 
-    queryset = Membro.objects.all()
+    queryset = Membro.objects.all().select_related('funcao').prefetch_related('parentescos__membro_destino')
 
     serializer_class = MembroSerializer
 
     permission_classes = [IsAuthenticated]
+
+    @action(detail=False, methods=['get'])
+    def lista(self, request):
+        """Retorna a lista de membros (URL: /api/membros/lista/)"""
+        return self.list(request)
+
+    @action(detail=True, methods=['get'])
+    def detalhes(self, request, pk=None):
+        """Retorna detalhes de um membro (URL: /api/membros/{id}/detalhes/)"""
+        return self.retrieve(request, pk)
+
+    @action(detail=False, methods=['post'])
+    def cadastrar(self, request):
+        """Cria um novo membro (URL: /api/membros/cadastrar/)"""
+        return self.create(request)
+
+    @action(detail=True, methods=['put', 'patch'])
+    def salvar(self, request, pk=None):
+        """Atualiza um membro existente (URL: /api/membros/{id}/salvar/)"""
+        return self.update(request, pk)
 
     def perform_create(self, serializer):
 
@@ -531,9 +551,9 @@ def _executar_tarefas_pos_cadastro(membro_id, parentescos_data):
 
                 to=membro.email,
 
-                subject='Bem-vindo! Seu Termo de Ciíªncia e Aceite (LGPD)',
+                subject='Bem-vindo! Seu Termo de Ciência e Aceite (LGPD)',
 
-                body=f'Olá {membro.nome},\n\ní com alegria que confirmamos o seu cadastro no portal da Igreja Assembleia de Deus Ministério na Capital.\n\nPara finalizarmos o processo administrativo, enviamos em anexo o Termo de Consentimento de Dados Pessoais (LGPD). Pedimos a gentileza de assinar o documento anexo e nos enviar uma cí³pia (digitalizada ou foto legí­vel). Vocíª pode responder diretamente a esta mensagem ou enviá-la para igrejaadcapital@gmail.com.\n\nFraternalmente,\nEquipe AD Capital',
+                body=f'Olá {membro.nome},\n\ní com alegria que confirmamos o seu cadastro no portal da Igreja Assembleia de Deus Ministério na Capital.\n\nPara finalizarmos o processo administrativo, enviamos em anexo o Termo de Consentimento de Dados Pessoais (LGPD). Pedimos a gentileza de assinar o documento anexo e nos enviar uma cópia (digitalizada ou foto legível). Você pode responder diretamente a esta mensagem ou enviá-la para igrejaadcapital@gmail.com.\n\nFraternalmente,\nEquipe AD Capital',
 
                 filename=nome_arquivo,
 
@@ -549,7 +569,7 @@ def _executar_tarefas_pos_cadastro(membro_id, parentescos_data):
 
                 print("--- [BG-THREAD] AVISO: Falha no envio via Resend. Verifique logs acima.")
 
-        # 3. Salvamento do PDF ní£o assinado no Cloudinary (para o membro baixar)
+        # 3. Salvamento do PDF não assinado no Cloudinary (para o membro baixar)
 
         print(f"--- [BG-THREAD] Salvando PDF no Cloudinary...")
 
@@ -557,7 +577,7 @@ def _executar_tarefas_pos_cadastro(membro_id, parentescos_data):
 
         # NíO marca lgpd_consentido - o status permanece PENDENTE até o admin fazer upload do documento assinado
 
-        print(f"--- [BG-THREAD] PDF salvo no Cloudinary. Status: PENDENTE (aguardando assinatura fí­sica)")
+        print(f"--- [BG-THREAD] PDF salvo no Cloudinary. Status: PENDENTE (aguardando assinatura física)")
 
         # 4. Lí³gica de Parentesco
 
@@ -594,17 +614,11 @@ def _executar_tarefas_pos_cadastro(membro_id, parentescos_data):
         traceback.print_exc()
 
     finally:
-
         from django.db import connection
-
         try:
-
             connection.close()
-
-            print("--- [BG-THREAD] Conexí£o com banco fechada.")
-
+            print("--- [BG-THREAD] Conexão com banco fechada.")
         except:
-
             pass
 
 class AutoCadastroMembroView(APIView):
@@ -619,7 +633,7 @@ class AutoCadastroMembroView(APIView):
 
     permission_classes = [AllowAny]
 
-    authentication_classes = [] # Desativa autenticação para o portal píºblico
+    authentication_classes = [] # Desativa autenticação para o portal público
 
     parser_classes = [MultiPartParser, FormParser, JSONParser] # Suporte a diversos formatos de dados
 
@@ -649,7 +663,7 @@ class AutoCadastroMembroView(APIView):
 
             if not cpf_original:
 
-                return Response({"error": "CPF é obrigatí³rio"}, status=400)
+                return Response({"error": "CPF é obrigatório"}, status=400)
 
             cpf_limpo = "".join(filter(str.isdigit, cpf_original))
 
@@ -735,7 +749,7 @@ class AutoCadastroMembroView(APIView):
 
 def run_migrations_debug(request):
 
-    """View temporária para forí§ar migrações e ver o log no navegador"""
+    """View temporária para forçar migrações e ver o log no navegador"""
 
     from django.core.management import call_command
 
@@ -785,7 +799,7 @@ def download_termo_lgpd(request, pk):
 
         if not membro.lgpd_documento:
 
-             return Response({"error": "Termo ní£o encontrado para este membro."}, status=404)
+             return Response({"error": "Termo não encontrado para este membro."}, status=404)
 
         # Como estamos usando Cloudinary, retornamos a URL direta para download
 
@@ -793,7 +807,7 @@ def download_termo_lgpd(request, pk):
 
     except Membro.DoesNotExist:
 
-        return Response({"error": "Membro ní£o encontrado."}, status=404)
+        return Response({"error": "Membro não encontrado."}, status=404)
 
 @api_view(['GET'])
 
@@ -898,4 +912,71 @@ class UsuariosView(APIView):
             return Response({'error': 'Papel inválido'}, status=400)
         except User.DoesNotExist:
             return Response({'error': 'Usuário não encontrado'}, status=404)
+
+class TrocarSenhaView(APIView):
+    """Permite ao usuário logado trocar sua própria senha"""
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        user = request.user
+        nova_senha = request.data.get('nova_senha')
+        if not nova_senha or len(nova_senha) < 4:
+            return Response({"error": "Senha deve ter pelo menos 4 caracteres"}, status=400)
+        
+        user.set_password(nova_senha)
+        user.save()
+        return Response({"success": "Senha alterada com sucesso!"})
+
+class ResetarSenhaView(APIView):
+    """Reseta a senha para o padrão (5 últimos dígitos do CPF) e avisa por email"""
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        cpf = request.data.get('cpf')
+        if not cpf:
+            return Response({"error": "CPF é obrigatório"}, status=400)
+        
+        cpf_limpo = "".join(filter(str.isdigit, cpf))
+        user = User.objects.filter(username=cpf_limpo).first()
+        
+        if not user:
+            return Response({"error": "Usuário não encontrado com este CPF"}, status=404)
+        
+        if len(cpf_limpo) < 5:
+            return Response({"error": "CPF inválido"}, status=400)
+            
+        nova_senha = cpf_limpo[-5:]
+        user.set_password(nova_senha)
+        user.save()
+        
+        email_destino = user.email
+        if not email_destino and hasattr(user, 'perfil') and user.perfil.membro:
+            email_destino = user.perfil.membro.email
+            
+        if email_destino:
+            import threading
+            from .utils import enviar_email_resend_api
+            
+            def enviar_bg():
+                try:
+                    msg = (
+                        f"Olá,\n\n"
+                        "Conforme solicitado, sua senha de acesso ao Portal AD Capital foi resetada.\n\n"
+                        f"Sua NOVA SENHA são os **5 ÚLTIMOS DÍGITOS** do seu CPF: {nova_senha}\n\n"
+                        "Acesse agora em: https://adcapitaligreja.com.br/#/portal\n\n"
+                        "Recomendamos que você altere esta senha assim que entrar no portal.\n\n"
+                        "Se você não solicitou esta alteração, procure a secretaria da igreja."
+                    )
+                    enviar_email_resend_api(
+                        to=email_destino, 
+                        subject="Senha Resetada - Portal AD Capital", 
+                        body=msg
+                    )
+                except Exception as e:
+                    print(f"Erro ao enviar email de reset: {e}")
+            
+            threading.Thread(target=enviar_bg).start()
+            return Response({"success": f"Senha resetada com sucesso! Instruções enviadas para {email_destino}"})
+            
+        return Response({"success": "Senha resetada para os 5 últimos dígitos do seu CPF. (Não conseguimos enviar email pois não há endereço cadastrado)"})
 

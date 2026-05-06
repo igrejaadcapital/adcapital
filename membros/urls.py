@@ -14,7 +14,9 @@ from .views import (
     ultimo_video_youtube,
     buscar_membros_autocomplete_publico,
     MeusDadosView,
-    UsuariosView
+    UsuariosView,
+    TrocarSenhaView,
+    ResetarSenhaView
 )
 
 from .view_public import (
@@ -49,5 +51,7 @@ urlpatterns = [
     path('membros/meus-dados/', MeusDadosView.as_view(), name='meus-dados'),
     path('usuarios/', UsuariosView.as_view(), name='usuarios-lista'),
     path('usuarios/<int:pk>/', UsuariosView.as_view(), name='usuario-detalhe'),
+    path('auth/trocar-senha/', TrocarSenhaView.as_view(), name='trocar-senha'),
+    path('auth/resetar-senha/', ResetarSenhaView.as_view(), name='resetar-senha'),
     path('', include(router.urls)),
 ]

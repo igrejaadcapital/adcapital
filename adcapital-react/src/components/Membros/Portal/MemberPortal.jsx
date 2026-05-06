@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../../api/config';
 import StatusView from '../../Common/StatusView';
+import configuracaoService from '../../../api/configuracaoService';
 
 export default function MemberPortal() {
   const [dados, setDados] = useState(null);
@@ -9,6 +10,10 @@ export default function MemberPortal() {
   const [formData, setFormData] = useState({});
   const [mensagem, setMensagem] = useState(null);
   const [opcoesFuncao, setOpcoesFuncao] = useState([]);
+  
+  // Senha
+  const [novaSenha, setNovaSenha] = useState('');
+  const [carregandoSenha, setCarregandoSenha] = useState(false);
 
   const carregarDados = async () => {
     setLoading(true);
@@ -48,6 +53,24 @@ export default function MemberPortal() {
     }
   };
 
+  const handleTrocarSenha = async (e) => {
+    e.preventDefault();
+    if (!novaSenha || novaSenha.length < 4) {
+      setMensagem({ type: 'error', text: 'A senha deve ter pelo menos 4 caracteres.' });
+      return;
+    }
+    setCarregandoSenha(true);
+    try {
+      await configuracaoService.trocarSenha(novaSenha);
+      setMensagem({ type: 'success', text: 'Senha alterada com sucesso!' });
+      setNovaSenha('');
+    } catch (err) {
+      setMensagem({ type: 'error', text: 'Erro ao trocar senha.' });
+    } finally {
+      setCarregandoSenha(false);
+    }
+  };
+
   if (loading && !dados) return <StatusView loading={true} />;
   if (!dados) return (
     <div className="p-8 text-center space-y-4">
@@ -83,7 +106,7 @@ export default function MemberPortal() {
         </div>
 
         <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Dados Pessoais */}
+          {/* ... (campos existentes mantidos) ... */}
           <div className="space-y-1">
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">E-mail</label>
             <input 
@@ -316,6 +339,31 @@ export default function MemberPortal() {
             </div>
           )}
         </form>
+      </div>
+
+      {/* Alterar Senha */}
+      <div className="bg-slate-900 p-8 rounded-[2.5rem] border border-slate-800 shadow-2xl space-y-6">
+        <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">🔐 Segurança e Acesso</h3>
+        <form onSubmit={handleTrocarSenha} className="flex flex-col md:flex-row gap-4 items-end">
+          <div className="flex-1 space-y-1 w-full">
+            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Nova Senha</label>
+            <input 
+              type="password" 
+              placeholder="Digite sua nova senha..."
+              className="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl font-bold text-sm text-white outline-none focus:ring-2 focus:ring-blue-500/50" 
+              value={novaSenha} 
+              onChange={e => setNovaSenha(e.target.value)}
+            />
+          </div>
+          <button 
+            type="submit" 
+            disabled={carregandoSenha}
+            className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all disabled:opacity-50"
+          >
+            {carregandoSenha ? 'Atualizando...' : 'Atualizar Senha'}
+          </button>
+        </form>
+        <p className="text-[10px] text-slate-500 font-medium italic">Sua senha é pessoal e intransferível. Recomendamos o uso de pelo menos 6 caracteres.</p>
       </div>
 
       {/* Vínculos Familiares */}

@@ -95,29 +95,60 @@ def auto_cadastro_direto(request):
         if serializer.is_valid():
             membro = serializer.save()
             
-            # --- START LGPD LOGIC (Resilient) ---
+            # --- START USER ACCESS & LGPD LOGIC ---
             try:
-                # Gera o PDF do termo não assinado para envio por email
-                # NÃO marca lgpd_consentido pois o termo ainda precisa ser assinado fisicamente
+                # 1. Criar Usuário para o Portal (se não existir)
+                from django.contrib.auth.models import User
+                from .models import Perfil
+                
+                username = cpf_limpo
+                senha_padrao = cpf_limpo[:5] # 5 primeiros dígitos do CPF
+                
+                user, created = User.objects.get_or_create(username=username, defaults={'email': membro.email or ''})
+                if created:
+                    user.set_password(senha_padrao)
+                    user.save()
+                
+                # Garante vínculo Perfil -> Membro
+                perfil, _ = Perfil.objects.get_or_create(user=user)
+                perfil.membro = membro
+                perfil.role = 'MEMBRO'
+                perfil.save()
+
+                # 2. Geração de PDF do Termo
                 from .utils import gerar_termo_lgpd_pdf
                 nome_arquivo, pdf_file = gerar_termo_lgpd_pdf(membro)
                 pdf_bytes = pdf_file.read()
                 
                 from django.core.files.base import ContentFile
                 membro.lgpd_documento.save(nome_arquivo, ContentFile(pdf_bytes), save=False)
-                # lgpd_consentido permanece False - será True apenas quando o admin fizer upload do documento assinado
                 membro.save()
 
-                # Enviar por e-mail via Resend API (Em Background para não travar o servidor)
+                # 3. Enviar por e-mail com Instruções de Acesso
                 if membro.email:
                     import threading
                     def enviar_bg():
                         try:
                             from .utils import enviar_email_resend_api
+                            msg_corpo = (
+                                f"Olá {membro.nome},\n\n"
+                                "É com alegria que confirmamos o seu cadastro no portal da Igreja AD Capital.\n\n"
+                                "🔐 **SEU ACESSO AO PORTAL DO MEMBRO:**\n"
+                                f"Para acessar seu perfil e acompanhar a igreja, use os dados abaixo:\n"
+                                f"Site: https://adcapitaligreja.com.br/#/portal\n"
+                                f"Usuário (CPF): {membro.cpf}\n"
+                                f"Senha Padrão: {senha_padrao}\n"
+                                "(Recomendamos alterar sua senha após o primeiro acesso)\n\n"
+                                "📄 **TERMO LGPD:**\n"
+                                "Enviamos em anexo o Termo de Consentimento de Dados Pessoais. "
+                                "Pedimos a gentileza de assinar e nos enviar uma foto legível ou cópia digitalizada.\n\n"
+                                "Fraternalmente,\nEquipe AD Capital"
+                            )
+                            
                             enviar_email_resend_api(
                                 to=membro.email,
-                                subject='Bem-vindo! Seu Termo de Ciência e Aceite (LGPD)',
-                                body=f'Olá {membro.nome},\n\nÉ com alegria que confirmamos o seu cadastro no portal da Igreja Assembleia de Deus Ministério na Capital.\n\nPara finalizarmos o processo administrativo, enviamos em anexo o Termo de Consentimento de Dados Pessoais (LGPD). Pedimos a gentileza de assinar o documento anexo e nos enviar uma cópia (digitalizada ou foto legível). Você pode responder diretamente a esta mensagem ou enviá-la para igrejaadcapital@gmail.com.\n\nFraternalmente,\nEquipe AD Capital',
+                                subject='Bem-vindo à AD Capital! (Acesso ao Portal)',
+                                body=msg_corpo,
                                 filename=nome_arquivo,
                                 file_content=pdf_bytes
                             )
@@ -125,10 +156,9 @@ def auto_cadastro_direto(request):
                             print(f"Erro ao enviar via Resend (bg): {email_err}")
                     
                     threading.Thread(target=enviar_bg).start()
-            except Exception as lgpd_err:
-                # Loga o erro mas NÃO quebra o request de cadastro
-                print(f"AVISO: Falha na lógica LGPD (Cadastro salvo no entanto): {lgpd_err}")
-            # --- END LGPD LOGIC ---
+            except Exception as user_err:
+                print(f"AVISO: Falha na criação de usuário ou e-mail: {user_err}")
+            # --- END USER ACCESS & LGPD LOGIC ---
 
             # Lógica de Parentesco (Apenas se enviado, para evitar apagar o que já existe em um update parcial)
             if 'parentescos_novo' in data:

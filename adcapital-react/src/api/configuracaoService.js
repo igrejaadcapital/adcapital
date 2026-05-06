@@ -32,9 +32,11 @@ const configuracaoService = {
   saveProgramacao: (data) => api.post('/agenda/programacao-semanal/', data),
   deleteProgramacao: (id) => api.delete(`/agenda/programacao-semanal/${id}/`),
   
-  // Gestão de Usuários (RBAC)
+  // Gestão de Usuários (RBAC) & Senhas
   listarUsuarios: () => api.get('/usuarios/'),
   atualizarPapelUsuario: (id, role) => api.patch(`/usuarios/${id}/`, { role }),
+  trocarSenha: (nova_senha) => api.post('/auth/trocar-senha/', { nova_senha }),
+  resetarSenha: (cpf) => api.post('/auth/resetar-senha/', { cpf }),
 };
 
 export default configuracaoService;
