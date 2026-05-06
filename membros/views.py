@@ -886,13 +886,18 @@ class UsuariosView(APIView):
         if not hasattr(request.user, 'perfil') or request.user.perfil.role != 'ADMIN':
             return Response({'error': 'Acesso negado'}, status=403)
         
-        usuarios = User.objects.all().select_related('perfil').order_by('username')
+        usuarios = User.objects.all().select_related('perfil__membro').order_by('username')
         data = []
         for u in usuarios:
+            nome_exibicao = u.get_full_name()
+            # Se o nome no User estiver vazio, tenta pegar do Membro vinculado
+            if not nome_exibicao and hasattr(u, 'perfil') and u.perfil.membro:
+                nome_exibicao = u.perfil.membro.nome
+            
             data.append({
                 'id': u.id,
                 'username': u.username,
-                'nome': u.get_full_name() or u.username,
+                'nome': nome_exibicao or u.username,
                 'role': u.perfil.role if hasattr(u, 'perfil') else 'MEMBRO',
                 'is_active': u.is_active
             })

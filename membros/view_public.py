@@ -104,9 +104,13 @@ def auto_cadastro_direto(request):
                 username = cpf_limpo
                 senha_padrao = cpf_limpo[:5] # 5 primeiros dígitos do CPF
                 
-                user, created = User.objects.get_or_create(username=username, defaults={'email': membro.email or ''})
+                user, created = User.objects.get_or_create(username=username, defaults={'email': membro.email or '', 'first_name': membro.nome})
                 if created:
                     user.set_password(senha_padrao)
+                    user.save()
+                elif not user.first_name:
+                    # Se o usuário já existia (ex: de um teste anterior) mas estava sem nome, atualiza
+                    user.first_name = membro.nome
                     user.save()
                 
                 # Garante vínculo Perfil -> Membro
