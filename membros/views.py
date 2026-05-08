@@ -25,6 +25,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from rest_framework import viewsets
+from rest_framework.pagination import PageNumberPagination
 
 from rest_framework.views import APIView
 
@@ -415,9 +416,12 @@ class FotoGaleriaViewSet(viewsets.ModelViewSet):
 
         return [IsAuthenticated()]
 
-class MembroViewSet(viewsets.ModelViewSet):
+class MembroPagination(PageNumberPagination):
+    page_size = 50
 
+class MembroViewSet(viewsets.ModelViewSet):
     """CRUD administrativo completo para Membros"""
+    pagination_class = MembroPagination
 
     queryset = Membro.objects.all().select_related('funcao').prefetch_related('parentescos__membro_destino')
 
