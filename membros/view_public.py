@@ -131,9 +131,20 @@ def auto_cadastro_direto(request):
                 # 3. Enviar por e-mail com Instruções de Acesso
                 if membro.email:
                     import threading
-                    def enviar_bg():
+                    def enviar_bg(m_id, filename, content):
+                        from django.db import connection, close_old_connections
                         try:
+                            # Libera conexão antes de chamar API externa
+                            close_old_connections()
+                            connection.close()
+
                             from .utils import enviar_email_resend_api
+                            from .models import Membro
+                            
+                            # Busca o membro apenas para garantir que existe
+                            # Mas não precisamos segurar a conexão se já temos os dados
+                            # No entanto, o resend não precisa do DB
+                            
                             msg_corpo = (
                                 f"Olá {membro.nome},\n\n"
                                 "É com alegria que confirmamos o seu cadastro no portal da Igreja AD Capital.\n\n"
@@ -153,13 +164,21 @@ def auto_cadastro_direto(request):
                                 to=membro.email,
                                 subject='Bem-vindo à AD Capital! (Acesso ao Portal)',
                                 body=msg_corpo,
-                                filename=nome_arquivo,
-                                file_content=pdf_bytes
+                                filename=filename,
+                                file_content=content
                             )
                         except Exception as email_err:
                             print(f"Erro ao enviar via Resend (bg): {email_err}")
+                        finally:
+                            try:
+                                connection.close()
+                            except:
+                                pass
                     
-                    threading.Thread(target=enviar_bg).start()
+                    threading.Thread(
+                        target=enviar_bg, 
+                        args=(membro.id, nome_arquivo, pdf_bytes)
+                    ).start()
             except Exception as user_err:
                 print(f"AVISO: Falha na criação de usuário ou e-mail: {user_err}")
             # --- END USER ACCESS & LGPD LOGIC ---

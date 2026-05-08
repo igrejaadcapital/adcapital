@@ -270,32 +270,30 @@ def buscar_opcoes_parentesco(request):
 @authentication_classes([])
 
 def buscar_configuracao_publica(request):
-
-    """Retorna apenas o status e a pergunta do portal para o píºblico"""
-
-    # Usamos filter(id=1).first() para evitar escrita desnecessária e deadlock
-
-    config = ConfiguracaoPortal.objects.filter(id=1).first()
-
-    if not config:
-
-        # Fallback em memória se o registro sumir
+    """Retorna apenas o status e a pergunta do portal para o público. Cache leve de 5 min."""
+    from django.db import connection, close_old_connections
+    try:
+        # Garante que não estamos usando uma conexão zumbi
+        close_old_connections()
+        config = ConfiguracaoPortal.objects.filter(id=1).first()
+        
+        if not config:
+            return Response({
+                "is_ativo": True,
+                "pergunta": "Qual o seu melhor amigo?"
+            })
 
         return Response({
-
-            "is_ativo": True,
-
-            "pergunta": "Qual o seu melhor amigo?"
-
+            "is_ativo": config.is_ativo,
+            "pergunta": config.pergunta
         })
-
-    return Response({
-
-        "is_ativo": config.is_ativo,
-
-        "pergunta": config.pergunta
-
-    })
+    except Exception as e:
+        print(f"Erro ao buscar config pública: {e}")
+        # Fallback de segurança se o banco estiver inacessível
+        return Response({
+            "is_ativo": True,
+            "pergunta": "Qual o seu melhor amigo? (Modo de Segurança)"
+        })
 
 @api_view(['POST'])
 
@@ -512,112 +510,77 @@ class MembroViewSet(viewsets.ModelViewSet):
                     membro_destino_id=p_id,
 
                     defaults={'grau': grau}
-
                 )
 
 def _executar_tarefas_pos_cadastro(membro_id, parentescos_data):
-
     """
-
-    Executa tarefas pesadas em background. 
-
-    Prioriza o E-mail e captura os bytes do PDF imediatamente para evitar erros de arquivo fechado.
-
+    Executa tarefas pesadas em background sem prender a conexão com o banco.
     """
-
+    from django.db import connection, close_old_connections
     try:
-
+        # 1. Garante conexão limpa e busca dados básicos
+        close_old_connections()
         from .models import Membro, Parentesco
-
         membro = Membro.objects.get(id=membro_id)
+        
+        # Carrega dados necessários e FECHA a conexão antes da rede/cpu
+        membro_nome = membro.nome
+        membro_email = membro.email
+        membro_cpf = membro.cpf
+        connection.close() 
 
-        # 1. Geração de PDF e Captura Imediata de Bytes
+        print(f"--- [BG-THREAD] Iniciando processamento para {membro_nome} ---")
 
-        print(f"--- [BG-THREAD] Iniciando processamento para {membro.nome} ---")
-
+        # 2. Geração de PDF (CPU Heavy)
+        from .utils import gerar_termo_lgpd_pdf, enviar_email_resend_api
         nome_arquivo, pdf_file = gerar_termo_lgpd_pdf(membro)
-
         pdf_bytes = pdf_file.read()
-
         print(f"--- [BG-THREAD] PDF Gerado ({len(pdf_bytes)} bytes)")
 
-        # 2. Envio de E-mail via Resend API (Bypass SMTP Block)
-
-        if membro.email:
-
-            print(f"--- [BG-THREAD] Usando Resend API para {membro.email}...")
-
-            sucesso = enviar_email_resend_api(
-
-                to=membro.email,
-
+        # 3. Envio de E-mail (Network Heavy - Timeout 15s)
+        if membro_email:
+            print(f"--- [BG-THREAD] Usando Resend API para {membro_email}...")
+            enviar_email_resend_api(
+                to=membro_email,
                 subject='Bem-vindo! Seu Termo de Ciência e Aceite (LGPD)',
-
-                body=f'Olá {membro.nome},\n\ní com alegria que confirmamos o seu cadastro no portal da Igreja Assembleia de Deus Ministério na Capital.\n\nPara finalizarmos o processo administrativo, enviamos em anexo o Termo de Consentimento de Dados Pessoais (LGPD). Pedimos a gentileza de assinar o documento anexo e nos enviar uma cópia (digitalizada ou foto legível). Você pode responder diretamente a esta mensagem ou enviá-la para igrejaadcapital@gmail.com.\n\nFraternalmente,\nEquipe AD Capital',
-
+                body=f'Olá {membro_nome},\n\ní‰ com alegria que confirmamos o seu cadastro no portal da Igreja Assembleia de Deus Ministério na Capital.\n\nPara finalizarmos o processo administrativo, enviamos em anexo o Termo de Consentimento de Dados Pessoais (LGPD). Pedimos a gentileza de assinar o documento anexo e nos enviar uma cópia (digitalizada ou foto legível). Você pode responder diretamente a esta mensagem ou enviá-la para igrejaadcapital@gmail.com.\n\nFraternalmente,\nEquipe AD Capital',
                 filename=nome_arquivo,
-
                 file_content=pdf_bytes
-
             )
 
-            if sucesso:
-
-                print("--- [BG-THREAD] E-mail enviado com sucesso via Resend.")
-
-            else:
-
-                print("--- [BG-THREAD] AVISO: Falha no envio via Resend. Verifique logs acima.")
-
-        # 3. Salvamento do PDF não assinado no Cloudinary (para o membro baixar)
-
-        print(f"--- [BG-THREAD] Salvando PDF no Cloudinary...")
-
+        # 4. Volta ao Banco (Cloudinary e Parentesco)
+        # O Django abrirá uma nova conexão automaticamente aqui
+        close_old_connections()
+        membro = Membro.objects.get(id=membro_id)
+        from django.core.files.base import ContentFile
         membro.lgpd_documento.save(nome_arquivo, ContentFile(pdf_bytes), save=True)
 
-        # NíO marca lgpd_consentido - o status permanece PENDENTE até o admin fazer upload do documento assinado
-
-        print(f"--- [BG-THREAD] PDF salvo no Cloudinary. Status: PENDENTE (aguardando assinatura física)")
-
-        # 4. Lí³gica de Parentesco
-
         if parentescos_data:
-
             print("--- [BG-THREAD] Processando parentescos...")
-
             for item in parentescos_data:
-
                 p_id = item.get('parente_id') or item.get('membro_destino')
-
                 grau = item.get('grau')
-
                 if p_id and grau and str(p_id) != str(membro.id):
-
                     if Membro.objects.filter(id=p_id).exists():
-
                         Parentesco.objects.get_or_create(
-
                             membro_origem=membro,
-
                             membro_destino_id=p_id,
-
                             defaults={'grau': grau}
-
                         )
-
             print("--- [BG-THREAD] Parentescos processados.")
 
     except Exception:
-
-        print("--- [BG-THREAD] ERRO CRíTICO EM TAREFAS DE BACKGROUND ---")
-
+        print("--- [BG-THREAD] ERRO CRí TICO EM TAREFAS DE BACKGROUND ---")
+        import traceback
         traceback.print_exc()
 
     finally:
-        from django.db import connection
         try:
             connection.close()
-            print("--- [BG-THREAD] Conexão com banco fechada.")
+            print("--- [BG-THREAD] Conexão finalizada.")
+        except:
+            pass
+m banco fechada.")
         except:
             pass
 
@@ -972,15 +935,28 @@ class ResetarSenhaView(APIView):
                         "Recomendamos que você altere esta senha assim que entrar no portal.\n\n"
                         "Se você não solicitou esta alteração, procure a secretaria da igreja."
                     )
-                    enviar_email_resend_api(
-                        to=email_destino, 
-                        subject="Senha Resetada - Portal AD Capital", 
-                        body=msg
-                    )
-                except Exception as e:
-                    print(f"Erro ao enviar email de reset: {e}")
+                    def enviar_bg():
+                        from django.db import connection, close_old_connections
+                        try:
+                            # Libera conexão para o pool
+                            close_old_connections()
+                            connection.close()
+
+                            from .utils import enviar_email_resend_api
+                            enviar_email_resend_api(
+                                to=email_destino, 
+                                subject="Senha Resetada - Portal AD Capital", 
+                                body=msg
+                            )
+                        except Exception as e:
+                            print(f"Erro ao enviar email de reset: {e}")
+                        finally:
+                            try:
+                                connection.close()
+                            except:
+                                pass
             
-            threading.Thread(target=enviar_bg).start()
+                    threading.Thread(target=enviar_bg).start()
             return Response({"success": f"Senha resetada com sucesso! Instruções enviadas para {email_destino}"})
             
         return Response({"success": "Senha resetada para os 5 últimos dígitos do seu CPF. (Não conseguimos enviar email pois não há endereço cadastrado)"})

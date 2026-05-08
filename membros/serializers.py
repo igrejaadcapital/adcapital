@@ -34,8 +34,8 @@ class MembroSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True
     )
-    # Isso vai buscar todos os parentes vinculados a este membro
-    parentes = serializers.SerializerMethodField()
+    # Isso vai buscar todos os parentes vinculados a este membro usando o prefetch_related já existente no ViewSet
+    parentes = ParentescoDetalheSerializer(source='parentescos', many=True, read_only=True)
 
     class Meta:
         model = Membro
@@ -48,10 +48,6 @@ class MembroSerializer(serializers.ModelSerializer):
             'telefone': {'required': False, 'allow_null': True},
         }
 
-    def get_parentes(self, obj):
-        # Busca parentescos onde este membro é a origem
-        relacoes = Parentesco.objects.filter(membro_origem=obj)
-        return ParentescoDetalheSerializer(relacoes, many=True).data
 
     def validate_nome(self, value):
         return value.upper() if value else value

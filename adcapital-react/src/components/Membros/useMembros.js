@@ -18,7 +18,9 @@ export function useMembros() {
                 membroService.getFuncoes(),
                 membroService.getGraus()
             ]);
-            setMembros(m.data);
+            // Se os dados vierem paginados, pegamos o array de 'results'. Caso contrário, usamos o array direto.
+            const listaMembros = Array.isArray(m.data) ? m.data : (m.data.results || []);
+            setMembros(listaMembros);
             setFuncoes(f.data);
             setGraus(g.data);
         } catch (err) {

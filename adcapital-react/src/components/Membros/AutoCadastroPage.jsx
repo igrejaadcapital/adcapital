@@ -34,7 +34,7 @@ export default function AutoCadastroPage() {
             setLoading(true);
             setError('');
             try {
-                const res = await api.get(`/configuracao-portal/publica/`);
+                const res = await api.get(`/configuracao-portal/publica/`, { timeout: 15000 });
                 if (res.data) {
                     setPergunta(res.data.pergunta || 'Qual o seu melhor amigo?');
                     setPortalAtivo(res.data.is_ativo);
