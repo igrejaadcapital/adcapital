@@ -482,7 +482,7 @@ export default function SettingsPage() {
                         {usuarios.map(u => (
                           <tr key={u.id} className="group hover:bg-slate-50 transition-colors">
                             <td className="py-4 px-2">
-                              <p className="font-bold text-slate-800 text-sm">{u.nome}</p>
+                              <p className="font-bold text-slate-800 text-sm">{u.nome?.split(' ')[0]}</p>
                               <p className="text-[10px] text-slate-400 font-bold uppercase">{u.username}</p>
                             </td>
                             <td className="py-4 px-2 text-center">
