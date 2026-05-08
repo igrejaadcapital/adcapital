@@ -580,9 +580,6 @@ def _executar_tarefas_pos_cadastro(membro_id, parentescos_data):
             print("--- [BG-THREAD] Conexão finalizada.")
         except:
             pass
-m banco fechada.")
-        except:
-            pass
 
 class AutoCadastroMembroView(APIView):
 
