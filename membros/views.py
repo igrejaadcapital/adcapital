@@ -920,10 +920,14 @@ class ResetarSenhaView(APIView):
             
         if email_destino:
             import threading
-            from .utils import enviar_email_resend_api
-            
             def enviar_bg():
+                from django.db import connection, close_old_connections
                 try:
+                    # Libera conexão para o pool
+                    close_old_connections()
+                    connection.close()
+
+                    from .utils import enviar_email_resend_api
                     msg = (
                         f"Olá,\n\n"
                         "Conforme solicitado, sua senha de acesso ao Portal AD Capital foi resetada.\n\n"
@@ -932,28 +936,20 @@ class ResetarSenhaView(APIView):
                         "Recomendamos que você altere esta senha assim que entrar no portal.\n\n"
                         "Se você não solicitou esta alteração, procure a secretaria da igreja."
                     )
-                    def enviar_bg():
-                        from django.db import connection, close_old_connections
-                        try:
-                            # Libera conexão para o pool
-                            close_old_connections()
-                            connection.close()
-
-                            from .utils import enviar_email_resend_api
-                            enviar_email_resend_api(
-                                to=email_destino, 
-                                subject="Senha Resetada - Portal AD Capital", 
-                                body=msg
-                            )
-                        except Exception as e:
-                            print(f"Erro ao enviar email de reset: {e}")
-                        finally:
-                            try:
-                                connection.close()
-                            except:
-                                pass
+                    enviar_email_resend_api(
+                        to=email_destino, 
+                        subject="Senha Resetada - Portal AD Capital", 
+                        body=msg
+                    )
+                except Exception as e:
+                    print(f"Erro ao enviar email de reset: {e}")
+                finally:
+                    try:
+                        connection.close()
+                    except:
+                        pass
             
-                    threading.Thread(target=enviar_bg).start()
+            threading.Thread(target=enviar_bg).start()
             return Response({"success": f"Senha resetada com sucesso! Instruções enviadas para {email_destino}"})
             
         return Response({"success": "Senha resetada para os 5 últimos dígitos do seu CPF. (Não conseguimos enviar email pois não há endereço cadastrado)"})
