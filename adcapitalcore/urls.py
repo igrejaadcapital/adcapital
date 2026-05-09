@@ -9,7 +9,7 @@ from membros.view_public import (
     portal_verificar_resposta_direto,
     auto_cadastro_direto
 )
-from membros.views import run_migrations_debug, CustomTokenObtainPairView
+from membros.views import run_migrations_debug, CustomTokenObtainPairView, ping_view
 
 urlpatterns = [
     # [PORTAL PUBLIC ROUTES - ROBUST MAPPING]
@@ -25,6 +25,7 @@ urlpatterns = [
     path('api/v', portal_verificar_resposta_direto),
     path('api/c', auto_cadastro_direto),
     path('api/debug/migrate/', run_migrations_debug),
+    path('api/ping/', ping_view, name='ping'),
 
     path('admin/', admin.site.urls),
     path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),

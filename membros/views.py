@@ -73,6 +73,13 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
+@authentication_classes([])
+def ping_view(request):
+    """Endpoint ultraleve para acordar o servidor (Cold Start) sem tocar no banco de dados."""
+    return Response({'status': 'ok', 'message': 'Servidor acordado!'}, status=200)
+
+@api_view(['GET'])
 
 @permission_classes([AllowAny])
 

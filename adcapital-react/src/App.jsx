@@ -13,6 +13,7 @@ import AutoCadastroPage from './components/Membros/AutoCadastroPage'
 import LandingPage from './components/SitePublico/LandingPage'
 import AnalyticsPage from './components/Analytics/AnalyticsPage'
 import MemberPortal from './components/Membros/Portal/MemberPortal'
+import api from './api/config'
 
 function MainApp({ logout }) {
   const { user } = useAuth();
@@ -157,6 +158,26 @@ function App() {
     const handleHashChange = () => setHash(window.location.hash);
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  // [WARM-UP LOGIC]
+  // Acorda o servidor assim que o app carrega e a cada 10 minutos
+  useEffect(() => {
+    const warmup = async () => {
+      try {
+        // Usamos fetch direto para ser o mais leve possível e evitar interceptores de autenticação
+        const baseUrl = import.meta.env.VITE_API_URL || 'https://api.adcapitaligreja.com.br/api';
+        console.log("[Warm-up] Enviando sinal de despertar para o servidor...");
+        await fetch(`${baseUrl}/ping/`);
+        console.log("[Warm-up] Servidor respondeu com sucesso.");
+      } catch (err) {
+        console.warn("[Warm-up] Falha ao enviar sinal, mas tudo bem, o servidor deve acordar no próximo request real.");
+      }
+    };
+
+    warmup(); // Chama imediatamente no load
+    const interval = setInterval(warmup, 10 * 60 * 1000); // A cada 10 minutos
+    return () => clearInterval(interval);
   }, []);
   
   const currentHash = window.location.hash.toLowerCase();
