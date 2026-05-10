@@ -36,13 +36,12 @@ export default function MembroTable({ membros, onEdit, onDelete, deletandoId }) 
   });
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mt-6 overflow-x-auto relative">
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 mt-6 overflow-x-auto relative">
       <table className="w-full text-left border-collapse min-w-[800px]">
         <thead>
           <tr className="bg-slate-50 border-b border-slate-200">
             <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">CPF</th>
-            <th 
-              className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest w-full min-w-[300px] cursor-pointer hover:bg-slate-100 transition-colors group"
+            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest min-w-[250px] cursor-pointer hover:bg-slate-100 transition-colors group"
               onClick={toggleSort}
             >
               <div className="flex items-center gap-2">
@@ -58,7 +57,7 @@ export default function MembroTable({ membros, onEdit, onDelete, deletandoId }) 
             <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Função</th>
             <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Nascimento</th>
             <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">LGPD</th>
-            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Ações</th>
+            <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right min-w-[100px]">Ações</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
@@ -122,7 +121,7 @@ export default function MembroTable({ membros, onEdit, onDelete, deletandoId }) 
                   )}
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <div className={`flex justify-end gap-2 transition-opacity ${isDeleting ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                  <div className={`flex justify-end gap-2 transition-opacity ${isDeleting ? 'opacity-50' : ''}`}>
                     <button
                       onClick={() => onEdit(m)}
                       disabled={isDeleting}
