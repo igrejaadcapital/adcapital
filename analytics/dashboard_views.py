@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.db import connection, close_old_connections
-from django.db.models import Count, Sum
+from django.db.models import Count, Sum, Q
 from django.db.models.functions import TruncMonth
 from membros.models import Membro
 from financeiro.models import Transacao
@@ -32,8 +32,8 @@ class ConsolidatedDashboardView(APIView):
             
             # Finanças Totais
             financas_totais = Transacao.objects.aggregate(
-                entradas=Sum('valor', filter=timezone.models.Q(tipo='ENTRADA')),
-                saidas=Sum('valor', filter=timezone.models.Q(tipo='SAIDA'))
+                entradas=Sum('valor', filter=Q(tipo='ENTRADA')),
+                saidas=Sum('valor', filter=Q(tipo='SAIDA'))
             )
             total_entradas = financas_totais['entradas'] or 0
             total_saidas = financas_totais['saidas'] or 0
