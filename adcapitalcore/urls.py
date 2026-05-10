@@ -9,9 +9,13 @@ from membros.view_public import (
     portal_verificar_resposta_direto,
     auto_cadastro_direto
 )
-from membros.views import run_migrations_debug, CustomTokenObtainPairView, ping_view
+from analytics.dashboard_views import ConsolidatedDashboardView
+from membros.views import run_migrations_debug, CustomTokenObtainPairView, ping_view, health_check
 
 urlpatterns = [
+    # [DASHBOARD CONSOLIDADO - PERFORMANCE]
+    path('api/dashboard/resumo/', ConsolidatedDashboardView.as_view(), name='dashboard-resumo'),
+    path('api/health/', health_check, name='health-check'),
     # [PORTAL PUBLIC ROUTES - ROBUST MAPPING]
     # Mapeamento redundante para garantir que NUNCA dê 404 em produção
     path('v/', portal_verificar_resposta_direto, name='portal_v'),

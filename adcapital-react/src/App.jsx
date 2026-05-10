@@ -13,12 +13,15 @@ import AutoCadastroPage from './components/Membros/AutoCadastroPage'
 import LandingPage from './components/SitePublico/LandingPage'
 import AnalyticsPage from './components/Analytics/AnalyticsPage'
 import MemberPortal from './components/Membros/Portal/MemberPortal'
+import { useDashboard } from './hooks/useDashboard'
 import api from './api/config'
 
 function MainApp({ logout }) {
   const { user } = useAuth();
-  const { membros, membrosFiltrados, busca, setBusca, funcoes, graus, carregarDados, loading, error } = useMembros();
+  const { membros, membrosFiltrados, busca, setBusca, funcoes, graus, carregarDados, loading: loadingMembros, error: errorMembros } = useMembros();
   const [telaAtiva, setTelaAtiva] = useState(user?.role === 'MEMBRO' ? 'portal' : 'home');
+
+  const { homeData, analyticsData, loading: loadingDashboard, error: errorDashboard, retry: retryDashboard } = useDashboard();
 
   const {
     transacoes,
@@ -83,15 +86,15 @@ function MainApp({ logout }) {
         )}
         {telaAtiva === 'home' && (
           <DashboardHome
-            totalMembros={membros.length}
-            saldoBancario={saldoAtual}
-            entradas={totalEntradas}
-            saidas={totalSaidas}
+            totalMembros={homeData.total_membros}
+            saldoBancario={homeData.saldo_atual}
+            entradas={homeData.total_entradas}
+            saidas={homeData.total_saidas}
             irParaMembros={() => setTelaAtiva('membros')}
             irParaFinanceiro={() => setTelaAtiva('financeiro')}
-            loading={loading}
-            error={error}
-            retry={carregarDados}
+            loading={loadingDashboard}
+            error={errorDashboard}
+            retry={retryDashboard}
           />
         )}
 
@@ -104,8 +107,8 @@ function MainApp({ logout }) {
             funcoes={funcoes}
             graus={graus}
             carregarDados={carregarDados}
-            loading={loading}
-            error={error}
+            loading={loadingMembros}
+            error={errorMembros}
           />
         )}
 
@@ -164,14 +167,22 @@ function App() {
   // Acorda o servidor assim que o app carrega e a cada 10 minutos
   useEffect(() => {
     const warmup = async () => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+      
       try {
-        // Usamos fetch direto para ser o mais leve possível e evitar interceptores de autenticação
         const baseUrl = import.meta.env.VITE_API_URL || 'https://api.adcapitaligreja.com.br/api';
         console.log("[Warm-up] Enviando sinal de despertar para o servidor...");
-        await fetch(`${baseUrl}/ping/`);
+        await fetch(`${baseUrl}/ping/`, { signal: controller.signal });
         console.log("[Warm-up] Servidor respondeu com sucesso.");
       } catch (err) {
-        console.warn("[Warm-up] Falha ao enviar sinal, mas tudo bem, o servidor deve acordar no próximo request real.");
+        if (err.name === 'AbortError') {
+            console.warn("[Warm-up] Timeout ao despertar, o servidor pode estar em Cold Start intenso.");
+        } else {
+            console.warn("[Warm-up] Falha ao enviar sinal, mas tudo bem.");
+        }
+      } finally {
+        clearTimeout(timeoutId);
       }
     };
 

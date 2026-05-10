@@ -8,12 +8,13 @@ import StatusView from '../Common/StatusView';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
-export default function AnalyticsPage() {
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
+export default function AnalyticsPage({ preloadedData }) {
+  const [stats, setStats] = useState(preloadedData || null);
+  const [loading, setLoading] = useState(!preloadedData);
   const [error, setError] = useState(null);
 
   const carregarDados = async () => {
+    if (preloadedData && stats) return; // Se já temos dados, não recarrega sozinho
     setLoading(true);
     try {
       const data = await analyticsService.getDashboardStats();
@@ -27,8 +28,10 @@ export default function AnalyticsPage() {
   };
 
   useEffect(() => {
-    carregarDados();
-  }, []);
+    if (!preloadedData) {
+        carregarDados();
+    }
+  }, [preloadedData]);
 
   if (error) return <StatusView error={error} onRetry={carregarDados} />;
   if (loading || !stats) return <StatusView loading={true} />;

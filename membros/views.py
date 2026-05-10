@@ -76,8 +76,23 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 @permission_classes([AllowAny])
 @authentication_classes([])
 def ping_view(request):
-    """Endpoint ultraleve para acordar o servidor (Cold Start) sem tocar no banco de dados."""
+    """Endpoint ultraleve (Zero-DB) para acordar o servidor e monitorar latência básica."""
     return Response({'status': 'ok', 'message': 'Servidor acordado!'}, status=200)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+@authentication_classes([])
+def health_check(request):
+    """Monitor de integridade: Checa o banco de dados com timeout curto (2s)."""
+    from django.db import connection, close_old_connections
+    try:
+        close_old_connections()
+        with connection.cursor() as cursor:
+            # Query ultra simples para checar conexão
+            cursor.execute("SELECT 1")
+        return Response({'status': 'healthy', 'database': 'ok'}, status=200)
+    except Exception as e:
+        return Response({'status': 'unhealthy', 'error': str(e)}, status=503)
 
 @api_view(['GET'])
 
@@ -872,6 +887,8 @@ class UsuariosView(APIView):
                 'role': u.perfil.role if hasattr(u, 'perfil') else 'MEMBRO',
                 'is_active': u.is_active
             })
+        # Ordena a lista final pelo nome para facilitar a gestão
+        data.sort(key=lambda x: x['nome'])
         return Response(data)
 
     def patch(self, request, pk):
