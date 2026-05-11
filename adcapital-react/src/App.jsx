@@ -163,31 +163,35 @@ function App() {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  // [WARM-UP LOGIC]
-  // Acorda o servidor assim que o app carrega e a cada 10 minutos
+  // [WARM-UP LOGIC] - Agressivo com retry para combater Cold Start
   useEffect(() => {
-    const warmup = async () => {
+    const warmup = async (attempt = 1) => {
+      const maxAttempts = 4;
+      const delays = [5000, 15000, 30000, 60000]; // 5s, 15s, 30s, 60s
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
-      
+      const timeoutId = setTimeout(() => controller.abort(), 20000); // 20s timeout por tentativa
+
       try {
         const baseUrl = import.meta.env.VITE_API_URL || 'https://api.adcapitaligreja.com.br/api';
-        console.log("[Warm-up] Enviando sinal de despertar para o servidor...");
+        console.log(`[Warm-up] Tentativa ${attempt}/${maxAttempts}...`);
         await fetch(`${baseUrl}/ping/`, { signal: controller.signal });
         console.log("[Warm-up] Servidor respondeu com sucesso.");
       } catch (err) {
-        if (err.name === 'AbortError') {
-            console.warn("[Warm-up] Timeout ao despertar, o servidor pode estar em Cold Start intenso.");
-        } else {
-            console.warn("[Warm-up] Falha ao enviar sinal, mas tudo bem.");
+        if (attempt < maxAttempts) {
+          const wait = delays[attempt - 1];
+          console.warn(`[Warm-up] Falha (tentativa ${attempt}). Retentando em ${wait/1000}s...`);
+          clearTimeout(timeoutId);
+          await new Promise(r => setTimeout(r, wait));
+          return warmup(attempt + 1);
         }
+        console.warn("[Warm-up] Servidor não respondeu após todas as tentativas. O servidor deve acordar no próximo request real.");
       } finally {
         clearTimeout(timeoutId);
       }
     };
 
     warmup(); // Chama imediatamente no load
-    const interval = setInterval(warmup, 10 * 60 * 1000); // A cada 10 minutos
+    const interval = setInterval(() => warmup(), 4 * 60 * 1000); // A cada 4 minutos (abaixo dos 15 min do Render)
     return () => clearInterval(interval);
   }, []);
   

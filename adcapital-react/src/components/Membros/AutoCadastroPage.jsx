@@ -10,10 +10,9 @@ import { Loader2 } from 'lucide-react';
 const BASE_HOST = 'https://api.adcapitaligreja.com.br/api';
 
 export default function AutoCadastroPage() {
-    // 1. Estratégia de Independência: Funções fixas para estabilidade, mas Pergunta dinâmica
     const [pergunta, setPergunta] = useState('Qual o seu melhor amigo?');
     const [portalAtivo, setPortalAtivo] = useState(true);
-    const [funcoes] = useState([
+    const [funcoes, setFuncoes] = useState([
         { id: 1, nome: 'Membro' },
         { id: 2, nome: 'Obreiro' },
         { id: 3, nome: 'Diácono' },
@@ -28,32 +27,56 @@ export default function AutoCadastroPage() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [graus, setGraus] = useState([]);
+    const [serverWaking, setServerWaking] = useState(false); // Estado de "servidor acordando"
 
     React.useEffect(() => {
-        const fetchConfig = async () => {
+        let cancelled = false;
+
+        const fetchConfig = async (attempt = 1) => {
+            const maxAttempts = 3;
             setLoading(true);
             setError('');
-            try {
-                const res = await api.get(`/configuracao-portal/publica/`, { timeout: 15000 });
-                if (res.data) {
-                    setPergunta(res.data.pergunta || 'Qual o seu melhor amigo?');
-                    setPortalAtivo(res.data.is_ativo);
-                }
-            } catch (err) {
-                console.error("Erro ao carregar config:", err);
-                setError("O servidor está demorando a responder. Tente novamente em instantes.");
-            }
             
+            if (attempt > 1) {
+                setServerWaking(true);
+            }
+
             try {
-                const resGraus = await api.get('/opcoes-parentesco/');
-                if (resGraus.data) setGraus(resGraus.data);
+                // ENDPOINT CONSOLIDADO: 1 request em vez de 3
+                const res = await api.get('/init-publico/');
+                if (cancelled) return;
+                
+                if (res.data) {
+                    setPergunta(res.data.portal?.pergunta || 'Qual o seu melhor amigo?');
+                    setPortalAtivo(res.data.portal?.is_ativo ?? true);
+                    if (res.data.graus) setGraus(res.data.graus);
+                    if (res.data.funcoes?.length > 0) setFuncoes(res.data.funcoes);
+                }
+                setServerWaking(false);
             } catch (err) {
-                console.error("Erro ao carregar graus:", err);
+                if (cancelled) return;
+                console.error(`Erro ao carregar config (tentativa ${attempt}):`, err);
+                
+                if (attempt < maxAttempts) {
+                    // O axios já faz retry automático via interceptor, mas aqui
+                    // tratamos o caso de falha TOTAL (após os 3 retries do axios)
+                    const waitTime = attempt * 5000;
+                    setError(`Servidor está iniciando... Tentando novamente em ${waitTime/1000}s (${attempt}/${maxAttempts})`);
+                    setServerWaking(true);
+                    await new Promise(r => setTimeout(r, waitTime));
+                    if (!cancelled) return fetchConfig(attempt + 1);
+                } else {
+                    setError('');
+                    setServerWaking(false);
+                    // Usa dados de fallback que já estão nos estados default
+                }
             } finally {
-                setLoading(false);
+                if (!cancelled) setLoading(false);
             }
         };
+
         fetchConfig();
+        return () => { cancelled = true; };
     }, []);
     
     const [formData, setFormData] = useState({
@@ -204,7 +227,23 @@ export default function AutoCadastroPage() {
                     <p className="text-slate-400 font-bold uppercase text-[10px] tracking-[0.2em] mb-8">Cadastro e Atualização de Dados</p>
                     
                     <div className="w-full space-y-4 relative min-h-[150px]">
-                        <StatusView loading={loading && !resposta} />
+                        {/* Mostrar "servidor acordando" com animação amigável */}
+                        {serverWaking && (
+                            <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-[2px] rounded-2xl">
+                                <div className="flex flex-col items-center gap-3 p-6">
+                                    <div className="relative">
+                                        <Loader2 className="animate-spin text-blue-600" size={36} />
+                                    </div>
+                                    <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest text-center animate-pulse">
+                                        Preparando o sistema...
+                                    </span>
+                                    <span className="text-[9px] font-bold text-slate-400 text-center">
+                                        O servidor está sendo iniciado. Isso pode levar alguns segundos.
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+                        <StatusView loading={loading && !resposta && !serverWaking} />
                         {!portalAtivo && <p className="text-rose-500 text-xs font-black text-center mb-4 uppercase">Portal Desativado no Momento</p>}
                         <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">{pergunta}</label>
                         <input 
@@ -216,9 +255,9 @@ export default function AutoCadastroPage() {
                             disabled={loading || !portalAtivo}
                             autoFocus
                         />
-                        {error && <p className="text-rose-500 text-[10px] font-bold text-center mt-2 uppercase tracking-wide">{error}</p>}
+                        {error && !serverWaking && <p className="text-rose-500 text-[10px] font-bold text-center mt-2 uppercase tracking-wide">{error}</p>}
                         
-                        <button type="submit" disabled={loading || !portalAtivo} className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-blue-200 active:scale-95 transition-all mt-4 disabled:opacity-50 flex items-center justify-center gap-2">
+                        <button type="submit" disabled={loading || !portalAtivo || serverWaking} className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-blue-200 active:scale-95 transition-all mt-4 disabled:opacity-50 flex items-center justify-center gap-2">
                             {loading ? (
                                 <>
                                     <Loader2 className="animate-spin" size={20} />

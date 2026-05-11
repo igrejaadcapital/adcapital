@@ -2,7 +2,7 @@ import StatusView from '../Common/StatusView';
 
 export default function DashboardHome({ totalMembros, saldoBancario, entradas, saidas, irParaMembros, irParaFinanceiro, loading, error, retry }) {
   if (error && !loading) {
-    return <StatusView error={error} onRetry={retry} />;
+    return <StatusView error={error} onRetry={retry} autoRetry={true} autoRetryDelay={10} />;
   }
 
   const dados = [

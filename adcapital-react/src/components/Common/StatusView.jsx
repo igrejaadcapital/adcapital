@@ -1,5 +1,5 @@
-import React from 'react';
-import { AlertCircle, RefreshCcw, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { AlertCircle, RefreshCcw, Loader2, Wifi } from 'lucide-react';
 
 /**
  * StatusView - Componente universal para feedback de Carregamento e Erro.
@@ -10,6 +10,8 @@ import { AlertCircle, RefreshCcw, Loader2 } from 'lucide-react';
  * @param {string} subMessage - Mensagem secundária (explicação).
  * @param {function} onRetry - Função disparada ao clicar em "Tentar Novamente".
  * @param {boolean} fullPage - Se verdadeiro, ocupa a tela inteira (fixed). Caso contrário, relativo ao pai.
+ * @param {boolean} autoRetry - Se verdadeiro, faz retry automático após countdown.
+ * @param {number} autoRetryDelay - Delay em segundos para auto-retry (default: 10).
  */
 export default function StatusView({ 
     loading, 
@@ -17,8 +19,31 @@ export default function StatusView({
     message = "O servidor demorou a responder", 
     subMessage = "Isso acontece às vezes quando o sistema fica muito tempo parado (Cold Start).", 
     onRetry, 
-    fullPage = false 
+    fullPage = false,
+    autoRetry = false,
+    autoRetryDelay = 10
 }) {
+    const [countdown, setCountdown] = useState(autoRetryDelay);
+
+    // Auto-retry com contagem regressiva
+    useEffect(() => {
+        if (!error || !onRetry || !autoRetry) return;
+        setCountdown(autoRetryDelay);
+        
+        const interval = setInterval(() => {
+            setCountdown(prev => {
+                if (prev <= 1) {
+                    clearInterval(interval);
+                    onRetry();
+                    return autoRetryDelay;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+        
+        return () => clearInterval(interval);
+    }, [error, autoRetry, autoRetryDelay, onRetry]);
+
     // Se não houver erro nem carregamento, não renderiza nada.
     if (!loading && !error) return null;
 
@@ -42,13 +67,21 @@ export default function StatusView({
                         </p>
                     </div>
                     {onRetry && (
-                        <button 
-                            onClick={onRetry}
-                            className="flex items-center gap-2 bg-slate-900 text-white px-8 py-3 rounded-full font-black text-[10px] uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-lg"
-                        >
-                            <RefreshCcw size={14} className={loading ? "animate-spin" : ""} />
-                            {loading ? "Reconectando..." : "Tentar Novamente"}
-                        </button>
+                        <div className="flex flex-col items-center gap-2">
+                            <button 
+                                onClick={onRetry}
+                                className="flex items-center gap-2 bg-slate-900 text-white px-8 py-3 rounded-full font-black text-[10px] uppercase tracking-[0.2em] hover:scale-105 active:scale-95 transition-all shadow-lg"
+                            >
+                                <RefreshCcw size={14} className={loading ? "animate-spin" : ""} />
+                                {loading ? "Reconectando..." : "Tentar Novamente"}
+                            </button>
+                            {autoRetry && (
+                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                                    <Wifi size={10} className="animate-pulse" />
+                                    Reconectando automaticamente em {countdown}s...
+                                </span>
+                            )}
+                        </div>
                     )}
                 </div>
             </div>

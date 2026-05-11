@@ -1,1 +1,1 @@
-web: gunicorn adcapitalcore.wsgi --log-file - --threads 4 --timeout 90
+web: gunicorn adcapitalcore.wsgi --workers 2 --threads 2 --preload --timeout 120 --log-file -

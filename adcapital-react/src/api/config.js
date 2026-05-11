@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL || 'https://api.adcapitaligreja.com.br/api',
-    timeout: 90000 // Aumentado para 90s para suportar "Cold Starts" do Render e envio de e-mails LGPD com anexo
+    timeout: 90000 // 90s para suportar Cold Starts do Render
 });
 
 api.interceptors.request.use(config => {
@@ -31,24 +31,38 @@ const processQueue = (error, token = null) => {
 // Função auxiliar de delay para retry
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+// Erros que merecem retry automático (servidor acordando)
+const isRetryableError = (error) => {
+    const status = error.response?.status;
+    // 502/503/504 = servidor reiniciando, ECONNABORTED = timeout, sem response = rede
+    return (
+        status === 502 || status === 503 || status === 504 ||
+        error.code === 'ECONNABORTED' ||
+        error.code === 'ERR_NETWORK' ||
+        (!error.response && error.message?.includes('Network Error'))
+    );
+};
+
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
 
-        // --- RETRY AUTOMÁTICO PARA 502/503 (Cold Start do Render) ---
-        const status = error.response?.status;
-        if ((status === 502 || status === 503) && (!originalRequest._retryCount || originalRequest._retryCount < 3)) {
+        // --- RETRY AUTOMÁTICO PROGRESSIVO (Cold Start / Rede) ---
+        if (isRetryableError(error) && (!originalRequest._retryCount || originalRequest._retryCount < 3)) {
             originalRequest._retryCount = (originalRequest._retryCount || 0) + 1;
-            const waitTime = originalRequest._retryCount * 2000; // 2s, 4s, 6s
-            console.warn(`[Retry ${originalRequest._retryCount}/3] Servidor retornou ${status}. Tentando novamente em ${waitTime/1000}s...`);
+            // Backoff exponencial: 3s, 8s, 15s
+            const delays = [3000, 8000, 15000];
+            const waitTime = delays[originalRequest._retryCount - 1];
+            const status = error.response?.status || 'TIMEOUT';
+            console.warn(`[Retry ${originalRequest._retryCount}/3] Erro ${status}. Retentando em ${waitTime/1000}s...`);
             await delay(waitTime);
             return api(originalRequest);
         }
 
-        // Se for erro de timeout ou rede (sem resposta do servidor)
+        // Se for erro de timeout ou rede após todas as tentativas
         if (error.code === 'ECONNABORTED' || !error.response) {
-            console.error("Erro de conexão ou tempo de resposta esgotado.");
+            console.error("Erro de conexão ou tempo de resposta esgotado (após retries).");
             return Promise.reject(error);
         }
 

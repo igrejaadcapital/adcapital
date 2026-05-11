@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import threading
-
 import json
-
 import traceback
-
 import urllib.request
-
 import xml.etree.ElementTree as ET
+import time
+import os
 
 from django.core.mail import EmailMessage
 
@@ -77,6 +75,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 @authentication_classes([])
 def ping_view(request):
     """Endpoint ultraleve (Zero-DB) para acordar o servidor e monitorar latência básica."""
+    _garantir_keep_alive()  # Garante que o self-keep-alive está rodando
     return Response({'status': 'ok', 'message': 'Servidor acordado!'}, status=200)
 
 @api_view(['GET'])
@@ -88,11 +87,117 @@ def health_check(request):
     try:
         close_old_connections()
         with connection.cursor() as cursor:
-            # Query ultra simples para checar conexão
             cursor.execute("SELECT 1")
         return Response({'status': 'healthy', 'database': 'ok'}, status=200)
     except Exception as e:
         return Response({'status': 'unhealthy', 'error': str(e)}, status=503)
+
+# ========================================================================
+# SELF-KEEP-ALIVE: Impede o Render Free de desligar o servidor
+# ========================================================================
+_keep_alive_started = False
+_keep_alive_lock = threading.Lock()
+
+def _self_keep_alive_loop():
+    """Thread daemon que faz self-ping a cada 4 minutos para manter o Render acordado."""
+    api_url = os.environ.get('RENDER_EXTERNAL_URL', 'https://api.adcapitaligreja.com.br')
+    ping_url = f"{api_url}/api/ping/"
+    while True:
+        time.sleep(240)  # 4 minutos (abaixo do limite de 15 min do Render)
+        try:
+            req = urllib.request.Request(ping_url, headers={'User-Agent': 'SelfKeepAlive/1.0'})
+            urllib.request.urlopen(req, timeout=15)
+            print(f"[Keep-Alive] Self-ping OK em {ping_url}")
+        except Exception as e:
+            print(f"[Keep-Alive] Falha no self-ping: {e}")
+
+def _garantir_keep_alive():
+    """Inicia o loop de keep-alive apenas uma vez (thread-safe)."""
+    global _keep_alive_started
+    if _keep_alive_started:
+        return
+    with _keep_alive_lock:
+        if _keep_alive_started:
+            return
+        _keep_alive_started = True
+        t = threading.Thread(target=_self_keep_alive_loop, daemon=True)
+        t.start()
+        print("[Keep-Alive] Thread de self-ping iniciada (intervalo: 4 min)")
+
+# ========================================================================
+# ENDPOINTS CONSOLIDADOS: Reduz múltiplos requests para 1
+# ========================================================================
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+@authentication_classes([])
+def init_publico(request):
+    """
+    Endpoint consolidado para a página de Auto-Cadastro.
+    Retorna config do portal + opções de parentesco + opções de função em 1 chamada.
+    """
+    _garantir_keep_alive()
+    from django.db import close_old_connections
+    try:
+        close_old_connections()
+        config = ConfiguracaoPortal.objects.filter(id=1).first()
+        graus = [{'id': f[0], 'nome': f[1]} for f in Parentesco.GRAU_CHOICES]
+        funcoes_db = Funcao.objects.all().order_by('nome')
+        funcoes_list = [{'id': f.id, 'nome': f.nome} for f in funcoes_db]
+
+        return Response({
+            'portal': {
+                'is_ativo': config.is_ativo if config else True,
+                'pergunta': config.pergunta if config else 'Qual o seu melhor amigo?',
+            },
+            'graus': graus,
+            'funcoes': funcoes_list,
+        })
+    except Exception as e:
+        print(f"Erro em init_publico: {e}")
+        return Response({
+            'portal': {'is_ativo': True, 'pergunta': 'Qual o seu melhor amigo? (Modo Seguro)'},
+            'graus': [{'id': f[0], 'nome': f[1]} for f in Parentesco.GRAU_CHOICES],
+            'funcoes': [{'id': 1, 'nome': 'Membro'}],
+        })
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+@authentication_classes([])
+def init_site(request):
+    """
+    Endpoint consolidado para o Site Institucional (Landing Page).
+    Retorna config do site + programação semanal + galeria em 1 chamada.
+    """
+    _garantir_keep_alive()
+    from django.db import close_old_connections
+    from agenda.models import ProgramacaoSemanal
+    from agenda.serializers import ProgramacaoSemanalSerializer
+    try:
+        close_old_connections()
+        config = ConfiguracaoSite.objects.filter(id=1).first()
+        if not config:
+            config, _ = ConfiguracaoSite.objects.get_or_create(id=1)
+        config_data = ConfiguracaoSiteSerializer(config).data
+
+        programacao = ProgramacaoSemanal.objects.all().order_by('dia_semana', 'ordem')
+        programacao_data = ProgramacaoSemanalSerializer(programacao, many=True).data
+
+        galeria = FotoGaleria.objects.all().order_by('ordem', '-criado_em')
+        galeria_data = FotoGaleriaSerializer(galeria, many=True).data
+
+        return Response({
+            'config': config_data,
+            'programacao': programacao_data,
+            'galeria': galeria_data,
+        })
+    except Exception as e:
+        print(f"Erro em init_site: {e}")
+        return Response({
+            'config': {},
+            'programacao': [],
+            'galeria': [],
+        })
 
 @api_view(['GET'])
 

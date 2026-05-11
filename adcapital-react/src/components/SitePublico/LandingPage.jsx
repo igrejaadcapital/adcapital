@@ -30,28 +30,38 @@ const LandingPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    let cancelled = false;
+
+    const fetchData = async (attempt = 1) => {
+      const maxAttempts = 3;
       try {
-        const [resConfig, resProg, resGal] = await Promise.all([
-          api.get('/configuracao-site/'),
-          api.get('/agenda/programacao-semanal/'),
-          api.get('/galeria/')
-        ]);
-        setConfig(resConfig.data);
-        setProgramacao(resProg.data);
-        setGaleria(resGal.data);
+        // ENDPOINT CONSOLIDADO: 1 request em vez de 3
+        const res = await api.get('/init-site/');
+        if (cancelled) return;
+
+        setConfig(res.data.config || null);
+        setProgramacao(res.data.programacao || []);
+        setGaleria(res.data.galeria || []);
 
         // Busca o último vídeo separadamente (não bloqueia o carregamento)
-        if (resConfig.data?.youtube_channel_id) {
+        if (res.data.config?.youtube_channel_id) {
           api.get('/ultimo-video/').then(r => setUltimoVideo(r.data)).catch(() => { });
         }
       } catch (err) {
-        console.error("Erro ao carregar dados do site:", err);
+        console.error(`Erro ao carregar dados do site (tentativa ${attempt}):`, err);
+        if (attempt < maxAttempts && !cancelled) {
+          // Retry com backoff: o axios interceptor já faz 3 retries,
+          // mas se falhou total, tentamos o endpoint inteiro de novo
+          const waitTime = attempt * 5000;
+          await new Promise(r => setTimeout(r, waitTime));
+          if (!cancelled) return fetchData(attempt + 1);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
     fetchData();
+    return () => { cancelled = true; };
   }, []);
 
   const scrollTo = (id) => {

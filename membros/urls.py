@@ -16,7 +16,9 @@ from .views import (
     MeusDadosView,
     UsuariosView,
     TrocarSenhaView,
-    ResetarSenhaView
+    ResetarSenhaView,
+    init_publico,
+    init_site,
 )
 
 from .view_public import (
@@ -36,7 +38,11 @@ urlpatterns = [
     path('v/', portal_verificar_resposta_direto, name='portal_v'),
     path('c/', auto_cadastro_direto, name='portal_c'),
     
-    # Novas rotas para o Dashboard Admin e Site Público
+    # [ENDPOINTS CONSOLIDADOS - PERFORMANCE] Um request em vez de 3-5
+    path('init-publico/', init_publico, name='init-publico'),
+    path('init-site/', init_site, name='init-site'),
+
+    # Rotas legadas (mantidas para compatibilidade)
     path('opcoes-funcao/', buscar_opcoes_funcao, name='opcoes-funcao'),
     path('opcoes-parentesco/', buscar_opcoes_parentesco, name='opcoes-parentesco'),
     path('configuracao-portal/publica/', buscar_configuracao_publica, name='config-publica'),

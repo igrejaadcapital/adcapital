@@ -13,9 +13,10 @@ export function AuthProvider({ children }) {
   const [error, setError] = useState(null);
   const [carregando, setCarregando] = useState(false);
 
-  const login = async (username, password) => {
+  const login = async (username, password, attempt = 1) => {
+    const maxAttempts = 3;
     setCarregando(true);
-    setError(null);
+    if (attempt === 1) setError(null);
     try {
       const response = await fetch(`${API_URL}/token/`, {
         method: 'POST',
@@ -39,7 +40,13 @@ export function AuthProvider({ children }) {
         return false;
       }
     } catch (err) {
-      setError('Erro de conexão ao tentar logar no servidor.');
+      // Se for erro de rede (cold start), retenta automaticamente
+      if (attempt < maxAttempts) {
+        setError(`Servidor iniciando... Tentativa ${attempt}/${maxAttempts}`);
+        await new Promise(r => setTimeout(r, 5000));
+        return login(username, password, attempt + 1);
+      }
+      setError('Erro de conexão ao tentar logar no servidor. Tente novamente em instantes.');
       return false;
     } finally {
       setCarregando(false);
