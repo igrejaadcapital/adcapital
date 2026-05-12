@@ -4,23 +4,30 @@ import LancamentoFinanceiroFormModal from './ModalLancamentosFinanceiro/Lancamen
 import financeiroService from '../../api/financeiroService';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import ImportarOFXModal from './ImportarOFXModal';
+import { useFinanceiro } from './useFinanceiro';
+import { useCategoriasFinanceiras } from './useCategoriasFinanceiras';
 
-export default function FinanceiroMain({
-    transacoes,
-    transacoesFiltradas,
-    buscaTexto, setBuscaTexto,
-    buscaMes, setBuscaMes,
-    atualizarTransacoes,
-    totalEntradas,
-    totalSaidas,
-    saldoAtual,
-    categoriasEntrada,
-    categoriasSaida,
-    adicionarCategoriaEntrada,
-    adicionarCategoriaSaida,
-    loading,
-    error
-}) {
+export default function FinanceiroMain() {
+    const {
+        transacoes,
+        transacoesFiltradas,
+        buscaTexto, setBuscaTexto,
+        buscaMes, setBuscaMes,
+        atualizarTransacoes,
+        totalEntradas,
+        totalSaidas,
+        saldoAtual,
+        loading,
+        error
+    } = useFinanceiro();
+
+    const {
+        categoriasEntrada,
+        categoriasSaida,
+        adicionarCategoriaEntrada,
+        adicionarCategoriaSaida,
+    } = useCategoriasFinanceiras();
+
     const [mostrarModal, setMostrarModal] = useState(false);
     const [tipoLancamento, setTipoLancamento] = useState('ENTRADA');
     const [lancamentoParaEditar, setLancamentoParaEditar] = useState(null);

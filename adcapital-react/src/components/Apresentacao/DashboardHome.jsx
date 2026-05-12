@@ -1,6 +1,14 @@
 import StatusView from '../Common/StatusView';
+import { useDashboard } from '../../hooks/useDashboard';
 
-export default function DashboardHome({ totalMembros, saldoBancario, entradas, saidas, irParaMembros, irParaFinanceiro, loading, error, retry }) {
+export default function DashboardHome({ irParaMembros, irParaFinanceiro }) {
+  const { homeData, loading, error, retry } = useDashboard();
+  
+  const totalMembros = homeData?.total_membros || 0;
+  const saldoBancario = homeData?.saldo_atual || 0;
+  const entradas = homeData?.total_entradas || 0;
+  const saidas = homeData?.total_saidas || 0;
+
   if (error && !loading) {
     return <StatusView error={error} onRetry={retry} autoRetry={true} autoRetryDelay={10} />;
   }

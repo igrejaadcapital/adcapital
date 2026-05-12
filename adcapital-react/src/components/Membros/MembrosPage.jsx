@@ -1,22 +1,25 @@
+import React, { useState } from 'react';
 import StatusView from '../Common/StatusView';
-import { useState } from 'react';
 import Header from '../Header';
 import MembroCard from './MembroCard';
 import MembroTable from './MembroTable';
 import CadastroMainFormModal from './ModalCadastro/CadastroMainFormModal';
 import membroService from '../../api/membroService';
+import { useMembros } from './useMembros';
 
-export default function MembrosPage({
-  membros,
-  membrosFiltrados,
-  busca,
-  setBusca,
-  funcoes,
-  graus,
-  carregarDados,
-  loading,
-  error
-}) {
+export default function MembrosPage() {
+  const { 
+    membros, 
+    membrosFiltrados, 
+    busca, 
+    setBusca, 
+    funcoes, 
+    graus, 
+    carregarDados, 
+    loading, 
+    error 
+  } = useMembros();
+
   const [mostrarModal, setMostrarModal] = useState(false);
   const [membroParaEditar, setMembroParaEditar] = useState(null);
   const [viewType, setViewType] = useState('list'); // 'list' ou 'grid'

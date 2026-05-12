@@ -18,31 +18,8 @@ import api from './api/config'
 
 function MainApp({ logout }) {
   const { user } = useAuth();
-  const { membros, membrosFiltrados, busca, setBusca, funcoes, graus, carregarDados, loading: loadingMembros, error: errorMembros } = useMembros();
   const [telaAtiva, setTelaAtiva] = useState(user?.role === 'MEMBRO' ? 'mensagens' : 'home');
 
-
-  const { homeData, analyticsData, loading: loadingDashboard, error: errorDashboard, retry: retryDashboard } = useDashboard();
-
-  const {
-    transacoes,
-    transacoesFiltradas,
-    buscaTexto, setBuscaTexto,
-    buscaMes, setBuscaMes,
-    atualizarTransacoes,
-    totalEntradas,
-    totalSaidas,
-    saldoAtual,
-    loading: loadingFinanceiro,
-    error: errorFinanceiro
-  } = useFinanceiro();
-
-  const {
-    categoriasEntrada,
-    categoriasSaida,
-    adicionarCategoriaEntrada,
-    adicionarCategoriaSaida,
-  } = useCategoriasFinanceiras();
 
   return (
     <div className="min-h-screen bg-slate-100 font-sans text-slate-900">
@@ -91,51 +68,17 @@ function MainApp({ logout }) {
         )}
         {telaAtiva === 'home' && (
           <DashboardHome
-            totalMembros={homeData.total_membros}
-            saldoBancario={homeData.saldo_atual}
-            entradas={homeData.total_entradas}
-            saidas={homeData.total_saidas}
             irParaMembros={() => setTelaAtiva('membros')}
             irParaFinanceiro={() => setTelaAtiva('financeiro')}
-            loading={loadingDashboard}
-            error={errorDashboard}
-            retry={retryDashboard}
           />
         )}
 
         {telaAtiva === 'membros' && (
-          <MembrosPage
-            membros={membros}
-            membrosFiltrados={membrosFiltrados}
-            busca={busca}
-            setBusca={setBusca}
-            funcoes={funcoes}
-            graus={graus}
-            carregarDados={carregarDados}
-            loading={loadingMembros}
-            error={errorMembros}
-          />
+          <MembrosPage />
         )}
 
         {telaAtiva === 'financeiro' && (
-          <FinanceiroMain
-            transacoes={transacoes}
-            transacoesFiltradas={transacoesFiltradas}
-            buscaTexto={buscaTexto}
-            setBuscaTexto={setBuscaTexto}
-            buscaMes={buscaMes}
-            setBuscaMes={setBuscaMes}
-            atualizarTransacoes={atualizarTransacoes}
-            totalEntradas={totalEntradas}
-            totalSaidas={totalSaidas}
-            saldoAtual={saldoAtual}
-            categoriasEntrada={categoriasEntrada}
-            categoriasSaida={categoriasSaida}
-            adicionarCategoriaEntrada={adicionarCategoriaEntrada}
-            adicionarCategoriaSaida={adicionarCategoriaSaida}
-            loading={loadingFinanceiro}
-            error={errorFinanceiro}
-          />
+          <FinanceiroMain />
         )}
 
         {telaAtiva === 'agenda' && user?.role !== 'MEMBRO' && (
@@ -196,7 +139,7 @@ function App() {
     };
 
     warmup(); // Chama imediatamente no load
-    const interval = setInterval(() => warmup(), 4 * 60 * 1000); // A cada 4 minutos (abaixo dos 15 min do Render)
+    const interval = setInterval(() => warmup(), 10 * 60 * 1000); // A cada 10 minutos
     return () => clearInterval(interval);
   }, []);
   
