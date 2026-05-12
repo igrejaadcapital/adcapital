@@ -32,6 +32,9 @@ export default function MemberPortal({ abaAtiva = 'mensagens' }) {
       setFormData(res.data);
       setOpcoesFuncao(resFuncoes.data);
       setDevocionais(resDevocionais.data);
+      if (resDevocionais.data.length > 0) {
+        setDevocionalExpandida(resDevocionais.data[0].id);
+      }
     } catch (err) {
       const msg = err.response?.data?.error || 'Erro ao carregar dados.';
       setMensagem({ type: 'error', text: msg });
@@ -115,7 +118,7 @@ export default function MemberPortal({ abaAtiva = 'mensagens' }) {
             <span className="text-[9px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase">{devocionais.length} Mensagens</span>
           </div>
           <div className="divide-y divide-slate-100">
-            {devocionais.map(d => {
+            {devocionais.slice(0, 30).map(d => {
               const isExpanded = devocionalExpandida === d.id;
               return (
                 <div key={d.id} className="transition-colors hover:bg-slate-50/50">
