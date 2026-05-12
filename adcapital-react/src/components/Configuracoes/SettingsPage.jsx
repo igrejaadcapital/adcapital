@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import configuracaoService from '../../api/configuracaoService';
+import api from '../../api/config';
 import { 
   Globe, 
   ImageIcon, 
@@ -15,7 +16,8 @@ import {
   ShieldAlert,
   Layers,
   Loader2,
-  CheckCircle
+  CheckCircle,
+  MessageSquare
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
