@@ -235,6 +235,8 @@ export default function SettingsPage() {
         setDeletandoId(null);
       }
     }
+  };
+
   const handleSalvarDevocional = async () => {
     if (!novaDevocional.titulo || !novaDevocional.conteudo) return alert("Preencha título e conteúdo.");
     try {
