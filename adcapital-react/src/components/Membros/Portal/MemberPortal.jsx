@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import api from '../../../api/config';
 import StatusView from '../../Common/StatusView';
 import configuracaoService from '../../../api/configuracaoService';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronDown, BookOpen } from 'lucide-react';
 
-export default function MemberPortal() {
+export default function MemberPortal({ abaAtiva = 'mensagens' }) {
   const [dados, setDados] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editando, setEditando] = useState(false);
@@ -11,7 +13,7 @@ export default function MemberPortal() {
   const [mensagem, setMensagem] = useState(null);
   const [opcoesFuncao, setOpcoesFuncao] = useState([]);
   const [devocionais, setDevocionais] = useState([]);
-  const [aba, setAba] = useState('mensagens');
+  const [devocionalExpandida, setDevocionalExpandida] = useState(null);
 
   
   // Senha
@@ -96,55 +98,65 @@ export default function MemberPortal() {
         <p className="text-blue-200">Bem-vindo ao seu portal de membro.</p>
       </div>
 
-      <div className="flex gap-4 border-b border-slate-200 pb-2">
-        <button 
-          onClick={() => setAba('mensagens')}
-          className={`px-6 py-3 rounded-full font-black text-[10px] uppercase tracking-widest transition-all ${aba === 'mensagens' ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
-        >
-          Mensagens
-        </button>
-        <button 
-          onClick={() => setAba('perfil')}
-          className={`px-6 py-3 rounded-full font-black text-[10px] uppercase tracking-widest transition-all ${aba === 'perfil' ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
-        >
-          Meu Perfil
-        </button>
-      </div>
-
       {mensagem && (
         <div className={`p-4 rounded-2xl text-sm font-bold ${mensagem.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'}`}>
           {mensagem.text}
         </div>
       )}
 
-      {aba === 'mensagens' && (
+      {abaAtiva === 'mensagens' && (
         <div className="space-y-8">
           {/* Seção de Devocionais / Mensagens do Pastor */}
           {devocionais.length > 0 ? (
             <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden">
 
           <div className="bg-slate-50 p-6 border-b border-slate-100 flex items-center justify-between">
-            <h3 className="text-[11px] font-black text-slate-800 uppercase tracking-[0.2em]">📖 Palavra do Pastor / Devocional</h3>
-            <span className="text-[9px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase">Últimas Mensagens</span>
+            <h3 className="text-[11px] font-black text-slate-800 uppercase tracking-[0.2em] flex items-center gap-2"><BookOpen size={16} className="text-blue-600"/> Histórico de Devocionais</h3>
+            <span className="text-[9px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase">{devocionais.length} Mensagens</span>
           </div>
-          <div className="divide-y divide-slate-50">
-            {devocionais.slice(0, 3).map(d => (
-              <div key={d.id} className="p-8 space-y-4 hover:bg-slate-50/50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{new Date(d.data_publicacao).toLocaleDateString('pt-BR')}</span>
-                  <div className="h-px flex-1 bg-slate-100" />
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Por: {d.autor}</span>
+          <div className="divide-y divide-slate-100">
+            {devocionais.map(d => {
+              const isExpanded = devocionalExpandida === d.id;
+              return (
+                <div key={d.id} className="transition-colors hover:bg-slate-50/50">
+                  <button 
+                    onClick={() => setDevocionalExpandida(isExpanded ? null : d.id)}
+                    className="w-full text-left p-6 md:p-8 flex items-center justify-between gap-4"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-[9px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded uppercase tracking-widest">{new Date(d.data_publicacao).toLocaleDateString('pt-BR')}</span>
+                        <div className="w-1 h-1 rounded-full bg-slate-300" />
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Por: {d.autor}</span>
+                      </div>
+                      <h4 className={`text-lg md:text-xl font-black leading-tight transition-colors ${isExpanded ? 'text-blue-600' : 'text-slate-900'}`}>{d.titulo}</h4>
+                    </div>
+                    <div className={`p-2 rounded-full transition-all ${isExpanded ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-400'}`}>
+                      <motion.div animate={{ rotate: isExpanded ? 180 : 0 }}>
+                        <ChevronDown size={20} />
+                      </motion.div>
+                    </div>
+                  </button>
+
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        className="overflow-hidden"
+                      >
+                        <div className="p-6 md:p-8 pt-0 text-slate-600 leading-relaxed text-sm md:text-base whitespace-pre-wrap border-t border-slate-50 mt-2 bg-slate-50/30">
+                          {d.conteudo}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
-                <h4 className="text-xl font-black text-slate-900 leading-tight">{d.titulo}</h4>
-                <p className="text-slate-600 leading-relaxed text-sm whitespace-pre-wrap">{d.conteudo}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
-          {devocionais.length > 3 && (
-            <div className="p-4 bg-slate-50/50 text-center border-t border-slate-50">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">Acesse o grupo da igreja para ver o histórico completo</p>
-            </div>
-          )}
         </div>
           ) : (
             <div className="bg-white p-12 rounded-[2.5rem] border border-dashed border-slate-200 text-center">
@@ -154,7 +166,7 @@ export default function MemberPortal() {
         </div>
       )}
 
-      {aba === 'perfil' && (
+      {abaAtiva === 'perfil' && (
         <div className="space-y-8">
           <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6 overflow-hidden">
             <div className="flex justify-between items-center">

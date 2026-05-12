@@ -19,7 +19,8 @@ import api from './api/config'
 function MainApp({ logout }) {
   const { user } = useAuth();
   const { membros, membrosFiltrados, busca, setBusca, funcoes, graus, carregarDados, loading: loadingMembros, error: errorMembros } = useMembros();
-  const [telaAtiva, setTelaAtiva] = useState(user?.role === 'MEMBRO' ? 'portal' : 'home');
+  const [telaAtiva, setTelaAtiva] = useState(user?.role === 'MEMBRO' ? 'mensagens' : 'home');
+
 
   const { homeData, analyticsData, loading: loadingDashboard, error: errorDashboard, retry: retryDashboard } = useDashboard();
 
@@ -53,7 +54,10 @@ function MainApp({ logout }) {
           </div>
           <div className="flex gap-6 font-black text-[10px] uppercase tracking-[0.2em]">
           {user?.role === 'MEMBRO' ? (
-            <button onClick={() => setTelaAtiva('portal')} className={`pb-1 transition-all ${telaAtiva === 'portal' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Meu Perfil</button>
+            <>
+              <button onClick={() => setTelaAtiva('mensagens')} className={`pb-1 transition-all ${telaAtiva === 'mensagens' || telaAtiva === 'portal' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Mensagens</button>
+              <button onClick={() => setTelaAtiva('perfil')} className={`pb-1 transition-all ${telaAtiva === 'perfil' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Meu Perfil</button>
+            </>
           ) : (
             <>
               <button onClick={() => setTelaAtiva('home')} className={`pb-1 transition-all ${telaAtiva === 'home' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Início</button>
@@ -81,8 +85,8 @@ function MainApp({ logout }) {
       </nav>
 
       <main className="max-w-6xl mx-auto p-4">
-        {telaAtiva === 'portal' && (
-          <MemberPortal />
+        {(telaAtiva === 'portal' || telaAtiva === 'mensagens' || telaAtiva === 'perfil') && (
+          <MemberPortal abaAtiva={telaAtiva === 'perfil' ? 'perfil' : 'mensagens'} />
         )}
         {telaAtiva === 'home' && (
           <DashboardHome
