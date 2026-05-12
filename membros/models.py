@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.db import models
+from django.utils import timezone
 
 
 
@@ -882,3 +883,19 @@ class ComentarioPalavra(models.Model):
 
     def __str__(self):
         return f"{self.nome} - {self.criado_em.strftime('%d/%m/%Y')}"
+
+class Devocional(models.Model):
+    titulo = models.CharField(max_length=200, verbose_name="Título")
+    conteudo = models.TextField(verbose_name="Conteúdo")
+    data_publicacao = models.DateField(default=timezone.now, verbose_name="Data de Publicação")
+    autor = models.CharField(max_length=100, default='Pastor', verbose_name="Autor")
+    is_ativo = models.BooleanField(default=True, verbose_name="Ativo")
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-data_publicacao', '-criado_em']
+        verbose_name = "Devocional"
+        verbose_name_plural = "Devocionais"
+
+    def __str__(self):
+        return self.titulo

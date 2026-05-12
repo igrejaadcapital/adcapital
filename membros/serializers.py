@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Membro, Parentesco, Funcao, ConfiguracaoPortal, ConfiguracaoSite, FotoGaleria, ComentarioPalavra
+from .models import Membro, Parentesco, Funcao, ConfiguracaoPortal, ConfiguracaoSite, FotoGaleria, ComentarioPalavra, Devocional
 
 class ParentescoDetalheSerializer(serializers.ModelSerializer):
     nome_parente = serializers.ReadOnlyField(source='membro_destino.nome')
@@ -96,4 +96,9 @@ class FotoGaleriaSerializer(serializers.ModelSerializer):
 class ComentarioPalavraSerializer(serializers.ModelSerializer):
     class Meta:
         model = ComentarioPalavra
+        fields = '__all__'
+
+class DevocionalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Devocional
         fields = '__all__'

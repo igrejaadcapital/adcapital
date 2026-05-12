@@ -10,6 +10,7 @@ export default function MemberPortal() {
   const [formData, setFormData] = useState({});
   const [mensagem, setMensagem] = useState(null);
   const [opcoesFuncao, setOpcoesFuncao] = useState([]);
+  const [devocionais, setDevocionais] = useState([]);
   
   // Senha
   const [novaSenha, setNovaSenha] = useState('');
@@ -18,13 +19,15 @@ export default function MemberPortal() {
   const carregarDados = async () => {
     setLoading(true);
     try {
-      const [res, resFuncoes] = await Promise.all([
+      const [res, resFuncoes, resDevocionais] = await Promise.all([
         api.get('/membros/meus-dados/'),
-        api.get('/opcoes-funcao/')
+        api.get('/opcoes-funcao/'),
+        api.get('/devocionais/')
       ]);
       setDados(res.data);
       setFormData(res.data);
       setOpcoesFuncao(resFuncoes.data);
+      setDevocionais(resDevocionais.data);
     } catch (err) {
       const msg = err.response?.data?.error || 'Erro ao carregar dados.';
       setMensagem({ type: 'error', text: msg });
@@ -90,6 +93,34 @@ export default function MemberPortal() {
         <h1 className="text-3xl font-black italic">Olá, {dados.nome}! 👋</h1>
         <p className="text-blue-200">Bem-vindo ao seu portal de membro.</p>
       </div>
+
+      {/* Seção de Devocionais / Mensagens do Pastor */}
+      {devocionais.length > 0 && (
+        <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden">
+          <div className="bg-slate-50 p-6 border-b border-slate-100 flex items-center justify-between">
+            <h3 className="text-[11px] font-black text-slate-800 uppercase tracking-[0.2em]">📖 Palavra do Pastor / Devocional</h3>
+            <span className="text-[9px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase">Últimas Mensagens</span>
+          </div>
+          <div className="divide-y divide-slate-50">
+            {devocionais.slice(0, 3).map(d => (
+              <div key={d.id} className="p-8 space-y-4 hover:bg-slate-50/50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{new Date(d.data_publicacao).toLocaleDateString('pt-BR')}</span>
+                  <div className="h-px flex-1 bg-slate-100" />
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Por: {d.autor}</span>
+                </div>
+                <h4 className="text-xl font-black text-slate-900 leading-tight">{d.titulo}</h4>
+                <p className="text-slate-600 leading-relaxed text-sm whitespace-pre-wrap">{d.conteudo}</p>
+              </div>
+            ))}
+          </div>
+          {devocionais.length > 3 && (
+            <div className="p-4 bg-slate-50/50 text-center border-t border-slate-50">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic">Acesse o grupo da igreja para ver o histórico completo</p>
+            </div>
+          )}
+        </div>
+      )}
 
       {mensagem && (
         <div className={`p-4 rounded-2xl text-sm font-bold ${mensagem.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'}`}>

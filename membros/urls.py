@@ -2,6 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
     ComentarioPalavraViewSet,
+    DevocionalViewSet,
     verificar_aniversarios,
     MembroViewSet, 
     ConfiguracaoPortalViewSet,
@@ -37,6 +38,7 @@ router.register(r'configuracao-portal', ConfiguracaoPortalViewSet, basename='con
 router.register(r'configuracao-site', ConfiguracaoSiteViewSet, basename='configuracao-site')
 router.register(r'galeria', FotoGaleriaViewSet, basename='galeria')
 router.register(r'comentarios', ComentarioPalavraViewSet, basename='comentarios')
+router.register(r'devocionais', DevocionalViewSet, basename='devocionais')
 
 urlpatterns = [
     # Rotas Públicas (Sem autenticação no prefixo /api/)

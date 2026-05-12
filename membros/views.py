@@ -32,9 +32,9 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from .utils import gerar_termo_lgpd_pdf, enviar_email_resend_api
 
 from django.contrib.auth.models import User
-from .models import Membro, Parentesco, Funcao, ConfiguracaoPortal, ConfiguracaoSite, FotoGaleria, Perfil, ComentarioPalavra
+from .models import Membro, Parentesco, Funcao, ConfiguracaoPortal, ConfiguracaoSite, FotoGaleria, Perfil, ComentarioPalavra, Devocional
 
-from .serializers import MembroSerializer, ConfiguracaoPortalSerializer, ConfiguracaoSiteSerializer, FotoGaleriaSerializer, ComentarioPalavraSerializer
+from .serializers import MembroSerializer, ConfiguracaoPortalSerializer, ConfiguracaoSiteSerializer, FotoGaleriaSerializer, ComentarioPalavraSerializer, DevocionalSerializer
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
@@ -1112,6 +1112,15 @@ class ComentarioPalavraViewSet(viewsets.ModelViewSet):
     queryset = ComentarioPalavra.objects.all()
     serializer_class = ComentarioPalavraSerializer
     permission_classes = [AllowAny]  # GET e POST livres, DELETE protegido no frontend ou aqui
+
+class DevocionalViewSet(viewsets.ModelViewSet):
+    queryset = Devocional.objects.all()
+    serializer_class = DevocionalSerializer
+    
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
     def get_permissions(self):
         if self.action == 'destroy':

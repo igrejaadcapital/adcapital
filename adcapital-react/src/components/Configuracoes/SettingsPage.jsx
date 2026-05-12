@@ -55,6 +55,8 @@ export default function SettingsPage() {
   const [editProg, setEditProg] = useState(null);
   const [novaProg, setNovaProg] = useState({ dia_semana: 0, titulo: '', horario: '', ordem: 0 });
   const [comentarios, setComentarios] = useState([]);
+  const [devocionais, setDevocionais] = useState([]);
+  const [novaDevocional, setNovaDevocional] = useState({ titulo: '', conteudo: '', autor: 'Pastor', is_ativo: true });
   const [deletandoId, setDeletandoId] = useState(null);
   const [sucesso, setSucesso] = useState(false);
 
@@ -62,7 +64,7 @@ export default function SettingsPage() {
     try {
       setLoading(true);
       setError(false);
-      const [fRes, cRes, pRes, sRes, gRes, pgRes, uRes, comRes] = await Promise.all([
+      const [fRes, cRes, pRes, sRes, gRes, pgRes, uRes, comRes, devRes] = await Promise.all([
         configuracaoService.listarFuncoes(),
         configuracaoService.listarCategorias(),
         configuracaoService.getPortalConfig(),
@@ -70,7 +72,8 @@ export default function SettingsPage() {
         configuracaoService.getGaleria(),
         configuracaoService.getProgramacao(),
         configuracaoService.listarUsuarios().catch(() => ({ data: [] })), // Fallback if not admin
-        api.get('/comentarios/').catch(() => ({ data: [] }))
+        api.get('/comentarios/').catch(() => ({ data: [] })),
+        api.get('/devocionais/').catch(() => ({ data: [] }))
       ]);
       
       setFuncoes(fRes.data);
@@ -82,6 +85,7 @@ export default function SettingsPage() {
       setGaleria(gRes.data);
       setUsuarios(uRes.data);
       setComentarios(comRes.data);
+      setDevocionais(devRes.data || []);
     } catch (err) {
       console.error("Erro ao carregar configurações:", err);
       setError(true);
@@ -231,6 +235,31 @@ export default function SettingsPage() {
         setDeletandoId(null);
       }
     }
+  const handleSalvarDevocional = async () => {
+    if (!novaDevocional.titulo || !novaDevocional.conteudo) return alert("Preencha título e conteúdo.");
+    try {
+      setLoading(true);
+      await api.post('/devocionais/', novaDevocional);
+      setNovaDevocional({ titulo: '', conteudo: '', autor: 'Pastor', is_ativo: true });
+      await carregarDados();
+      alert("Devocional publicada!");
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao salvar devocional.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelDevocional = async (id) => {
+    if (confirm('Excluir esta devocional?')) {
+      try {
+        await api.delete(`/devocionais/${id}/`);
+        await carregarDados();
+      } catch (err) {
+        console.error(err);
+      }
+    }
   };
 
   return (
@@ -261,6 +290,9 @@ export default function SettingsPage() {
         </button>
         <button onClick={() => setAba('wiki')} className={cn("w-full p-4 rounded-3xl flex items-center gap-3 transition-all font-black text-xs uppercase tracking-widest", aba === 'wiki' ? "bg-blue-600 text-white shadow-lg" : "bg-white text-slate-400 border border-slate-100 hover:bg-slate-50")}>
           <BookOpen size={18} /> Wiki & TI
+        </button>
+        <button onClick={() => setAba('devocionais')} className={cn("w-full p-4 rounded-3xl flex items-center gap-3 transition-all font-black text-xs uppercase tracking-widest", aba === 'devocionais' ? "bg-blue-600 text-white shadow-lg" : "bg-white text-slate-400 border border-slate-100 hover:bg-slate-50")}>
+          <MessageSquare size={18} /> Devocionais
         </button>
       </aside>
 
@@ -796,6 +828,62 @@ export default function SettingsPage() {
                      <p>• <strong>Deploy:</strong> Todo git push na branch main inicia deploy automático no Render.</p>
                   </div>
                </div>
+            </section>
+          )}
+
+          {/* --- ABA DEVOCIONAIS --- */}
+          {aba === 'devocionais' && (
+            <section className="space-y-6">
+              <div className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 overflow-hidden">
+                <div className="p-8 border-b border-slate-100 bg-slate-50/50">
+                  <h2 className="font-black uppercase text-xs tracking-widest text-slate-800">Nova Devocional</h2>
+                </div>
+                <div className="p-8 space-y-4">
+                  <Field label="Título" value={novaDevocional.titulo} onChange={v => setNovaDevocional({...novaDevocional, titulo: v})} />
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Conteúdo da Mensagem</label>
+                    <textarea 
+                      className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl min-h-[200px] text-sm focus:outline-none focus:border-blue-500 transition-all"
+                      value={novaDevocional.conteudo}
+                      onChange={e => setNovaDevocional({...novaDevocional, conteudo: e.target.value})}
+                      placeholder="Escreva a palavra diária aqui..."
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Field label="Autor" value={novaDevocional.autor} onChange={v => setNovaDevocional({...novaDevocional, autor: v})} />
+                  </div>
+                  <button onClick={handleSalvarDevocional} className="w-full bg-blue-600 text-white p-5 rounded-3xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-600/20 hover:bg-blue-700 transition-all">
+                    Publicar Devocional
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="font-black uppercase text-[10px] tracking-widest text-slate-400 px-4">Histórico de Mensagens</h3>
+                {devocionais.length === 0 ? (
+                  <div className="bg-white p-12 rounded-[2.5rem] border border-dashed border-slate-200 text-center">
+                    <p className="text-slate-400 font-bold">Nenhuma devocional publicada ainda.</p>
+                  </div>
+                ) : (
+                  devocionais.map(d => (
+                    <div key={d.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex justify-between items-start gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="text-[9px] font-black bg-blue-50 text-blue-600 px-2 py-1 rounded-md uppercase tracking-tighter">
+                            {new Date(d.data_publicacao).toLocaleDateString()}
+                          </span>
+                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Por: {d.autor}</span>
+                        </div>
+                        <h4 className="font-bold text-slate-800 mb-1">{d.titulo}</h4>
+                        <p className="text-sm text-slate-500 line-clamp-2">{d.conteudo}</p>
+                      </div>
+                      <button onClick={() => handleDelDevocional(d.id)} className="p-3 text-rose-500 hover:bg-rose-50 rounded-xl transition-all">
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
             </section>
           )}
       </div>
