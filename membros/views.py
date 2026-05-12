@@ -57,6 +57,10 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 
     def validate(self, attrs):
+        # Limpa o username se for um CPF formatado (ex: 115.125...)
+        username = attrs.get("username", "")
+        if username and any(char in username for char in '.-'):
+            attrs["username"] = "".join(filter(str.isdigit, username))
 
         data = super().validate(attrs)
 

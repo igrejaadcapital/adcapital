@@ -102,7 +102,7 @@ def auto_cadastro_direto(request):
                 from .models import Perfil
                 
                 username = cpf_limpo
-                senha_padrao = cpf_limpo[:5] # 5 primeiros dígitos do CPF
+                senha_padrao = f"Adcapital{cpf_limpo[:5]}" # Prefixo + 5 primeiros dígitos do CPF
                 
                 user, created = User.objects.get_or_create(username=username, defaults={'email': membro.email or '', 'first_name': membro.nome})
                 if created:
