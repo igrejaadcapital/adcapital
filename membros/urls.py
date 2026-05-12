@@ -22,6 +22,7 @@ from .views import (
     init_publico,
     init_site,
     curtir_palavra,
+    resetar_senhas_em_massa,
 )
 
 from .view_public import (
@@ -47,6 +48,7 @@ urlpatterns = [
     path('init-site/', init_site, name='init-site'),
     path('curtir-palavra/', curtir_palavra, name='curtir-palavra'),
     path('verificar-aniversarios/', verificar_aniversarios, name='verificar-aniversarios'),
+    path('resetar-senhas-massa/', resetar_senhas_em_massa, name='resetar-senhas-massa'),
 
     # Rotas legadas (mantidas para compatibilidade)
     path('opcoes-funcao/', buscar_opcoes_funcao, name='opcoes-funcao'),

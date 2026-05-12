@@ -1046,7 +1046,7 @@ class TrocarSenhaView(APIView):
         return Response({"success": "Senha alterada com sucesso!"})
 
 class ResetarSenhaView(APIView):
-    """Reseta a senha para o padrão (5 últimos dígitos do CPF) e avisa por email"""
+    """Reseta a senha para o padrão (Adcapital + 5 primeiros dígitos do CPF) e avisa por email"""
     permission_classes = [AllowAny]
     
     def post(self, request):
@@ -1063,7 +1063,7 @@ class ResetarSenhaView(APIView):
         if len(cpf_limpo) < 5:
             return Response({"error": "CPF inválido"}, status=400)
             
-        nova_senha = cpf_limpo[-5:]
+        nova_senha = f"Adcapital{cpf_limpo[:5]}"
         user.set_password(nova_senha)
         user.save()
         
@@ -1084,7 +1084,7 @@ class ResetarSenhaView(APIView):
                     msg = (
                         f"Olá,\n\n"
                         "Conforme solicitado, sua senha de acesso ao Portal AD Capital foi resetada.\n\n"
-                        f"Sua NOVA SENHA são os **5 ÚLTIMOS DÍGITOS** do seu CPF: {nova_senha}\n\n"
+                        f"Sua NOVA SENHA: {nova_senha}\n\n"
                         "Acesse agora em: https://adcapitaligreja.com.br/#/portal\n\n"
                         "Recomendamos que você altere esta senha assim que entrar no portal.\n\n"
                         "Se você não solicitou esta alteração, procure a secretaria da igreja."
@@ -1154,3 +1154,30 @@ def verificar_aniversarios(request):
         return Response({'success': True, 'enviados': enviados})
     except Exception as e:
         return Response({'error': str(e)}, status=500)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+@authentication_classes([])
+def resetar_senhas_em_massa(request):
+    """Endpoint temporário para unificar todas as senhas para o padrão Adcapital + 5 primeiros dígitos do CPF."""
+    import re
+    atualizados = 0
+    erros = []
+    for m in Membro.objects.all():
+        if not m.cpf:
+            continue
+        cpf_limpo = "".join(re.findall(r'\d+', m.cpf))
+        if not cpf_limpo or len(cpf_limpo) < 5:
+            continue
+        user = User.objects.filter(username=cpf_limpo).first()
+        if not user:
+            from .models import Perfil
+            p = Perfil.objects.filter(membro=m).first()
+            if p:
+                user = p.user
+        if user:
+            nova_senha = f"Adcapital{cpf_limpo[:5]}"
+            user.set_password(nova_senha)
+            user.save()
+            atualizados += 1
+    return Response({'success': True, 'atualizados': atualizados, 'erros': erros})
