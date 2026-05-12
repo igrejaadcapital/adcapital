@@ -10,7 +10,8 @@ import {
   Image as ImageIcon,
   MessageSquare,
   Facebook,
-  ChevronDown
+  ChevronDown,
+  BookOpen
 } from 'lucide-react';
 import qrcode from '../../assets/qrcode.png';
 import api from '../../api/config';
