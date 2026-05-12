@@ -369,51 +369,6 @@ const LandingPage = () => {
         </section>
       )}
 
-      {/* --- DEVOCIONAIS / MENSAGENS DIÁRIAS --- */}
-      {devocionais.length > 0 && (
-        <section className="py-20 bg-slate-900/10 backdrop-blur-3xl relative overflow-hidden">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/5 rounded-full blur-[120px] pointer-events-none" />
-          
-          <div className="max-w-6xl mx-auto px-6 relative z-10">
-            <div className="text-center mb-16">
-              <span className="text-blue-500 font-black uppercase tracking-[0.3em] text-[10px] mb-3 block">Série de Palavras</span>
-              <h2 className="text-4xl md:text-5xl font-black uppercase italic tracking-tighter">Mensagens Diárias</h2>
-              <p className="text-slate-500 font-bold mt-2 uppercase text-xs">Acompanhe as últimas palavras e devocionais do Pastor</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {devocionais.slice(0, 6).map((d, index) => (
-                <motion.div
-                  key={d.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  className="bg-white/5 border border-white/5 p-8 rounded-[2.5rem] hover:bg-white/10 hover:border-blue-500/30 transition-all group flex flex-col h-full"
-                >
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-full bg-blue-600/20 flex items-center justify-center text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-all">
-                      <BookOpen size={18} />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{new Date(d.data_publicacao).toLocaleDateString('pt-BR')}</p>
-                      <p className="text-[9px] font-black text-blue-500 uppercase tracking-tighter">Por: {d.autor}</p>
-                    </div>
-                  </div>
-                  <h3 className="text-xl font-black text-white mb-4 leading-tight group-hover:text-blue-400 transition-colors">{d.titulo}</h3>
-                  <p className="text-slate-400 text-sm leading-relaxed mb-6 line-clamp-4 font-medium italic">"{d.conteudo}"</p>
-                  <div className="mt-auto pt-6 border-t border-white/5">
-                    <a href="#/portal" className="text-[10px] font-black text-blue-500 uppercase tracking-[0.2em] flex items-center gap-2 group-hover:gap-4 transition-all">
-                      Ler Completa <ChevronRight size={14} />
-                    </a>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* --- PROGRAMAÇÃO --- */}
       <section id="programacao" className="py-20 bg-slate-900/30">
         <div className="max-w-6xl mx-auto px-6">

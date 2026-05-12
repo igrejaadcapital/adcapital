@@ -11,6 +11,8 @@ export default function MemberPortal() {
   const [mensagem, setMensagem] = useState(null);
   const [opcoesFuncao, setOpcoesFuncao] = useState([]);
   const [devocionais, setDevocionais] = useState([]);
+  const [aba, setAba] = useState('mensagens');
+
   
   // Senha
   const [novaSenha, setNovaSenha] = useState('');
@@ -94,9 +96,33 @@ export default function MemberPortal() {
         <p className="text-blue-200">Bem-vindo ao seu portal de membro.</p>
       </div>
 
-      {/* Seção de Devocionais / Mensagens do Pastor */}
-      {devocionais.length > 0 && (
-        <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden">
+      <div className="flex gap-4 border-b border-slate-200 pb-2">
+        <button 
+          onClick={() => setAba('mensagens')}
+          className={`px-6 py-3 rounded-full font-black text-[10px] uppercase tracking-widest transition-all ${aba === 'mensagens' ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+        >
+          Mensagens
+        </button>
+        <button 
+          onClick={() => setAba('perfil')}
+          className={`px-6 py-3 rounded-full font-black text-[10px] uppercase tracking-widest transition-all ${aba === 'perfil' ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+        >
+          Meu Perfil
+        </button>
+      </div>
+
+      {mensagem && (
+        <div className={`p-4 rounded-2xl text-sm font-bold ${mensagem.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'}`}>
+          {mensagem.text}
+        </div>
+      )}
+
+      {aba === 'mensagens' && (
+        <div className="space-y-8">
+          {/* Seção de Devocionais / Mensagens do Pastor */}
+          {devocionais.length > 0 ? (
+            <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden">
+
           <div className="bg-slate-50 p-6 border-b border-slate-100 flex items-center justify-between">
             <h3 className="text-[11px] font-black text-slate-800 uppercase tracking-[0.2em]">📖 Palavra do Pastor / Devocional</h3>
             <span className="text-[9px] font-black text-blue-600 bg-blue-50 px-3 py-1 rounded-full uppercase">Últimas Mensagens</span>
@@ -120,16 +146,19 @@ export default function MemberPortal() {
             </div>
           )}
         </div>
-      )}
-
-      {mensagem && (
-        <div className={`p-4 rounded-2xl text-sm font-bold ${mensagem.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'}`}>
-          {mensagem.text}
+          ) : (
+            <div className="bg-white p-12 rounded-[2.5rem] border border-dashed border-slate-200 text-center">
+              <p className="text-slate-400 font-bold">Nenhuma mensagem disponível no momento.</p>
+            </div>
+          )}
         </div>
       )}
 
-      <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6 overflow-hidden">
-        <div className="flex justify-between items-center">
+      {aba === 'perfil' && (
+        <div className="space-y-8">
+          <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6 overflow-hidden">
+            <div className="flex justify-between items-center">
+
           <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">📋 Meus Dados Cadastrais</h3>
           {!editando && (
             <button onClick={() => setEditando(true)} className="text-xs font-black text-blue-600 uppercase">Editar Dados</button>
@@ -420,6 +449,8 @@ export default function MemberPortal() {
           <p className="text-emerald-600 text-sm font-medium">{dados.status === 'LIGADO' ? '✅ Você está com cadastro ativo e regular.' : '⚠️ Cadastro em revisão.'}</p>
         </div>
       </div>
+        </div>
+      )}
     </div>
   );
 }
