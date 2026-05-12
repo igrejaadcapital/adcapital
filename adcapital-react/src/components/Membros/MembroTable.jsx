@@ -3,6 +3,17 @@ import { Loader2, ArrowUpDown, ChevronUp, ChevronDown } from 'lucide-react';
 
 export default function MembroTable({ membros, onEdit, onDelete, deletandoId }) {
   const [sortOrder, setSortOrder] = useState('asc'); // 'asc' ou 'desc'
+  const [expandedRows, setExpandedRows] = useState(new Set());
+
+  const toggleRow = (id) => {
+    const newExpanded = new Set(expandedRows);
+    if (newExpanded.has(id)) {
+      newExpanded.delete(id);
+    } else {
+      newExpanded.add(id);
+    }
+    setExpandedRows(newExpanded);
+  };
 
   const formatarCPF = (cpf) => {
     if (!cpf) return '---';
@@ -40,6 +51,7 @@ export default function MembroTable({ membros, onEdit, onDelete, deletandoId }) 
       <table className="w-full text-left border-collapse min-w-[800px]">
         <thead>
           <tr className="bg-slate-50 border-b border-slate-200">
+            <th className="w-12 px-2 py-4"></th>
             <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">CPF</th>
             <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest min-w-[250px] cursor-pointer hover:bg-slate-100 transition-colors group"
               onClick={toggleSort}
@@ -64,8 +76,22 @@ export default function MembroTable({ membros, onEdit, onDelete, deletandoId }) 
           {membrosOrdenados.map((m) => {
             const isDeleting = deletandoId === m.id;
             return (
-              <tr key={m.id} className={`transition-colors group ${isDeleting ? 'bg-rose-50 opacity-50 italic' : 'hover:bg-blue-50/30'}`}>
-                <td className="px-6 py-4 text-sm font-mono text-slate-500 whitespace-nowrap">
+              <React.Fragment key={m.id}>
+                <tr className={`transition-colors group ${isDeleting ? 'bg-rose-50 opacity-50 italic' : 'hover:bg-blue-50/30'}`}>
+                  <td className="px-2 py-4 text-center align-middle">
+                    {m.parentes && m.parentes.length > 0 ? (
+                      <button 
+                        onClick={() => toggleRow(m.id)} 
+                        className="p-1 rounded-full hover:bg-blue-100 text-blue-500 transition-colors focus:outline-none"
+                        title="Ver familiares"
+                      >
+                        {expandedRows.has(m.id) ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                      </button>
+                    ) : (
+                      <span className="text-slate-300">-</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 text-sm font-mono text-slate-500 whitespace-nowrap">
                   {formatarCPF(m.cpf)}
                 </td>
                 <td className="px-6 py-4">
@@ -145,6 +171,33 @@ export default function MembroTable({ membros, onEdit, onDelete, deletandoId }) 
                   </div>
                 </td>
               </tr>
+              {expandedRows.has(m.id) && m.parentes && m.parentes.length > 0 && (
+                <tr className="bg-slate-50/80 border-b border-slate-100">
+                  <td colSpan={8} className="px-6 py-4 bg-slate-50/50">
+                    <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm relative overflow-hidden ml-10">
+                      <div className="absolute top-0 left-0 w-1 h-full bg-blue-400"></div>
+                      <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <span>👨‍👩‍👧‍👦 Vínculos Familiares</span>
+                        <span className="bg-slate-200 text-slate-600 py-0.5 px-2 rounded-full text-[10px]">{m.parentes.length}</span>
+                      </h4>
+                      <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {m.parentes.map((p, idx) => (
+                          <li key={idx} className="flex items-center gap-3 p-2 rounded-md hover:bg-slate-50 border border-slate-100 transition-colors bg-white">
+                            <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs shrink-0">
+                              {p.nome_parente ? p.nome_parente.charAt(0) : '?'}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-bold text-slate-700 truncate">{p.nome_parente}</p>
+                              <p className="text-[10px] uppercase font-black text-slate-400">{p.grau}</p>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </React.Fragment>
             );
           })}
         </tbody>

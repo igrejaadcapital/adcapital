@@ -32,9 +32,9 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from .utils import gerar_termo_lgpd_pdf, enviar_email_resend_api
 
 from django.contrib.auth.models import User
-from .models import Membro, Parentesco, Funcao, ConfiguracaoPortal, ConfiguracaoSite, FotoGaleria, Perfil
+from .models import Membro, Parentesco, Funcao, ConfiguracaoPortal, ConfiguracaoSite, FotoGaleria, Perfil, ComentarioPalavra
 
-from .serializers import MembroSerializer, ConfiguracaoPortalSerializer, ConfiguracaoSiteSerializer, FotoGaleriaSerializer
+from .serializers import MembroSerializer, ConfiguracaoPortalSerializer, ConfiguracaoSiteSerializer, FotoGaleriaSerializer, ComentarioPalavraSerializer
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
@@ -198,6 +198,22 @@ def init_site(request):
             'programacao': [],
             'galeria': [],
         })
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+@authentication_classes([])
+def curtir_palavra(request):
+    """Incrementa a contagem de curtidas na palavra pastoral."""
+    _garantir_keep_alive()
+    from django.db import close_old_connections
+    try:
+        close_old_connections()
+        config, _ = ConfiguracaoSite.objects.get_or_create(id=1)
+        config.curtidas_palavra += 1
+        config.save()
+        return Response({'success': True, 'curtidas_palavra': config.curtidas_palavra})
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
 
 @api_view(['GET'])
 
@@ -1087,3 +1103,50 @@ class ResetarSenhaView(APIView):
             
         return Response({"success": "Senha resetada para os 5 últimos dígitos do seu CPF. (Não conseguimos enviar email pois não há endereço cadastrado)"})
 
+
+class ComentarioPalavraViewSet(viewsets.ModelViewSet):
+    queryset = ComentarioPalavra.objects.all()
+    serializer_class = ComentarioPalavraSerializer
+    permission_classes = [AllowAny]  # GET e POST livres, DELETE protegido no frontend ou aqui
+
+    def get_permissions(self):
+        if self.action == 'destroy':
+            return [IsAuthenticated()]
+        return [AllowAny()]
+
+import datetime
+from .utils import enviar_email_resend_api
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+@authentication_classes([])
+def verificar_aniversarios(request):
+    try:
+        hoje = datetime.date.today()
+        membros = Membro.objects.filter(
+            data_nascimento__month=hoje.month, 
+            data_nascimento__day=hoje.day
+        ).exclude(ano_ultimo_email_aniversario=hoje.year).exclude(email__isnull=True).exclude(email__exact='')
+        
+        enviados = 0
+        for m in membros:
+            html = f"""
+            <html><body>
+                <h2 style="color: #2563eb;">Feliz Aniversário, {m.nome}! 🎉</h2>
+                <p>Nós da <strong>Igreja AD Capital</strong> louvamos a Deus pela sua vida e oramos para que o Senhor derrame ricas bênçãos sobre você neste dia tão especial.</p>
+                <p><em>"O Senhor te abençoe e te guarde; o Senhor faça resplandecer o seu rosto sobre ti e te conceda paz." (Números 6:24-26)</em></p>
+                <p>Um forte abraço da sua família na fé!</p>
+            </body></html>
+            """
+            enviar_email_resend_api(
+                para=[m.email],
+                assunto=f"Feliz Aniversário, {m.nome}! 🎉",
+                html_conteudo=html
+            )
+            m.ano_ultimo_email_aniversario = hoje.year
+            m.save()
+            enviados += 1
+            
+        return Response({'success': True, 'enviados': enviados})
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)

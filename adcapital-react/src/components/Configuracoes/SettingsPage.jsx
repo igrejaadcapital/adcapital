@@ -52,6 +52,7 @@ export default function SettingsPage() {
   const [galeria, setGaleria] = useState([]);
   const [editProg, setEditProg] = useState(null);
   const [novaProg, setNovaProg] = useState({ dia_semana: 0, titulo: '', horario: '', ordem: 0 });
+  const [comentarios, setComentarios] = useState([]);
   const [deletandoId, setDeletandoId] = useState(null);
   const [sucesso, setSucesso] = useState(false);
 
@@ -59,14 +60,15 @@ export default function SettingsPage() {
     try {
       setLoading(true);
       setError(false);
-      const [fRes, cRes, pRes, sRes, gRes, pgRes, uRes] = await Promise.all([
+      const [fRes, cRes, pRes, sRes, gRes, pgRes, uRes, comRes] = await Promise.all([
         configuracaoService.listarFuncoes(),
         configuracaoService.listarCategorias(),
         configuracaoService.getPortalConfig(),
         configuracaoService.getSiteConfig(),
         configuracaoService.getGaleria(),
         configuracaoService.getProgramacao(),
-        configuracaoService.listarUsuarios().catch(() => ({ data: [] })) // Fallback if not admin
+        configuracaoService.listarUsuarios().catch(() => ({ data: [] })), // Fallback if not admin
+        api.get('/comentarios/').catch(() => ({ data: [] }))
       ]);
       
       setFuncoes(fRes.data);
@@ -77,6 +79,7 @@ export default function SettingsPage() {
       setProgramacao(pgRes.data);
       setGaleria(gRes.data);
       setUsuarios(uRes.data);
+      setComentarios(comRes.data);
     } catch (err) {
       console.error("Erro ao carregar configurações:", err);
       setError(true);
@@ -213,6 +216,21 @@ export default function SettingsPage() {
     }
   };
 
+  const handleDelComentario = async (id) => {
+    if (confirm('Excluir este comentário do site público?')) {
+      setDeletandoId(`com_${id}`);
+      try {
+        await api.delete(`/comentarios/${id}/`);
+        setComentarios(comentarios.filter(c => c.id !== id));
+      } catch (err) {
+        console.error(err);
+        alert('Erro ao excluir comentário.');
+      } finally {
+        setDeletandoId(null);
+      }
+    }
+  };
+
   return (
     <div className="flex flex-col md:flex-row gap-8 min-h-[80vh] p-4 text-slate-800 relative">
       <StatusView 
@@ -310,6 +328,45 @@ export default function SettingsPage() {
                       <h3 className="font-black text-blue-900/40 text-[10px] uppercase tracking-[0.2em] mb-2">Palavra do Pastor (Destaque no Site)</h3>
                       <Field label="Título Pastoral" value={siteConfig.pastoral_titulo} onChange={v => setSiteConfig({...siteConfig, pastoral_titulo: v})} />
                       <Field label="Mensagem Pastoral" isTextArea value={siteConfig.pastoral_texto} onChange={v => setSiteConfig({...siteConfig, pastoral_texto: v})} />
+                  </div>
+
+                  {/* Moderação de Comentários */}
+                  <div className="bg-slate-50/50 p-8 rounded-[2rem] border border-slate-100 space-y-6">
+                      <h3 className="font-black text-slate-800 text-[10px] uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                         <MessageSquare size={14} className="text-blue-500" />
+                         Moderação de Comentários
+                      </h3>
+                      <p className="text-[10px] text-slate-400 font-bold uppercase mb-4">Gerencie as mensagens deixadas na Palavra Pastoral</p>
+                      
+                      <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                        {comentarios.length === 0 ? (
+                           <div className="text-center py-10 border-2 border-dashed border-slate-200 rounded-[2rem]">
+                              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Nenhum comentário ainda</p>
+                           </div>
+                        ) : (
+                           comentarios.map(c => (
+                             <div key={c.id} className="flex flex-col md:flex-row justify-between items-start md:items-center p-5 bg-white border border-slate-200 rounded-2xl hover:border-blue-200 transition-colors gap-4">
+                               <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                     <span className="font-black text-sm text-blue-600">{c.nome}</span>
+                                     <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">
+                                       {new Date(c.criado_em).toLocaleDateString('pt-BR')}
+                                     </span>
+                                  </div>
+                                  <p className="text-xs font-medium text-slate-600">{c.texto}</p>
+                               </div>
+                               <button 
+                                 onClick={() => handleDelComentario(c.id)}
+                                 disabled={deletandoId === `com_${c.id}`}
+                                 className="flex items-center gap-2 px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl transition-colors font-black text-[10px] uppercase tracking-widest shrink-0"
+                               >
+                                 {deletandoId === `com_${c.id}` ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                                 Excluir
+                               </button>
+                             </div>
+                           ))
+                        )}
+                      </div>
                   </div>
                </div>
             </section>

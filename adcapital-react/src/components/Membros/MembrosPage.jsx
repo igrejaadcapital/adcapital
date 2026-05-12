@@ -96,7 +96,7 @@ export default function MembrosPage({
 
         {viewType === 'grid' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-            {membrosFiltrados.map((m) => (
+            {[...membrosFiltrados].sort((a,b) => a.nome.localeCompare(b.nome)).map((m) => (
               <MembroCard
                 key={m.id}
                 m={m}

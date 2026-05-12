@@ -1,6 +1,8 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
+    ComentarioPalavraViewSet,
+    verificar_aniversarios,
     MembroViewSet, 
     ConfiguracaoPortalViewSet,
     ConfiguracaoSiteViewSet,
@@ -19,6 +21,7 @@ from .views import (
     ResetarSenhaView,
     init_publico,
     init_site,
+    curtir_palavra,
 )
 
 from .view_public import (
@@ -32,6 +35,7 @@ router.register(r'membros', MembroViewSet)
 router.register(r'configuracao-portal', ConfiguracaoPortalViewSet, basename='configuracao-portal')
 router.register(r'configuracao-site', ConfiguracaoSiteViewSet, basename='configuracao-site')
 router.register(r'galeria', FotoGaleriaViewSet, basename='galeria')
+router.register(r'comentarios', ComentarioPalavraViewSet, basename='comentarios')
 
 urlpatterns = [
     # Rotas Públicas (Sem autenticação no prefixo /api/)
@@ -41,6 +45,8 @@ urlpatterns = [
     # [ENDPOINTS CONSOLIDADOS - PERFORMANCE] Um request em vez de 3-5
     path('init-publico/', init_publico, name='init-publico'),
     path('init-site/', init_site, name='init-site'),
+    path('curtir-palavra/', curtir_palavra, name='curtir-palavra'),
+    path('verificar-aniversarios/', verificar_aniversarios, name='verificar-aniversarios'),
 
     # Rotas legadas (mantidas para compatibilidade)
     path('opcoes-funcao/', buscar_opcoes_funcao, name='opcoes-funcao'),

@@ -29,6 +29,82 @@ const LandingPage = () => {
   const [ultimoVideo, setUltimoVideo] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Curtidas da Palavra Pastoral
+  const [curtidas, setCurtidas] = useState(0);
+  const [jaCurtiu, setJaCurtiu] = useState(false);
+
+  // Comentarios
+  const [comentarios, setComentarios] = useState([]);
+  const [novoNome, setNovoNome] = useState('');
+  const [novoTexto, setNovoTexto] = useState('');
+  const [enviando, setEnviando] = useState(false);
+
+  const fetchComentarios = async () => {
+    try {
+      const res = await api.get('/comentarios/');
+      setComentarios(res.data);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => {
+    fetchComentarios();
+  }, []);
+
+  const handleEnviarComentario = async (e) => {
+    e.preventDefault();
+    if (!novoNome.trim() || !novoTexto.trim()) return;
+    setEnviando(true);
+    try {
+      const res = await api.post('/comentarios/', {
+        configuracao: 1, // ID do ConfiguracaoSite padrao
+        nome: novoNome,
+        texto: novoTexto
+      });
+      setComentarios([res.data, ...comentarios]);
+      setNovoNome('');
+      setNovoTexto('');
+    } catch (err) {
+      alert("Erro ao enviar comentário.");
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  useEffect(() => {
+    // Verifica se já curtiu neste navegador
+    const curtiuStatus = localStorage.getItem('@adcapital:curtiu_palavra');
+    if (curtiuStatus === 'true') {
+      setJaCurtiu(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (config?.curtidas_palavra !== undefined) {
+      setCurtidas(config.curtidas_palavra);
+    }
+  }, [config?.curtidas_palavra]);
+
+  const handleCurtirPalavra = async () => {
+    if (jaCurtiu) return;
+    
+    // Atualização otimista
+    setCurtidas(prev => prev + 1);
+    setJaCurtiu(true);
+    localStorage.setItem('@adcapital:curtiu_palavra', 'true');
+
+    try {
+      await api.post('/curtir-palavra/');
+    } catch (err) {
+      console.error('Erro ao curtir a palavra:', err);
+      // Reverte em caso de erro
+      setCurtidas(prev => prev - 1);
+      setJaCurtiu(false);
+      localStorage.removeItem('@adcapital:curtiu_palavra');
+    }
+  };
+
   useEffect(() => {
     let cancelled = false;
 
@@ -210,7 +286,79 @@ const LandingPage = () => {
               <div className="text-slate-300 leading-relaxed text-lg space-y-4 whitespace-pre-wrap italic">
                 {config.pastoral_texto}
               </div>
-              <p className="mt-6 font-bold text-white text-xl">— {config.pastor_nome}</p>
+              <div className="mt-8 flex flex-col md:flex-row items-center justify-between gap-6 border-t border-slate-800 pt-6">
+                <p className="font-bold text-white text-xl">— {config.pastor_nome}</p>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleCurtirPalavra}
+                  disabled={jaCurtiu}
+                  className={cn(
+                    "flex items-center gap-3 px-6 py-3 rounded-full font-bold transition-all border shadow-lg cursor-pointer",
+                    jaCurtiu 
+                      ? "bg-red-500/20 text-red-400 border-red-500/30" 
+                      : "bg-white/5 text-slate-300 border-white/10 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30"
+                  )}
+                  title={jaCurtiu ? "Você já curtiu esta mensagem" : "Curtir mensagem"}
+                >
+                  <Heart size={22} className={cn("transition-all duration-300", jaCurtiu ? "fill-red-500 text-red-500 scale-110" : "")} />
+                  <span className="text-lg">{curtidas} {curtidas === 1 ? 'curtida' : 'curtidas'}</span>
+                </motion.button>
+              </div>
+            </div>
+          </div>
+
+          {/* Seção de Comentários */}
+          <div className="mt-8 bg-slate-900/50 border border-slate-800 rounded-[2rem] p-8 backdrop-blur-sm shadow-2xl">
+            <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+              <MessageSquare size={20} className="text-blue-500" />
+              Deixe uma mensagem para o Pastor
+            </h3>
+            
+            <form onSubmit={handleEnviarComentario} className="mb-10 space-y-4">
+              <div className="grid grid-cols-1 gap-4">
+                <input 
+                  type="text" 
+                  placeholder="Seu nome" 
+                  value={novoNome}
+                  onChange={e => setNovoNome(e.target.value)}
+                  className="w-full bg-slate-950/50 border border-slate-800 rounded-xl px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+                  required
+                />
+                <textarea 
+                  placeholder="O que achou da mensagem?" 
+                  value={novoTexto}
+                  onChange={e => setNovoTexto(e.target.value)}
+                  rows="3"
+                  className="w-full bg-slate-950/50 border border-slate-800 rounded-xl px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 transition-colors resize-none"
+                  required
+                />
+              </div>
+              <button 
+                type="submit" 
+                disabled={enviando}
+                className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold py-3 px-6 rounded-xl transition-colors w-full sm:w-auto"
+              >
+                {enviando ? 'Enviando...' : 'Enviar Mensagem'}
+              </button>
+            </form>
+
+            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+              {comentarios.length === 0 ? (
+                <p className="text-slate-500 text-center py-4 italic font-medium">Seja o primeiro a deixar uma mensagem!</p>
+              ) : (
+                comentarios.map(c => (
+                  <div key={c.id} className="bg-slate-950/50 border border-slate-800 rounded-2xl p-5">
+                    <div className="flex justify-between items-start mb-3">
+                      <span className="font-bold text-blue-400">{c.nome}</span>
+                      <span className="text-[10px] uppercase tracking-widest font-bold text-slate-500">
+                        {new Date(c.criado_em).toLocaleDateString('pt-BR')}
+                      </span>
+                    </div>
+                    <p className="text-slate-300 text-sm leading-relaxed">{c.texto}</p>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </section>
