@@ -56,6 +56,7 @@ function MainApp({ logout }) {
           {user?.role === 'MEMBRO' ? (
             <>
               <button onClick={() => setTelaAtiva('mensagens')} className={`pb-1 transition-all ${telaAtiva === 'mensagens' || telaAtiva === 'portal' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Mensagens</button>
+              <button onClick={() => setTelaAtiva('agenda')} className={`pb-1 transition-all ${telaAtiva === 'agenda' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Agenda</button>
               <button onClick={() => setTelaAtiva('perfil')} className={`pb-1 transition-all ${telaAtiva === 'perfil' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-400'}`}>Meu Perfil</button>
             </>
           ) : (
@@ -85,8 +86,8 @@ function MainApp({ logout }) {
       </nav>
 
       <main className="max-w-6xl mx-auto p-4">
-        {(telaAtiva === 'portal' || telaAtiva === 'mensagens' || telaAtiva === 'perfil') && (
-          <MemberPortal abaAtiva={telaAtiva === 'perfil' ? 'perfil' : 'mensagens'} />
+        {(telaAtiva === 'portal' || telaAtiva === 'mensagens' || telaAtiva === 'perfil' || (user?.role === 'MEMBRO' && telaAtiva === 'agenda')) && (
+          <MemberPortal abaAtiva={telaAtiva} />
         )}
         {telaAtiva === 'home' && (
           <DashboardHome
@@ -137,7 +138,7 @@ function MainApp({ logout }) {
           />
         )}
 
-        {telaAtiva === 'agenda' && (
+        {telaAtiva === 'agenda' && user?.role !== 'MEMBRO' && (
           <AgendaPage />
         )}
 

@@ -4,6 +4,7 @@ import StatusView from '../../Common/StatusView';
 import configuracaoService from '../../../api/configuracaoService';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, BookOpen } from 'lucide-react';
+import MemberAgenda from './MemberAgenda';
 
 export default function MemberPortal({ abaAtiva = 'mensagens' }) {
   const [dados, setDados] = useState(null);
@@ -167,6 +168,10 @@ export default function MemberPortal({ abaAtiva = 'mensagens' }) {
             </div>
           )}
         </div>
+      )}
+
+      {abaAtiva === 'agenda' && (
+        <MemberAgenda />
       )}
 
       {abaAtiva === 'perfil' && (
