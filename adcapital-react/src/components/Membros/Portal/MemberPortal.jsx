@@ -3,8 +3,9 @@ import api from '../../../api/config';
 import StatusView from '../../Common/StatusView';
 import configuracaoService from '../../../api/configuracaoService';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, BookOpen } from 'lucide-react';
+import { ChevronDown, BookOpen, Camera, UserPlus, Trash2 } from 'lucide-react';
 import MemberAgenda from './MemberAgenda';
+import ParentescoFormPublico from '../ParentescoFormPublico';
 
 export default function MemberPortal({ abaAtiva = 'mensagens' }) {
   const [dados, setDados] = useState(null);
@@ -17,22 +18,32 @@ export default function MemberPortal({ abaAtiva = 'mensagens' }) {
   const [devocionalExpandida, setDevocionalExpandida] = useState(null);
 
   
-  // Senha
-  const [novaSenha, setNovaSenha] = useState('');
+  // Parentesco e Opções
+  const [graus, setGraus] = useState([]);
   const [carregandoSenha, setCarregandoSenha] = useState(false);
 
   const carregarDados = async () => {
     setLoading(true);
     try {
-      const [res, resFuncoes, resDevocionais] = await Promise.all([
+      const [res, resFuncoes, resDevocionais, resGraus] = await Promise.all([
         api.get('/membros/meus-dados/'),
         api.get('/opcoes-funcao/'),
-        api.get('/devocionais/')
+        api.get('/devocionais/'),
+        api.get('/opcoes-parentesco/')
       ]);
       setDados(res.data);
-      setFormData(res.data);
+      // Prepara o formData com os parentescos atuais mapeados para o formato de edição
+      const parentesAtuais = res.data.parentes?.map(p => ({
+        parente_id: p.membro_destino,
+        grau: p.grau,
+        busca_termo: p.nome_parente
+      })) || [];
+      
+      setFormData({ ...res.data, parentescos_novo: parentesAtuais });
       setOpcoesFuncao(resFuncoes.data);
       setDevocionais(resDevocionais.data);
+      setGraus(resGraus.data);
+      
       if (resDevocionais.data.length > 0) {
         setDevocionalExpandida(resDevocionais.data[0].id);
       }
@@ -53,7 +64,33 @@ export default function MemberPortal({ abaAtiva = 'mensagens' }) {
     e.preventDefault();
     setLoading(true);
     try {
-      await api.patch('/membros/meus-dados/', formData);
+      const data = new FormData();
+      
+      // Lista de campos permitidos para edição pelo próprio membro
+      const camposPermitidos = [
+        'telefone', 'email', 'logradouro', 'numero', 'complemento', 'bairro', 
+        'cidade', 'uf', 'cep', 'data_nascimento', 'genero', 'estado_civil', 
+        'naturalidade', 'data_entrada', 'unidade', 'departamento', 
+        'motivo_entrada', 'observacoes', 'funcao'
+      ];
+
+      camposPermitidos.forEach(key => {
+        if (formData[key] !== undefined && formData[key] !== null) {
+          data.append(key, formData[key]);
+        }
+      });
+
+      // Foto (apenas se for um novo arquivo)
+      if (formData.foto instanceof File) {
+        data.append('foto', formData.foto);
+      }
+
+      // Parentescos
+      if (formData.parentescos_novo) {
+        data.append('parentescos_novo', JSON.stringify(formData.parentescos_novo));
+      }
+
+      await api.patch('/membros/meus-dados/', data);
       setMensagem({ type: 'success', text: 'Dados atualizados com sucesso!' });
       setEditando(false);
       carregarDados();
@@ -62,6 +99,29 @@ export default function MemberPortal({ abaAtiva = 'mensagens' }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const atualizarParentesco = (index, campo, valor) => {
+    setFormData(prev => {
+        const novos = [...(prev.parentescos_novo || [])];
+        novos[index][campo] = valor;
+        return { ...prev, parentescos_novo: novos };
+    });
+  };
+
+  const adicionarParentesco = () => {
+    setFormData(prev => ({
+        ...prev,
+        parentescos_novo: [...(prev.parentescos_novo || []), { parente_id: null, grau: '', busca_termo: '' }]
+    }));
+  };
+
+  const removerParentesco = (index) => {
+    setFormData(prev => {
+        const novos = [...(prev.parentescos_novo || [])];
+        novos.splice(index, 1);
+        return { ...prev, parentescos_novo: novos };
+    });
   };
 
   const handleTrocarSenha = async (e) => {
@@ -183,6 +243,41 @@ export default function MemberPortal({ abaAtiva = 'mensagens' }) {
           {!editando && (
             <button onClick={() => setEditando(true)} className="text-xs font-black text-blue-600 uppercase">Editar Dados</button>
           )}
+        </div>
+
+        {/* Upload de Foto */}
+        <div className="flex flex-col md:flex-row items-center gap-6 p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
+          <div className="relative group">
+            <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-xl bg-slate-200">
+              {formData.foto ? (
+                <img 
+                  src={formData.foto instanceof File ? URL.createObjectURL(formData.foto) : formData.foto} 
+                  alt="Perfil" 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-slate-400">
+                  <Camera size={40} />
+                </div>
+              )}
+            </div>
+            {editando && (
+              <label className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full shadow-lg cursor-pointer hover:bg-blue-700 transition-all group-hover:scale-110">
+                <Camera size={16} />
+                <input 
+                  type="file" 
+                  className="hidden" 
+                  accept="image/*"
+                  onChange={e => setFormData({ ...formData, foto: e.target.files[0] })}
+                />
+              </label>
+            )}
+          </div>
+          <div className="flex-1 text-center md:text-left">
+            <h4 className="text-xl font-black text-slate-800">{dados.nome}</h4>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{dados.funcao || 'Membro'}</p>
+            {editando && <p className="text-[10px] text-blue-600 font-bold mt-2 uppercase">Clique no ícone da câmera para trocar sua foto</p>}
+          </div>
         </div>
 
         <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -447,21 +542,35 @@ export default function MemberPortal({ abaAtiva = 'mensagens' }) {
       </div>
 
       {/* Vínculos Familiares */}
-      {dados.parentes && dados.parentes.length > 0 && (
-        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-4">
-          <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">👨‍👩‍👧‍👦 Vínculos Familiares</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {dados.parentes.map(parente => (
-              <div key={parente.id} className="bg-slate-50 p-4 rounded-2xl flex items-center justify-between border border-slate-100/50">
-                <span className="font-bold text-slate-700 text-sm">{parente.nome_parente}</span>
-                <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest bg-blue-50 px-2 py-1 rounded-lg">
-                  {parente.grau === 'PAI_MAE' ? 'Pai/Mãe' : parente.grau === 'FILHO_A' ? 'Filho(a)' : parente.grau === 'CONJUGE' ? 'Cônjuge' : parente.grau === 'IRMAO_A' ? 'Irmão(ã)' : 'Parente'}
-                </span>
+      <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-4">
+        {editando ? (
+          <ParentescoFormPublico 
+            formData={formData}
+            graus={graus}
+            atualizarParentesco={atualizarParentesco}
+            adicionarParentesco={adicionarParentesco}
+            removerParentesco={removerParentesco}
+          />
+        ) : (
+          <>
+            <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">👨‍👩‍👧‍👦 Vínculos Familiares</h3>
+            {dados.parentes && dados.parentes.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {dados.parentes.map(parente => (
+                  <div key={parente.id} className="bg-slate-50 p-4 rounded-2xl flex items-center justify-between border border-slate-100/50">
+                    <span className="font-bold text-slate-700 text-sm">{parente.nome_parente}</span>
+                    <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest bg-blue-50 px-2 py-1 rounded-lg">
+                      {graus.find(g => g.id === parente.grau)?.nome || parente.grau}
+                    </span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
-      )}
+            ) : (
+              <p className="text-xs text-slate-400 font-bold italic">Nenhum vínculo familiar cadastrado. Clique em "Editar Dados" para adicionar.</p>
+            )}
+          </>
+        )}
+      </div>
 
       <div className="bg-emerald-50 p-8 rounded-[2.5rem] border border-emerald-100 flex items-center justify-between">
         <div>

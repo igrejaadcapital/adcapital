@@ -566,6 +566,21 @@ class FotoGaleriaViewSet(viewsets.ModelViewSet):
 class MembroPagination(PageNumberPagination):
     page_size = 50
 
+def _salvar_parentescos_direto(membro, parentescos_data):
+    """Lógica unificada para salvar parentescos. Apaga os antigos e cria os novos."""
+    Parentesco.objects.filter(membro_origem=membro).delete()
+    if not parentescos_data:
+        return
+    for item in parentescos_data:
+        p_id = item.get('parente_id') or item.get('membro_destino')
+        grau = item.get('grau')
+        if p_id and grau and str(p_id) != str(membro.id):
+            Parentesco.objects.get_or_create(
+                membro_origem=membro,
+                membro_destino_id=p_id,
+                defaults={'grau': grau}
+            )
+
 class MembroViewSet(viewsets.ModelViewSet):
     """CRUD administrativo completo para Membros"""
     pagination_class = MembroPagination
@@ -629,39 +644,13 @@ class MembroViewSet(viewsets.ModelViewSet):
             print(f"Aviso: Erro ao salvar status LGPD no Admin: {e}")
 
         parentescos_data = self.request.data.get('parentescos_novo', [])
-
-        # Se vier de um FormData como string JSON
-
         if isinstance(parentescos_data, str):
-
             try:
-
                 parentescos_data = json.loads(parentescos_data)
-
             except:
-
                 parentescos_data = []
 
-        if self.action in ['update', 'partial_update']:
-
-            Parentesco.objects.filter(membro_origem=membro).delete()
-
-        for item in parentescos_data:
-
-            p_id = item.get('parente_id') or item.get('membro_destino')
-
-            grau = item.get('grau')
-
-            if p_id and grau and str(p_id) != str(membro.id):
-
-                Parentesco.objects.get_or_create(
-
-                    membro_origem=membro,
-
-                    membro_destino_id=p_id,
-
-                    defaults={'grau': grau}
-                )
+        _salvar_parentescos_direto(membro, parentescos_data)
 
 def _executar_tarefas_pos_cadastro(membro_id, parentescos_data):
     """
@@ -951,40 +940,47 @@ def buscar_membros_autocomplete_publico(request):
     return Response(opcoes)
 
 class MeusDadosView(APIView):
-
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get(self, request):
-
         perfil = getattr(request.user, 'perfil', None)
-
         if not perfil or not perfil.membro:
-
             return Response({'error': f'Perfil de membro não encontrado para: {request.user.username}'}, status=404)
-
         serializer = MembroSerializer(perfil.membro)
-
         return Response(serializer.data)
 
     def patch(self, request):
-
         perfil = getattr(request.user, 'perfil', None)
-
         if not perfil or not perfil.membro:
-
             return Response({'error': f'Perfil de membro não encontrado para: {request.user.username}'}, status=404)
 
-        # Permitir apenas alguns campos (Endereço, Telefone, Email)
-
-        campos_permitidos = ['telefone', 'email', 'logradouro', 'numero', 'complemento', 'bairro', 'cidade', 'uf', 'cep', 'data_nascimento', 'genero', 'estado_civil', 'naturalidade', 'data_entrada', 'unidade', 'departamento', 'motivo_entrada', 'observacoes', 'funcao']
+        # Permitir apenas alguns campos (Endereço, Telefone, Email, Foto)
+        campos_permitidos = [
+            'telefone', 'email', 'logradouro', 'numero', 'complemento', 'bairro', 
+            'cidade', 'uf', 'cep', 'data_nascimento', 'genero', 'estado_civil', 
+            'naturalidade', 'data_entrada', 'unidade', 'departamento', 
+            'motivo_entrada', 'observacoes', 'funcao', 'foto'
+        ]
 
         data = {k: v for k, v in request.data.items() if k in campos_permitidos}
-
         serializer = MembroSerializer(perfil.membro, data=data, partial=True)
 
         if serializer.is_valid():
-
             serializer.save()
+            
+            # Parentesco
+            parentescos_raw = request.data.get('parentescos_novo', [])
+            if parentescos_raw:
+                if isinstance(parentescos_raw, str):
+                    try:
+                        parentescos_data = json.loads(parentescos_raw)
+                    except:
+                        parentescos_data = []
+                else:
+                    parentescos_data = parentescos_raw
+                
+                _salvar_parentescos_direto(perfil.membro, parentescos_data)
 
             return Response(serializer.data)
 
