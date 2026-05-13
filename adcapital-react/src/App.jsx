@@ -100,6 +100,7 @@ function MainApp({ logout }) {
 function App() {
   const { token, logout } = useAuth();
   const [isWakingUp, setIsWakingUp] = useState(false);
+  const [, setHash] = useState(window.location.hash);
 
   useEffect(() => {
     // Log para Debug - Veja isso no console do navegador (F12)
