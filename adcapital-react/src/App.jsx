@@ -99,11 +99,11 @@ function MainApp({ logout }) {
 
 function App() {
   const { token, logout } = useAuth();
-  const [, setHash] = useState(window.location.hash);
+  const [isWakingUp, setIsWakingUp] = useState(false);
 
   useEffect(() => {
     // Log para Debug - Veja isso no console do navegador (F12)
-    console.log("Versão do App: SiteInstitucional-v1.5");
+    console.log("Versão do App: SiteInstitucional-v1.6");
     console.log("URL Atual:", window.location.href);
 
     const handleHashChange = () => setHash(window.location.hash);
@@ -115,31 +115,38 @@ function App() {
   useEffect(() => {
     const warmup = async (attempt = 1) => {
       const maxAttempts = 4;
-      const delays = [5000, 15000, 30000, 60000]; // 5s, 15s, 30s, 60s
+      const delays = [5000, 15000, 30000, 60000];
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 20000); // 20s timeout por tentativa
+      const timeoutId = setTimeout(() => controller.abort(), 20000);
 
       try {
         const baseUrl = import.meta.env.VITE_API_URL || 'https://api.adcapitaligreja.com.br/api';
         console.log(`[Warm-up] Tentativa ${attempt}/${maxAttempts}...`);
+        
+        // Se falhar na primeira, sinaliza que está acordando
+        if (attempt > 1) setIsWakingUp(true);
+
         await fetch(`${baseUrl}/ping/`, { signal: controller.signal });
+        
         console.log("[Warm-up] Servidor respondeu com sucesso.");
+        setIsWakingUp(false);
       } catch (err) {
         if (attempt < maxAttempts) {
           const wait = delays[attempt - 1];
           console.warn(`[Warm-up] Falha (tentativa ${attempt}). Retentando em ${wait/1000}s...`);
+          setIsWakingUp(true);
           clearTimeout(timeoutId);
           await new Promise(r => setTimeout(r, wait));
           return warmup(attempt + 1);
         }
-        console.warn("[Warm-up] Servidor não respondeu após todas as tentativas. O servidor deve acordar no próximo request real.");
+        console.warn("[Warm-up] Servidor não respondeu após todas as tentativas.");
       } finally {
         clearTimeout(timeoutId);
       }
     };
 
-    warmup(); // Chama imediatamente no load
-    const interval = setInterval(() => warmup(), 10 * 60 * 1000); // A cada 10 minutos
+    warmup();
+    const interval = setInterval(() => warmup(), 10 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
   
@@ -178,7 +185,7 @@ function App() {
   if (!isValidToken) {
     // Se for uma rota de sistema ou localhost, mostra login.
     if (isSystemRoute || currentHost === 'localhost') {
-       return <Login />;
+       return <Login isWakingUp={isWakingUp} />;
     }
     return <LandingPage />;
   }

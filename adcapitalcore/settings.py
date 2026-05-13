@@ -34,11 +34,17 @@ ALLOWED_HOSTS = [
     'cadastro.adcapitaligreja.com.br',
     'api.adcapitaligreja.com.br',
     'localhost',
-    '127.0.0.1'
+    '127.0.0.1',
+    '.onrender.com'
 ]
 env_hosts = os.environ.get('ALLOWED_HOSTS', '')
 if env_hosts:
     ALLOWED_HOSTS.extend([host.strip() for host in env_hosts.split(',')])
+
+# Adiciona o hostname do Render dinamicamente para evitar 400 Bad Request
+render_host = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if render_host and render_host not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(render_host)
 
 
 # Application definition

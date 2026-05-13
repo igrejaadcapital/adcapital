@@ -104,16 +104,32 @@ _keep_alive_lock = threading.Lock()
 
 def _self_keep_alive_loop():
     """Thread daemon que faz self-ping a cada 4 minutos para manter o Render acordado."""
-    api_url = os.environ.get('RENDER_EXTERNAL_URL', 'https://api.adcapitaligreja.com.br')
-    ping_url = f"{api_url}/api/ping/"
+    # Prioriza o hostname do Render se disponível para evitar pings externos desnecessários
+    render_host = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+    if render_host:
+        api_url = f"https://{render_host}"
+    else:
+        api_url = os.environ.get('RENDER_EXTERNAL_URL', 'https://api.adcapitaligreja.com.br')
+    
+    ping_url = f"{api_url.rstrip('/')}/api/ping/"
+    print(f"[Keep-Alive] Monitor iniciado para: {ping_url}")
+    
     while True:
-        time.sleep(240)  # 4 minutos (abaixo do limite de 15 min do Render)
+        time.sleep(240)  # 4 minutos
         try:
-            req = urllib.request.Request(ping_url, headers={'User-Agent': 'SelfKeepAlive/1.0'})
-            urllib.request.urlopen(req, timeout=15)
-            print(f"[Keep-Alive] Self-ping OK em {ping_url}")
+            # Adiciona headers básicos para parecer uma requisição legítima e evitar bloqueios
+            headers = {
+                'User-Agent': 'SelfKeepAlive/1.1',
+                'Accept': 'application/json'
+            }
+            req = urllib.request.Request(ping_url, headers=headers)
+            with urllib.request.urlopen(req, timeout=20) as response:
+                if response.status == 200:
+                    print(f"[Keep-Alive] Self-ping OK em {ping_url}")
+                else:
+                    print(f"[Keep-Alive] Self-ping retornou status {response.status} em {ping_url}")
         except Exception as e:
-            print(f"[Keep-Alive] Falha no self-ping: {e}")
+            print(f"[Keep-Alive] Falha no self-ping para {ping_url}: {e}")
 
 def _garantir_keep_alive():
     """Inicia o loop de keep-alive apenas uma vez (thread-safe)."""

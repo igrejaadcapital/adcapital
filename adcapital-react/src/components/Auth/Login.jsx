@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from './AuthProvider';
 import configuracaoService from '../../api/configuracaoService';
 
-export default function Login() {
+export default function Login({ isWakingUp }) {
   const { login, carregando, error } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -41,6 +41,13 @@ export default function Login() {
           <img src="/logo.png" alt="Logo AD Capital" className="h-16 w-auto mb-4 object-contain rounded-sm" />
           <h1 className="text-2xl font-black text-slate-800 tracking-tight">Igreja AD Capital</h1>
           <p className="text-sm text-slate-500 font-medium">Acesso Restrito do Sistema</p>
+          
+          {isWakingUp && (
+            <div className="mt-4 flex items-center gap-2 px-3 py-1 bg-amber-50 text-amber-700 rounded-full border border-amber-100 animate-pulse">
+              <span className="w-2 h-2 bg-amber-500 rounded-full"></span>
+              <span className="text-[10px] font-black uppercase tracking-widest">Servidor iniciando...</span>
+            </div>
+          )}
         </div>
 
         {!showReset ? (
