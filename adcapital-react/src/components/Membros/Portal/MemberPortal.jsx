@@ -18,8 +18,9 @@ export default function MemberPortal({ abaAtiva = 'mensagens' }) {
   const [devocionalExpandida, setDevocionalExpandida] = useState(null);
 
   
-  // Parentesco e Opções
+  // Parentesco e Senha
   const [graus, setGraus] = useState([]);
+  const [novaSenha, setNovaSenha] = useState('');
   const [carregandoSenha, setCarregandoSenha] = useState(false);
 
   const carregarDados = async () => {
