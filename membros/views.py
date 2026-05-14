@@ -580,7 +580,7 @@ class FotoGaleriaViewSet(viewsets.ModelViewSet):
         return [IsAuthenticated()]
 
 class MembroPagination(PageNumberPagination):
-    page_size = 50
+    page_size = 1000
 
 def _salvar_parentescos_direto(membro, parentescos_data):
     """Lógica unificada para salvar parentescos. Apaga os antigos e cria os novos."""
