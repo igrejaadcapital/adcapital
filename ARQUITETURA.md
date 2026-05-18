@@ -12,6 +12,7 @@ Este documento consolida todos os serviços e endereços que compõem o ecossist
 | **Banco/API (Back)** | Supabase | Onde os dados dos membros ficam permanentemente | [supabase.com](https://supabase.com) |
 | **Fotos & Mídia** | Cloudinary | Armazena fotos dos membros e logos | [cloudinary.com](https://cloudinary.com) |
 | **Código Fonte** | GitHub | Onde todo o código do projeto é salvo | [github.com](https://github.com) |
+| **Estatísticas & BI** | Google | Monitoramento e conversões do site e portal | [analytics.google.com](https://analytics.google.com) |
 
 ### 🔗 Estrutura de Endereços (URLs)
 
@@ -143,6 +144,23 @@ Para garantir que a igreja nunca perca seus dados, existe um script de exportaç
    ```
 3. Um novo arquivo **`backup_adcapital.json`** será gerado.
 4. **Recomendação**: Salve uma cópia deste arquivo em um local seguro (Google Drive, Pen Drive, etc) toda semana.
+
+---
+
+### 📊 Estatísticas e Rastreamento (Google Analytics 4)
+
+O ecossistema digital possui uma integração robusta e customizada com o **Google Analytics 4 (GA4)** para rastrear o fluxo de visitas e interações cruciais.
+
+**O que é monitorado:**
+*   **Landing Page Pública**: Acessos à página inicial (`/`) e cliques de conversão no botão *"Portal do Membro"* no cabeçalho.
+*   **Portal do Membro (Logado)**: Navegação interna pelas abas (Mensagens: `/portal/mensagens`, Agenda: `/portal/agenda`, Perfil: `/portal/perfil`).
+*   **Painel Administrativo**: Acessos ao login (`/login`) e navegação pelas abas administrativas (Início, Membros, Financeiro, Agenda, Estatísticas, Configurações).
+
+**Configuração de Produção:**
+O ID de métrica é configurado de forma dinâmica no frontend via variável de ambiente:
+*   `VITE_GA_MEASUREMENT_ID` (Exemplo: `G-G8L8E7X3B2`)
+
+Para alterar a conta de recebimento, basta atualizar essa chave no painel do Render ou no arquivo `.env` do React.
 
 ---
 *Manual de arquitetura - AD Capital Igreja*

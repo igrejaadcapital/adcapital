@@ -16,6 +16,7 @@ import {
 import qrcode from '../../assets/qrcode.png';
 import api from '../../api/config';
 import { clsx } from 'clsx';
+import { trackPageView, trackCustomEvent } from '../../hooks/useAnalytics';
 import { twMerge } from 'tailwind-merge';
 
 function cn(...inputs) {
@@ -25,6 +26,11 @@ function cn(...inputs) {
 // O api-config já possui o baseURL (/api)
 const LandingPage = () => {
   const [config, setConfig] = useState(null);
+
+  useEffect(() => {
+    trackPageView('/', 'AD Capital - Site Oficial');
+  }, []);
+
   const [programacao, setProgramacao] = useState([]);
   const [galeria, setGaleria] = useState([]);
   const [ultimoVideo, setUltimoVideo] = useState(null);
@@ -196,6 +202,7 @@ const LandingPage = () => {
           </div>
           <a
             href="#/portal"
+            onClick={() => trackCustomEvent('click_portal_membro', 'Navegacao', 'Botoes do Cabecalho')}
             className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-900/20"
           >
             Portal do Membro

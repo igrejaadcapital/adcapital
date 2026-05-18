@@ -15,10 +15,29 @@ import AnalyticsPage from './components/Analytics/AnalyticsPage'
 import MemberPortal from './components/Membros/Portal/MemberPortal'
 import { useDashboard } from './hooks/useDashboard'
 import api from './api/config'
+import { initializeGA, trackPageView } from './hooks/useAnalytics'
 
 function MainApp({ logout }) {
   const { user } = useAuth();
   const [telaAtiva, setTelaAtiva] = useState(user?.role === 'MEMBRO' ? 'mensagens' : 'home');
+
+  useEffect(() => {
+    if (user?.role === 'MEMBRO') return; // Rastreamento do portal é feito no MemberPortal.jsx
+
+    const adminPages = {
+      home: { path: '/admin/inicio', title: 'AD Capital - Início' },
+      membros: { path: '/admin/membros', title: 'AD Capital - Gestão de Membros' },
+      financeiro: { path: '/admin/financeiro', title: 'AD Capital - Gestão Financeira' },
+      agenda: { path: '/admin/agenda', title: 'AD Capital - Gestão da Agenda' },
+      analytics: { path: '/admin/estatisticas', title: 'AD Capital - Inteligência de Dados' },
+      config: { path: '/admin/configuracoes', title: 'AD Capital - Configurações' }
+    };
+
+    const currentPage = adminPages[telaAtiva];
+    if (currentPage) {
+      trackPageView(currentPage.path, currentPage.title);
+    }
+  }, [telaAtiva, user?.role]);
 
 
   return (
@@ -103,6 +122,9 @@ function App() {
   const [, setHash] = useState(window.location.hash);
 
   useEffect(() => {
+    // Inicializa o Google Analytics
+    initializeGA();
+
     // Log para Debug - Veja isso no console do navegador (F12)
     console.log("Versão do App: SiteInstitucional-v1.6");
     console.log("URL Atual:", window.location.href);
@@ -111,6 +133,13 @@ function App() {
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
+
+  // Rastreamento da tela de login
+  useEffect(() => {
+    if (!isValidToken && (isSystemRoute || currentHost === 'localhost')) {
+      trackPageView('/login', 'AD Capital - Login');
+    }
+  }, [isValidToken, isSystemRoute, currentHost]);
 
   // [WARM-UP LOGIC] - Agressivo com retry para combater Cold Start
   useEffect(() => {

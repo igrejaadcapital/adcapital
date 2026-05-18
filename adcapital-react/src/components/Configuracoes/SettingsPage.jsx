@@ -648,6 +648,7 @@ export default function SettingsPage() {
                         <TechItem label="Hospedagem" value="Render (Free Tier)" />
                         <TechItem label="Domínio" value="Registro.br" />
                         <TechItem label="PDF" value="ReportLab" />
+                        <TechItem label="Analytics" value="Google Analytics 4 (GA4)" />
                      </div>
                   </div>
 
@@ -683,6 +684,7 @@ export default function SettingsPage() {
                      <ServiceCard name="Resend" role="E-mail Transacional" detail="Domínio: adcapitaligreja.com.br | noreply@adcapitaligreja.com.br" url="resend.com" color="slate" />
                      <ServiceCard name="GitHub" role="Repositório de Código" detail="igrejaadcapital/adcapital (main)" url="github.com/igrejaadcapital/adcapital" color="slate" />
                      <ServiceCard name="Google" role="Calendar + Credenciais" detail="Sincronização de eventos via API" url="calendar.google.com" color="blue" />
+                     <ServiceCard name="Google Analytics" role="Estatísticas e BI" detail="Métricas de acesso e conversões do site e portal de membros" url="analytics.google.com" color="orange" />
                   </div>
                </div>
 
@@ -739,6 +741,7 @@ export default function SettingsPage() {
                      <EnvItem name="CLOUDINARY_API_KEY" desc="Chave pública Cloudinary" />
                      <EnvItem name="CLOUDINARY_API_SECRET" desc="Chave secreta Cloudinary" />
                      <EnvItem name="GOOGLE_CREDENTIALS_JSON" desc="Credenciais Google Calendar" />
+                     <EnvItem name="VITE_GA_MEASUREMENT_ID" desc="ID de Métrica do Google Analytics 4 (Front)" />
                   </div>
                </div>
 

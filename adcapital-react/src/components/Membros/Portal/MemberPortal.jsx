@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, BookOpen, Camera, UserPlus, Trash2 } from 'lucide-react';
 import MemberAgenda from './MemberAgenda';
 import ParentescoFormPublico from '../ParentescoFormPublico';
+import { trackPageView } from '../../../hooks/useAnalytics';
 
 export default function MemberPortal({ abaAtiva = 'mensagens' }) {
   const [dados, setDados] = useState(null);
@@ -60,6 +61,19 @@ export default function MemberPortal({ abaAtiva = 'mensagens' }) {
   useEffect(() => {
     carregarDados();
   }, []);
+
+  useEffect(() => {
+    const portalPages = {
+      mensagens: { path: '/portal/mensagens', title: 'AD Capital - Portal do Membro (Mensagens)' },
+      agenda: { path: '/portal/agenda', title: 'AD Capital - Portal do Membro (Agenda)' },
+      perfil: { path: '/portal/perfil', title: 'AD Capital - Portal do Membro (Meu Perfil)' }
+    };
+
+    const currentPage = portalPages[abaAtiva];
+    if (currentPage) {
+      trackPageView(currentPage.path, currentPage.title);
+    }
+  }, [abaAtiva]);
 
   const handleSave = async (e) => {
     e.preventDefault();
