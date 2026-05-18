@@ -134,13 +134,6 @@ function App() {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  // Rastreamento da tela de login
-  useEffect(() => {
-    if (!isValidToken && (isSystemRoute || currentHost === 'localhost')) {
-      trackPageView('/login', 'AD Capital - Login');
-    }
-  }, [isValidToken, isSystemRoute, currentHost]);
-
   // [WARM-UP LOGIC] - Agressivo com retry para combater Cold Start
   useEffect(() => {
     const warmup = async (attempt = 1) => {
@@ -195,6 +188,13 @@ function App() {
     currentHash.includes('portal') || 
     currentHash.includes('admin') || 
     currentHash.includes('sistema');
+
+  // Rastreamento da tela de login
+  useEffect(() => {
+    if (!isValidToken && (isSystemRoute || currentHost === 'localhost')) {
+      trackPageView('/login', 'AD Capital - Login');
+    }
+  }, [isValidToken, isSystemRoute, currentHost]);
 
   if (isPortal) {
     return <AutoCadastroPage />;
