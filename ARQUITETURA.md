@@ -158,7 +158,7 @@ O ecossistema digital possui uma integração robusta e customizada com o **Goog
 
 **Configuração de Produção:**
 O ID de métrica é configurado de forma dinâmica no frontend via variável de ambiente:
-*   `VITE_GA_MEASUREMENT_ID` (Exemplo: `G-G8L8E7X3B2`)
+*   `VITE_GA_MEASUREMENT_ID` (ID de Produção: `G-7KZ3C5J6TH`)
 
 Para alterar a conta de recebimento, basta atualizar essa chave no painel do Render ou no arquivo `.env` do React.
 

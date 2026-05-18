@@ -1,6 +1,6 @@
 // src/hooks/useAnalytics.js
 
-const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID || 'G-G8L8E7X3B2';
+const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID || 'G-7KZ3C5J6TH';
 
 /**
  * Inicializa dinamicamente o Google Analytics 4 (GA4).
