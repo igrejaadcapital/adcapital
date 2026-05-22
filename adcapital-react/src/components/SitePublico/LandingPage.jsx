@@ -29,6 +29,7 @@ const LandingPage = () => {
 
   useEffect(() => {
     trackPageView('/', 'AD Capital - Site Oficial');
+    api.post('/analytics/track/', { pagina: 'SITE' }).catch(() => {});
   }, []);
 
   const [programacao, setProgramacao] = useState([]);

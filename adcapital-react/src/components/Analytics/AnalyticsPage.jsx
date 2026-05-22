@@ -54,20 +54,30 @@ export default function AnalyticsPage({ preloadedData }) {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="flex justify-between items-center bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm gap-6">
         <div>
           <h1 className="text-2xl font-black text-slate-800 tracking-tight">Inteligência de Dados</h1>
           <p className="text-slate-400 text-sm font-medium">Visão estratégica da AD Capital</p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-6 justify-end items-center">
           <div className="text-center">
             <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest block">Total Membros</span>
             <span className="text-2xl font-black text-slate-800">{stats.total_membros}</span>
           </div>
-          <div className="w-px h-10 bg-slate-100 self-center"></div>
+          <div className="hidden sm:block w-px h-10 bg-slate-100 self-center"></div>
           <div className="text-center">
             <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest block">Ativos (Ligados)</span>
             <span className="text-2xl font-black text-slate-800">{stats.membros_ativos}</span>
+          </div>
+          <div className="hidden sm:block w-px h-10 bg-slate-100 self-center"></div>
+          <div className="text-center">
+            <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest block">Acessos ao Site</span>
+            <span className="text-2xl font-black text-slate-800">{stats.total_acessos_site || 0}</span>
+          </div>
+          <div className="hidden sm:block w-px h-10 bg-slate-100 self-center"></div>
+          <div className="text-center">
+            <span className="text-[10px] font-black text-violet-600 uppercase tracking-widest block">Acessos ao Portal</span>
+            <span className="text-2xl font-black text-slate-800">{stats.total_acessos_portal || 0}</span>
           </div>
         </div>
       </div>
@@ -145,6 +155,37 @@ export default function AnalyticsPage({ preloadedData }) {
                 <Legend verticalAlign="top" align="right" iconType="circle" />
                 <Area type="monotone" dataKey="entrada" stroke="#10b981" fillOpacity={1} fill="url(#colorEntrada)" name="Entradas" strokeWidth={3} />
                 <Area type="monotone" dataKey="saida" stroke="#ef4444" fillOpacity={1} fill="url(#colorSaida)" name="Saídas" strokeWidth={3} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Histórico de Acessos (Site vs Portal) */}
+        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm lg:col-span-2">
+          <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6">📊 Tráfego Mensal (Site vs Portal do Membro)</h3>
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={stats.historico_acessos || []}>
+                <defs>
+                  <linearGradient id="colorSite" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.15}/>
+                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="colorPortal" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.15}/>
+                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: 'bold'}} />
+                <YAxis axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: 'bold'}} />
+                <Tooltip 
+                  formatter={(val) => [`${val.toLocaleString('pt-BR')} visitas`, '']}
+                  contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}}
+                />
+                <Legend verticalAlign="top" align="right" iconType="circle" />
+                <Area type="monotone" dataKey="site" stroke="#6366f1" fillOpacity={1} fill="url(#colorSite)" name="Site Público" strokeWidth={3} />
+                <Area type="monotone" dataKey="portal" stroke="#8b5cf6" fillOpacity={1} fill="url(#colorPortal)" name="Portal do Membro" strokeWidth={3} />
               </AreaChart>
             </ResponsiveContainer>
           </div>

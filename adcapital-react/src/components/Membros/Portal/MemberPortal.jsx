@@ -60,6 +60,7 @@ export default function MemberPortal({ abaAtiva = 'mensagens' }) {
 
   useEffect(() => {
     carregarDados();
+    api.post('/analytics/track/', { pagina: 'PORTAL' }).catch(() => {});
   }, []);
 
   useEffect(() => {
