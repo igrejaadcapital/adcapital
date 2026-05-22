@@ -19,7 +19,11 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            shrinkResources false
+            // ProGuard só é necessário com minifyEnabled true (incompatível com AGP 9.x neste template)
+        }
+        debug {
+            minifyEnabled false
         }
     }
 }

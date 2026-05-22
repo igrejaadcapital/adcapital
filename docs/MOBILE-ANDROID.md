@@ -5,6 +5,11 @@
 1. [Node.js](https://nodejs.org/) 20+
 2. [Android Studio](https://developer.android.com/studio) (SDK 34+, build-tools)
 3. Variável `ANDROID_HOME` configurada (Studio → SDK Manager)
+4. **Emulador:** instale o driver **AEHD** (Android Emulator Hypervisor Driver) se o aviso aparecer no Device Manager — ou use celular físico com USB debugging
+
+## Erro comum: `getDefaultProguardFile`
+
+Se o Gradle falhar na linha `proguardFiles getDefaultProguardFile(...)` com AGP 9.x, o projeto já está configurado com `minifyEnabled false` **sem** ProGuard. Faça **File → Sync Project with Gradle Files** e **Build → Rebuild Project**.
 
 ## Configuração do projeto
 
