@@ -8,7 +8,7 @@ Status atualizado após **Fase 1** em produção (maio/2026).
 |------|------|--------|
 | **0** | Segurança (CORS, RBAC, JWT, cron) | Concluída |
 | **1** | Backend + API v1 + OpenAPI + Router | Concluída |
-| **2** | Front moderno (Query, UX mobile, pastas) | Em andamento |
+| **2** | Front moderno (Query, UX mobile, pastas) | Concluída (core) |
 | **3** | Android (PWA + Capacitor) | Próxima |
 | **4** | CI, staging, observabilidade | Backlog |
 
@@ -41,8 +41,8 @@ Status atualizado após **Fase 1** em produção (maio/2026).
 
 - [x] **2.1** React Router (feito na Fase 1.4)
 - [ ] **2.2** Pastas `features/` + `shared/` (migração gradual)
-- [x] **2.3** TanStack Query (cache/retry unificado) — *em PR*
-- [x] **2.4** Bottom navigation no portal (mobile) — *em PR*
+- [x] **2.3** TanStack Query (cache/retry unificado)
+- [x] **2.4** Bottom navigation no portal (mobile)
 - [ ] **2.3b** Migrar `useMembros`, `useFinanceiro`, `useDashboard`
 - [ ] **2.4b** Inputs mobile (`tel`, máscara CPF)
 
