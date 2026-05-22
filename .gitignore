@@ -11,6 +11,15 @@ dist/
 dist-ssr/
 *.local
 
+# Capacitor Android (gerado localmente)
+adcapital-react/android/.gradle/
+adcapital-react/android/.idea/
+adcapital-react/android/local.properties
+adcapital-react/android/**/build/
+adcapital-react/android/capacitor-cordova-android-plugins/
+*.keystore
+*.jks
+
 # Editor
 .vscode/
 .idea/

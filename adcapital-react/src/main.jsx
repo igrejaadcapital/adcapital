@@ -6,6 +6,7 @@ import './index.css'
 import App from './App.jsx'
 import { AuthProvider } from './components/Auth/AuthProvider'
 import { queryClient } from './api/queryClient'
+import { initCapacitor, isNativeApp } from './mobile/capacitorSetup'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -19,12 +20,14 @@ createRoot(document.getElementById('root')).render(
   </StrictMode>,
 )
 
-// PWA Registration
-if ('serviceWorker' in navigator) {
+initCapacitor();
+
+// PWA: service worker só no navegador (não no app Capacitor)
+if ('serviceWorker' in navigator && !isNativeApp()) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').then(reg => {
+    navigator.serviceWorker.register('./sw.js').then((reg) => {
       console.log('SW registered:', reg);
-    }).catch(err => {
+    }).catch((err) => {
       console.log('SW registration failed:', err);
     });
   });
