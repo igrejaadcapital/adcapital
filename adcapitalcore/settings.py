@@ -8,9 +8,12 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 """
 
 import os
+from datetime import timedelta
 from pathlib import Path
-from dotenv import load_dotenv
+
 import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
+from dotenv import load_dotenv
 
 # Load environment variables from .env file (if it exists)
 load_dotenv()
@@ -22,11 +25,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-*jzy@g1==oqy@(o+*(+ibbsojas%_7-=*hd7+o6*g!*wmzrcrs')
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+
+# SECURITY WARNING: keep the secret key used in production secret!
+_secret_key = os.environ.get('SECRET_KEY', '').strip()
+if not DEBUG:
+    if not _secret_key or _secret_key.startswith('django-insecure'):
+        raise ImproperlyConfigured(
+            'SECRET_KEY deve ser definida no ambiente de produção (valor forte, não padrão).'
+        )
+SECRET_KEY = _secret_key or 'django-insecure-*jzy@g1==oqy@(o+*(+ibbsojas%_7-=*hd7+o6*g!*wmzrcrs'
 
 ALLOWED_HOSTS = [
     'adcapitaligreja.com.br',
@@ -60,6 +69,7 @@ INSTALLED_APPS = [
     # Bibliotecas
     'corsheaders',
     'rest_framework',
+    'rest_framework_simplejwt.token_blacklist',
     'cloudinary_storage',
     'cloudinary',
 
@@ -170,17 +180,32 @@ STORAGES = {
     },
 }
 
-# LIBERAÇÃO DE CORS E CSRF (Essencial para o sistema funcionar em produção)
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_METHODS = ["DELETE", "GET", "OPTIONS", "PATCH", "POST", "PUT"]
+# CORS restrito aos domínios da igreja (+ dev local / Capacitor)
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    'https://adcapitaligreja.com.br',
+    'https://www.adcapitaligreja.com.br',
+    'https://sistema.adcapitaligreja.com.br',
+    'https://cadastro.adcapitaligreja.com.br',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'https://localhost',
+    'http://localhost',
+]
+_extra_cors = os.environ.get('CORS_ALLOWED_ORIGINS', '')
+if _extra_cors:
+    CORS_ALLOWED_ORIGINS.extend([o.strip() for o in _extra_cors.split(',') if o.strip()])
+
+CORS_ALLOW_METHODS = ['DELETE', 'GET', 'OPTIONS', 'PATCH', 'POST', 'PUT']
 CORS_PREFLIGHT_MAX_AGE = 86400
 
-# Domínios confiáveis para requisições cross-origin (Django 4.0+)
 CSRF_TRUSTED_ORIGINS = [
-    "https://adcapitaligreja.com.br",
-    "https://sistema.adcapitaligreja.com.br",
-    "https://cadastro.adcapitaligreja.com.br",
-    "https://api.adcapitaligreja.com.br"
+    'https://adcapitaligreja.com.br',
+    'https://www.adcapitaligreja.com.br',
+    'https://sistema.adcapitaligreja.com.br',
+    'https://cadastro.adcapitaligreja.com.br',
+    'https://api.adcapitaligreja.com.br',
 ]
 
 # Cloudinary Credentials
@@ -190,21 +215,38 @@ CLOUDINARY_STORAGE = {
     'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET')
 }
 
-# Criptografia REST JWT
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
-    )
+    ),
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '120/hour',
+        'user': '2000/hour',
+        'login': '10/minute',
+        'cadastro': '8/minute',
+        'reset_senha': '5/hour',
+        'curtidas': '30/hour',
+        'portal_verify': '20/minute',
+    },
 }
 
-from datetime import timedelta
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': True,
 }
+
+if not DEBUG:
+    SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'True') == 'True'
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
 
 # Email Configuration
 EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')

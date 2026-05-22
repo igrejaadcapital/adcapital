@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from membros.permissions import IsStaffChurch
 from django.db import connection, close_old_connections
 from django.db.models import Count, Sum, Q
 from django.db.models.functions import TruncMonth
@@ -16,7 +16,7 @@ class ConsolidatedDashboardView(APIView):
     Isso reduz drasticamente o número de conexões ao banco de dados e 
     previne travamentos em instâncias Free do Render.
     """
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsStaffChurch]
 
     def get(self, request):
         try:

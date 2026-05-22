@@ -10,7 +10,7 @@ from membros.view_public import (
     auto_cadastro_direto
 )
 from analytics.dashboard_views import ConsolidatedDashboardView
-from membros.views import run_migrations_debug, CustomTokenObtainPairView, ping_view, health_check
+from membros.views import CustomTokenObtainPairView, ping_view, health_check
 
 urlpatterns = [
     # [DASHBOARD CONSOLIDADO - PERFORMANCE]
@@ -28,7 +28,6 @@ urlpatterns = [
     path('api/c/', auto_cadastro_direto),
     path('api/v', portal_verificar_resposta_direto),
     path('api/c', auto_cadastro_direto),
-    path('api/debug/migrate/', run_migrations_debug),
     path('api/ping/', ping_view, name='ping'),
 
     path('admin/', admin.site.urls),
