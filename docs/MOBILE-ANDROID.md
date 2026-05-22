@@ -5,11 +5,44 @@
 1. [Node.js](https://nodejs.org/) 20+
 2. [Android Studio](https://developer.android.com/studio) (SDK 34+, build-tools)
 3. Variável `ANDROID_HOME` configurada (Studio → SDK Manager)
-4. **Emulador:** instale o driver **AEHD** (Android Emulator Hypervisor Driver) se o aviso aparecer no Device Manager — ou use celular físico com USB debugging
+4. **Emulador (opcional):** ver seção [AEHD no Windows](#aehd-no-windows) abaixo — **celular físico** é o caminho mais rápido se o driver falhar
+
+## AEHD no Windows (erro 1061 / 1072 / 1058)
+
+Se o instalador do **Android Emulator Hypervisor Driver** mostrar:
+
+- `ControlService FAILED 1061`
+- `DeleteService FAILED 1072` (serviço marcado para exclusão)
+- `StartService FAILED 1058` (serviço desabilitado)
+
+Faça **nesta ordem**:
+
+1. **Reinicie o Windows** (obrigatório após erro 1072).
+2. **Recursos do Windows** (`optionalfeatures.exe`) — ative:
+   - Plataforma de Hypervisor do Windows
+   - Plataforma de Máquina Virtual
+   - (Se existir e você usa emulador) Hyper-V
+3. Reinicie de novo.
+4. Abra o **Android Studio como Administrador**.
+5. **SDK Manager → SDK Tools** → marque **Android Emulator Hypervisor Driver** → Apply.
+6. No **Device Manager**, use **Reinstall AEHD** ou crie um AVD novo (Pixel 7, API 34).
+
+Se ainda falhar, **use o celular** (recomendado):
+
+1. No Android: **Configurações → Sobre o telefone** → toque 7× em “Número da compilação”.
+2. **Opções do desenvolvedor** → ative **Depuração USB**.
+3. Conecte o cabo USB; aceite “Permitir depuração”.
+4. No PC: `adb devices` (deve listar o aparelho).
+5. No Android Studio, escolha o **dispositivo físico** no seletor ao lado de Run ▶.
 
 ## Erro comum: `getDefaultProguardFile`
 
-Se o Gradle falhar na linha `proguardFiles getDefaultProguardFile(...)` com AGP 9.x, o projeto já está configurado com `minifyEnabled false` **sem** ProGuard. Faça **File → Sync Project with Gradle Files** e **Build → Rebuild Project**.
+Se o Gradle falhar na linha `proguardFiles getDefaultProguardFile(...)` com AGP 9.x:
+
+1. Atualize o projeto (`git pull` na pasta `developer`).
+2. Confirme que `android/app/build.gradle` **não** tem mais a linha `proguardFiles getDefaultProguardFile`.
+3. Clique **Sync Now** (banner amarelo) ou **File → Sync Project with Gradle Files**.
+4. **Build → Rebuild Project**.
 
 ## Configuração do projeto
 
