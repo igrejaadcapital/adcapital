@@ -3,16 +3,16 @@ from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
 from rest_framework.test import APIClient
 
-from membros.models import Perfil
-
 
 class SecurityPhase0Tests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.admin = User.objects.create_user(username='11111111111', password='testpass123')
-        Perfil.objects.create(user=self.admin, role='ADMIN')
+        self.admin.perfil.role = 'ADMIN'
+        self.admin.perfil.save(update_fields=['role'])
         self.membro_user = User.objects.create_user(username='22222222222', password='testpass123')
-        Perfil.objects.create(user=self.membro_user, role='MEMBRO')
+        self.membro_user.perfil.role = 'MEMBRO'
+        self.membro_user.perfil.save(update_fields=['role'])
 
     def test_debug_migrate_endpoint_removed(self):
         response = self.client.get('/api/debug/migrate/')

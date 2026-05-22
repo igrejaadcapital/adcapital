@@ -107,7 +107,14 @@ O sistema implementa um controle de acesso rigoroso baseado em cargos:
 | **TESOUREIRO** | Gestão financeira, entradas/saídas e relatórios de caixa. |
 | **MEMBRO** | Acesso exclusivo ao seu próprio perfil para atualização de dados cadastrais. |
 
-**Segurança:** Todas as rotas da API são protegidas por tokens **JWT (JSON Web Token)** com validade de 24 horas, garantindo que apenas usuários autenticados acessem os dados.
+**Segurança:** Rotas administrativas usam **JWT** com access token de **30 minutos** e refresh de **7 dias** (rotação com blacklist). Papéis (`ADMIN`, `SECRETARIO`, `TESOUREIRO`, `MEMBRO`) controlam o que cada usuário pode ver na API.
+
+**Variáveis obrigatórias em produção (Render):**
+| Variável | Uso |
+| :--- | :--- |
+| `SECRET_KEY` | Chave Django forte (não usar o valor `django-insecure-...`) |
+| `CRON_SECRET` | Header `X-Cron-Secret` no cron de aniversários (`/api/verificar-aniversarios/`) |
+| `DEBUG` | Deve ser `False` em produção |
 
 ---
 
@@ -127,8 +134,11 @@ Devido às limitações dos planos gratuitos utilizados:
 2. **Supabase Free (Banco de Dados)**: Pausa o projeto inteiro após 7 dias ininterruptos de inatividade.
 
 **Solução Aplicada:**
-Utilizamos o serviço externo **[cron-job.org](https://cron-job.org/en/)** (agendado **a cada 10 minutos**) para fazer requisições automatizadas na API pública (`https://api.adcapitaligreja.com.br/api/configuracao-site/`).
-Isso mantém tanto o servidor da API "acordado" quanto o Banco de Dados "ativo", impedindo que os dados fiquem inacessíveis.
+Utilizamos o serviço externo **[cron-job.org](https://cron-job.org/en/)** com duas tarefas:
+1. **Keep-alive** (a cada 10 min): `GET https://api.adcapitaligreja.com.br/api/configuracao-site/`
+2. **Aniversários** (diário): `GET https://api.adcapitaligreja.com.br/api/verificar-aniversarios/` com header `X-Cron-Secret: <valor de CRON_SECRET no Render>`
+
+Isso mantém o servidor da API "acordado", o banco ativo e envia e-mails de aniversário apenas com o segredo configurado.
 
 ---
 
@@ -155,6 +165,7 @@ O ecossistema digital possui uma integração robusta e customizada com o **Goog
 *   **Landing Page Pública**: Acessos à página inicial (`/`) e cliques de conversão no botão *"Portal do Membro"* no cabeçalho.
 *   **Portal do Membro (Logado)**: Navegação interna pelas abas (Mensagens: `/portal/mensagens`, Agenda: `/portal/agenda`, Perfil: `/portal/perfil`).
 *   **Painel Administrativo**: Acessos ao login (`/login`) e navegação pelas abas administrativas (Início, Membros, Financeiro, Agenda, Estatísticas, Configurações).
+*   **Rastreamento interno (API)**: `POST /api/analytics/track/` registra visitas ao site (`SITE`) e ao portal (`PORTAL`) na tabela `analytics.Acesso`.
 
 **Configuração de Produção:**
 O ID de métrica é configurado de forma dinâmica no frontend via variável de ambiente:

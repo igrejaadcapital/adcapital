@@ -1,6 +1,9 @@
+from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 from membros.permissions import IsStaffChurch
+from .models import Acesso
 from django.db.models import Count, Sum
 from django.db.models.functions import TruncMonth
 from membros.models import Membro
@@ -61,3 +64,15 @@ class DashboardStatsView(APIView):
         }
 
         return Response(stats)
+
+
+class TrackAcessoView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        pagina = request.data.get('pagina')
+        if pagina not in ('SITE', 'PORTAL'):
+            return Response({'error': 'pagina inválida'}, status=status.HTTP_400_BAD_REQUEST)
+        Acesso.objects.create(pagina=pagina)
+        return Response({'ok': True}, status=status.HTTP_201_CREATED)
+

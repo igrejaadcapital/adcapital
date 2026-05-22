@@ -2,7 +2,12 @@
 import os
 import secrets
 
+from django.conf import settings
 from rest_framework import permissions
+
+
+def _cron_secret():
+    return (os.environ.get('CRON_SECRET', '') or getattr(settings, 'CRON_SECRET', '')).strip()
 
 
 def get_user_role(user):
@@ -48,7 +53,7 @@ class HasCronSecret(permissions.BasePermission):
     """Protege endpoints de tarefas agendadas (cron-job.org, etc.)."""
 
     def has_permission(self, request, view):
-        expected = os.environ.get('CRON_SECRET', '').strip()
+        expected = _cron_secret()
         if not expected:
             return False
         provided = (
