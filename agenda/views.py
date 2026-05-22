@@ -11,6 +11,12 @@ class EventoViewSet(viewsets.ModelViewSet):
     serializer_class = EventoSerializer
     permission_classes = [IsStaffChurch]
 
+    def get_permissions(self):
+        # Portal do membro e site: leitura da programação para qualquer usuário logado
+        if self.action in ('list', 'retrieve'):
+            return [permissions.IsAuthenticated()]
+        return [IsStaffChurch()]
+
 class ProgramacaoSemanalViewSet(viewsets.ModelViewSet):
     """
     ViewSet para a programação semanal (EBD, Cultos fixos).

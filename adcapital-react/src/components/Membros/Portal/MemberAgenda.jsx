@@ -5,7 +5,7 @@ import { Calendar as CalendarIcon, Clock, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function MemberAgenda() {
-  const { eventos, carregando, error, buscarEventos } = useAgenda();
+  const { eventos, carregando, error, buscarEventos } = useAgenda({ includeSyncStatus: false });
 
   // Sort events by date ascending and filter out past events (optional, but good for a member agenda)
   const proximosEventos = useMemo(() => {

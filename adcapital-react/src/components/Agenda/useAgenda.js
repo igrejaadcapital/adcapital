@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import api from '../../api/config';
 
-export function useAgenda() {
+export function useAgenda({ includeSyncStatus = true } = {}) {
   const [eventos, setEventos] = useState([]);
   const [carregando, setCarregando] = useState(false);
   const [error, setError] = useState(false);
@@ -32,8 +32,10 @@ export function useAgenda() {
 
   useEffect(() => {
     buscarEventos();
-    verificarStatus();
-  }, [buscarEventos, verificarStatus]);
+    if (includeSyncStatus) {
+      verificarStatus();
+    }
+  }, [buscarEventos, verificarStatus, includeSyncStatus]);
 
   const criarEvento = async (novoEvento) => {
     setCarregando(true);
