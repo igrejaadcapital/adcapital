@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     # Bibliotecas
     'corsheaders',
     'rest_framework',
+    'drf_spectacular',
     'rest_framework_simplejwt.token_blacklist',
     'cloudinary_storage',
     'cloudinary',
@@ -208,6 +209,8 @@ CSRF_TRUSTED_ORIGINS = [
     'https://api.adcapitaligreja.com.br',
 ]
 
+CRON_SECRET = os.environ.get('CRON_SECRET', '').strip()
+
 # Cache compartilhado (PostgreSQL) — rate limit funciona com vários workers no Render
 CACHES = {
     'default': {
@@ -224,6 +227,7 @@ CLOUDINARY_STORAGE = {
 }
 
 REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
@@ -239,6 +243,35 @@ REST_FRAMEWORK = {
         'curtidas': '30/hour',
         'portal_verify': '20/minute',
     },
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Igreja AD Capital — API',
+    'DESCRIPTION': (
+        'API REST do sistema pastoral (membros, financeiro, agenda, analytics). '
+        'Autenticação via JWT (`Authorization: Bearer <access>`).'
+    ),
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SCHEMA_PATH_PREFIX': r'/api/v1',
+    'COMPONENT_SPLIT_REQUEST': True,
+    'APPEND_COMPONENTS': {
+        'securitySchemes': {
+            'BearerAuth': {
+                'type': 'http',
+                'scheme': 'bearer',
+                'bearerFormat': 'JWT',
+            }
+        }
+    },
+    'SECURITY': [{'BearerAuth': []}],
+    'TAGS': [
+        {'name': 'auth', 'description': 'Login JWT, health e ping'},
+        {'name': 'membros', 'description': 'Cadastro, portal e administração'},
+        {'name': 'financeiro', 'description': 'Transações e categorias'},
+        {'name': 'agenda', 'description': 'Eventos e programação'},
+        {'name': 'analytics', 'description': 'Dashboard e métricas'},
+    ],
 }
 
 SIMPLE_JWT = {

@@ -16,7 +16,8 @@ from dotenv import load_dotenv
 
 load_dotenv(ROOT / '.env')
 
-API = os.environ.get('SMOKE_API_BASE', 'https://api.adcapitaligreja.com.br/api').rstrip('/')
+API = os.environ.get('SMOKE_API_BASE', 'https://api.adcapitaligreja.com.br/api/v1').rstrip('/')
+LEGACY_API = os.environ.get('SMOKE_API_LEGACY_BASE', 'https://api.adcapitaligreja.com.br/api').rstrip('/')
 CRON_SECRET = os.environ.get('CRON_SECRET', '').strip()
 SMOKE_ADMIN_USER = os.environ.get('SMOKE_ADMIN_USER', '').strip()
 SMOKE_ADMIN_PASSWORD = os.environ.get('SMOKE_ADMIN_PASSWORD', '').strip()
@@ -24,11 +25,11 @@ IS_REMOTE_PROD = 'adcapitaligreja.com.br' in API
 IS_LOCAL_API = 'localhost' in API or '127.0.0.1' in API
 
 
-def http(method, path, *, headers=None, data=None, timeout=45):
+def http(method, path, *, headers=None, data=None, timeout=45, base=None):
     import urllib.error
     import urllib.request
 
-    url = f'{API}{path}'
+    url = f'{(base or API).rstrip("/")}{path}'
     body = None
     hdrs = {
         'User-Agent': 'Mozilla/5.0 (compatible; ADCapital-Smoke/1.0)',
@@ -73,9 +74,12 @@ def main():
         mark = 'OK' if ok else 'FALHOU'
         print(f'[{mark}] {name}' + (f' — {detail}' if detail else ''))
 
-    # --- API anônima ---
-    s, _ = http('GET', '/debug/migrate/')
-    check('GET /api/debug/migrate/ -> 404', s == 404, f'status={s}')
+    # --- API anônima (v1 + legado) ---
+    for label, base in [('v1', API), ('legado', LEGACY_API)]:
+        s, _ = http('GET', '/debug/migrate/', base=base)
+        check(f'GET {base}/debug/migrate/ -> 404', s == 404, f'status={s}')
+        s, _ = http('GET', '/ping/', base=base)
+        check(f'GET {base}/ping/ -> 200', s == 200, f'status={s}')
 
     s, _ = http('GET', '/financeiro/transacoes/')
     check('Financeiro sem token -> 401', s == 401, f'status={s}')

@@ -1,30 +1,25 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import (
-    ComentarioPalavraViewSet,
-    DevocionalViewSet,
-    verificar_aniversarios,
-    MembroViewSet, 
+
+from membros.api.configuracao import (
     ConfiguracaoPortalViewSet,
     ConfiguracaoSiteViewSet,
     FotoGaleriaViewSet,
-    excluir_funcao,
-    adicionar_funcao,
-    buscar_opcoes_funcao,
-    buscar_opcoes_parentesco,
+)
+from membros.api.cron import resetar_senhas_em_massa, verificar_aniversarios
+from membros.api.funcoes import adicionar_funcao, buscar_opcoes_funcao, excluir_funcao
+from membros.api.membros_admin import MembroViewSet, download_termo_lgpd
+from membros.api.portal import ComentarioPalavraViewSet, DevocionalViewSet, MeusDadosView
+from membros.api.publico import (
     buscar_configuracao_publica,
-    download_termo_lgpd,
-    ultimo_video_youtube,
     buscar_membros_autocomplete_publico,
-    MeusDadosView,
-    UsuariosView,
-    TrocarSenhaView,
-    ResetarSenhaView,
+    buscar_opcoes_parentesco,
+    curtir_palavra,
     init_publico,
     init_site,
-    curtir_palavra,
-    resetar_senhas_em_massa,
+    ultimo_video_youtube,
 )
+from membros.api.usuarios import ResetarSenhaView, TrocarSenhaView, UsuariosView
 
 from .view_public import (
     portal_verificar_resposta_direto,

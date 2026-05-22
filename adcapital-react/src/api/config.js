@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'https://api.adcapitaligreja.com.br/api',
+    baseURL: import.meta.env.VITE_API_URL || 'https://api.adcapitaligreja.com.br/api/v1',
     timeout: 90000 // 90s para suportar Cold Starts do Render
 });
 
@@ -113,11 +113,12 @@ api.interceptors.response.use(
             localStorage.removeItem('refresh_token');
 
             // Redireciona para o login apenas se necessário e se NÃO estivermos já nele
-            const isPublicPortal = window.location.hash.includes('cadastro');
-            const isLoginPage = window.location.pathname === '/' || window.location.hash === '#/';
-            
+            const path = window.location.pathname;
+            const isPublicPortal = path.startsWith('/cadastro');
+            const isLoginPage = path === '/' || path === '/login';
+
             if (!isPublicPortal && !isLoginPage) {
-                window.location.href = '/';
+                window.location.href = '/login';
             }
         }
 
