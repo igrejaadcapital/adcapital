@@ -1,113 +1,119 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../../api/config';
+import { agendaKeys } from '../../api/queryClient';
+
+async function fetchEventos() {
+  const response = await api.get('/agenda/eventos/');
+  return response.data;
+}
+
+async function fetchSyncStatus() {
+  const response = await api.get('/agenda/status/');
+  return response.data;
+}
 
 export function useAgenda({ includeSyncStatus = true } = {}) {
-  const [eventos, setEventos] = useState([]);
-  const [carregando, setCarregando] = useState(false);
-  const [error, setError] = useState(false);
-  const [syncStatus, setSyncStatus] = useState({ status: 'loading', message: '' });
+  const queryClient = useQueryClient();
 
-  const buscarEventos = useCallback(async () => {
-    setCarregando(true);
-    setError(false);
-    try {
-      const response = await api.get('/agenda/eventos/');
-      setEventos(response.data);
-    } catch (err) {
-      console.error("Erro ao buscar eventos:", err);
-      setError(true);
-    } finally {
-      setCarregando(false);
-    }
-  }, []);
+  const eventosQuery = useQuery({
+    queryKey: agendaKeys.eventos,
+    queryFn: fetchEventos,
+  });
 
-  const verificarStatus = useCallback(async () => {
-    try {
-      const response = await api.get('/agenda/status/');
-      setSyncStatus(response.data);
-    } catch (error) {
-      setSyncStatus({ status: 'offline', message: 'Erro ao conectar ao servidor de API.' });
-    }
-  }, []);
+  const statusQuery = useQuery({
+    queryKey: agendaKeys.status,
+    queryFn: fetchSyncStatus,
+    enabled: includeSyncStatus,
+    retry: 1,
+  });
 
-  useEffect(() => {
-    buscarEventos();
-    if (includeSyncStatus) {
-      verificarStatus();
-    }
-  }, [buscarEventos, verificarStatus, includeSyncStatus]);
+  const invalidateEventos = () =>
+    queryClient.invalidateQueries({ queryKey: agendaKeys.eventos });
+
+  const criarEventoMutation = useMutation({
+    mutationFn: (novoEvento) =>
+      api.post('/agenda/eventos/', {
+        titulo: novoEvento.titulo,
+        descricao: novoEvento.descricao,
+        data_inicio: new Date(novoEvento.data_inicio).toISOString(),
+        data_fim: new Date(novoEvento.data_fim).toISOString(),
+      }),
+    onSuccess: invalidateEventos,
+  });
+
+  const deletarEventoMutation = useMutation({
+    mutationFn: (id) => api.delete(`/agenda/eventos/${id}/`),
+    onSuccess: invalidateEventos,
+  });
+
+  const editarEventoMutation = useMutation({
+    mutationFn: ({ id, dados }) => api.put(`/agenda/eventos/${id}/`, dados),
+    onSuccess: invalidateEventos,
+  });
+
+  const syncMutation = useMutation({
+    mutationFn: () => api.post('/agenda/sync/'),
+    onSuccess: invalidateEventos,
+  });
 
   const criarEvento = async (novoEvento) => {
-    setCarregando(true);
     try {
-      await api.post('/agenda/eventos/', {
-          titulo: novoEvento.titulo,
-          descricao: novoEvento.descricao,
-          data_inicio: new Date(novoEvento.data_inicio).toISOString(),
-          data_fim: new Date(novoEvento.data_fim).toISOString()
-      });
-      await buscarEventos();
+      await criarEventoMutation.mutateAsync(novoEvento);
       return true;
     } catch (error) {
-      console.error("Erro ao criar evento:", error);
+      console.error('Erro ao criar evento:', error);
       return false;
-    } finally {
-      setCarregando(false);
     }
   };
 
   const deletarEvento = async (id) => {
-    setCarregando(true);
     try {
-      await api.delete(`/agenda/eventos/${id}/`);
-      await buscarEventos();
+      await deletarEventoMutation.mutateAsync(id);
       return true;
     } catch (error) {
-      console.error("Erro ao deletar evento:", error);
+      console.error('Erro ao deletar evento:', error);
       return false;
-    } finally {
-      setCarregando(false);
     }
   };
 
   const editarEvento = async (id, dados) => {
-    setCarregando(true);
     try {
-      await api.put(`/agenda/eventos/${id}/`, dados);
-      await buscarEventos();
+      await editarEventoMutation.mutateAsync({ id, dados });
       return true;
     } catch (error) {
-      console.error("Erro ao editar evento:", error);
+      console.error('Erro ao editar evento:', error);
       return false;
-    } finally {
-      setCarregando(false);
     }
   };
 
   const sincronizarComGoogle = async () => {
-    setCarregando(true);
     try {
-      const response = await api.post('/agenda/sync/');
-      await buscarEventos();
+      const response = await syncMutation.mutateAsync();
       return response.data;
     } catch (error) {
-      console.error("Erro ao sincronizar com Google:", error);
-      return { error: "Falha na sincronização externa" };
-    } finally {
-      setCarregando(false);
+      console.error('Erro ao sincronizar com Google:', error);
+      return { error: 'Falha na sincronização externa' };
     }
   };
 
-  return { 
-    eventos, 
-    carregando, 
-    error,
-    syncStatus, 
-    buscarEventos, 
-    verificarStatus, 
-    criarEvento, 
-    deletarEvento, 
+  const carregando =
+    eventosQuery.isPending ||
+    eventosQuery.isFetching ||
+    criarEventoMutation.isPending ||
+    deletarEventoMutation.isPending ||
+    editarEventoMutation.isPending ||
+    syncMutation.isPending;
+
+  return {
+    eventos: eventosQuery.data ?? [],
+    carregando,
+    error: eventosQuery.isError,
+    syncStatus: statusQuery.data ?? { status: 'loading', message: '' },
+    buscarEventos: () => eventosQuery.refetch(),
+    verificarStatus: () => statusQuery.refetch(),
+    criarEvento,
+    deletarEvento,
     editarEvento,
-    sincronizarComGoogle 
+    sincronizarComGoogle,
   };
 }
