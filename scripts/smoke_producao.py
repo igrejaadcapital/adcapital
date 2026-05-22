@@ -41,9 +41,13 @@ def http(method, path, *, headers=None, data=None, timeout=45):
     req = urllib.request.Request(url, data=body, headers=hdrs, method=method)
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
-            return resp.status, resp.read().decode('utf-8', errors='replace')[:400]
+            body = resp.read().decode('utf-8', errors='replace')
+            limit = 8000 if '/token/' in path else 400
+            return resp.status, body[:limit]
     except urllib.error.HTTPError as e:
-        return e.code, e.read().decode('utf-8', errors='replace')[:400]
+        body = e.read().decode('utf-8', errors='replace')
+        limit = 8000 if '/token/' in path else 400
+        return e.code, body[:limit]
 
 
 def site_ok(url):
@@ -153,7 +157,11 @@ def main():
             )
             check('ADMIN: GET membros/ -> 200', s == 200, f'status={s}')
         else:
-            check('ADMIN: login smoke', False, f'status login={login_status}')
+            check(
+                'ADMIN: login smoke (token no JSON)',
+                False,
+                f'status login={login_status}',
+            )
     elif IS_REMOTE_PROD:
         check(
             'RBAC ADMIN na API produção',
