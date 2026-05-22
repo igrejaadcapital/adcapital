@@ -1,6 +1,7 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../components/Auth/AuthProvider';
 import LandingPage from '../components/SitePublico/LandingPage';
+import { isNativeApp } from '../mobile/capacitorSetup';
 import { isValidToken, PATHS } from './paths';
 import { PostAuthRedirect } from './guards';
 
@@ -20,6 +21,14 @@ function isSystemHost() {
 
 export default function RootEntry() {
   const { token } = useAuth();
+
+  if (isNativeApp()) {
+    return isValidToken(token) ? (
+      <PostAuthRedirect />
+    ) : (
+      <Navigate to={PATHS.login} replace />
+    );
+  }
 
   if (isCadastroHost()) {
     return <Navigate to={PATHS.cadastro} replace />;

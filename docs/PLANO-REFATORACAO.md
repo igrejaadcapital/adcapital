@@ -9,7 +9,7 @@ Status atualizado após **Fase 1** em produção (maio/2026).
 | **0** | Segurança (CORS, RBAC, JWT, cron) | Concluída |
 | **1** | Backend + API v1 + OpenAPI + Router | Concluída |
 | **2** | Front moderno (Query, UX mobile, pastas) | Concluída (core) |
-| **3** | Android (PWA + Capacitor) | Próxima |
+| **3** | Android (PWA + Capacitor) | Em andamento |
 | **4** | CI, staging, observabilidade | Backlog |
 
 ---
@@ -51,9 +51,9 @@ Status atualizado após **Fase 1** em produção (maio/2026).
 ## Fase 3 — Android
 
 - [x] PWA básica (`manifest`, `sw.js`)
-- [ ] **3.1** Ícones/splash + `start_url` para `/login`
-- [ ] **3.2** Capacitor Android (`@capacitor/android`)
-- [ ] **3.3** Build AAB e Play Store interno
+- [x] **3.1** Splash/status bar + `viewport-fit` + `start_url` `/login`
+- [x] **3.2** Capacitor Android (`android/`, `capacitor.config.json`)
+- [ ] **3.3** Build AAB assinado e Play Store (teste interno) — ver `docs/MOBILE-ANDROID.md`
 - [ ] **3.4** Push (opcional — Firebase)
 
 **Recomendação:** PWA + Capacitor (um código React, mesma API).

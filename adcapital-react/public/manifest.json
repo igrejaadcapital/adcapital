@@ -1,6 +1,7 @@
 {
   "short_name": "AD Capital",
-  "name": "Igreja AD Capital",
+  "name": "Igreja AD Capital - Sistema",
+  "description": "Portal e gestão da Igreja AD Capital",
   "icons": [
     {
       "src": "logo.png",
