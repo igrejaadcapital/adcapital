@@ -10,7 +10,7 @@ from membros.view_public import (
     auto_cadastro_direto
 )
 from analytics.dashboard_views import ConsolidatedDashboardView
-from membros.views import CustomTokenObtainPairView, ping_view, health_check
+from membros.api.auth import CustomTokenObtainPairView, health_check, ping_view
 
 urlpatterns = [
     # [DASHBOARD CONSOLIDADO - PERFORMANCE]

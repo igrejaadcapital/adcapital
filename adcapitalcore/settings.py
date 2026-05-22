@@ -208,6 +208,8 @@ CSRF_TRUSTED_ORIGINS = [
     'https://api.adcapitaligreja.com.br',
 ]
 
+CRON_SECRET = os.environ.get('CRON_SECRET', '').strip()
+
 # Cache compartilhado (PostgreSQL) — rate limit funciona com vários workers no Render
 CACHES = {
     'default': {

@@ -7,7 +7,9 @@ from rest_framework import permissions
 
 
 def _cron_secret():
-    return (os.environ.get('CRON_SECRET', '') or getattr(settings, 'CRON_SECRET', '')).strip()
+    # settings primeiro: permite override_settings nos testes
+    value = getattr(settings, 'CRON_SECRET', None) or os.environ.get('CRON_SECRET', '')
+    return str(value).strip()
 
 
 def get_user_role(user):
