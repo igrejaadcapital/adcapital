@@ -1,42 +1,21 @@
 # adcapitalcore/urls.py
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-)
-from membros.view_public import (
-    portal_verificar_resposta_direto,
-    auto_cadastro_direto
-)
-from analytics.dashboard_views import ConsolidatedDashboardView
-from membros.api.auth import CustomTokenObtainPairView, health_check, ping_view
+
+from membros.view_public import auto_cadastro_direto, portal_verificar_resposta_direto
 
 urlpatterns = [
-    # [DASHBOARD CONSOLIDADO - PERFORMANCE]
-    path('api/dashboard/resumo/', ConsolidatedDashboardView.as_view(), name='dashboard-resumo'),
-    path('api/health/', health_check, name='health-check'),
-    # [PORTAL PUBLIC ROUTES - ROBUST MAPPING]
-    # Mapeamento redundante para garantir que NUNCA dê 404 em produção
-    path('v/', portal_verificar_resposta_direto, name='portal_v'),
-    path('c/', auto_cadastro_direto, name='portal_c'),
-    path('v', portal_verificar_resposta_direto), # Versão sem barra
-    path('c', auto_cadastro_direto),
-    
-    # Reforço de prefixo api/ na raiz (caso o include falhe ou demore)
-    path('api/v/', portal_verificar_resposta_direto),
-    path('api/c/', auto_cadastro_direto),
-    path('api/v', portal_verificar_resposta_direto),
-    path('api/c', auto_cadastro_direto),
-    path('api/ping/', ping_view, name='ping'),
-
     path('admin/', admin.site.urls),
-    path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    
-    # [LEGACY API ROUTES]
-    path('api/financeiro/', include('financeiro.urls')),
-    path('api/agenda/', include('agenda.urls')),
-    path('api/analytics/', include('analytics.urls')),
-    path('api/', include('membros.urls')),
+
+    # API versionada (contrato estável para web + mobile)
+    path('api/v1/', include('adcapitalcore.api_urls')),
+
+    # Legado — mantido até o front usar VITE_API_URL com /api/v1/
+    path('api/', include('adcapitalcore.api_urls')),
+
+    # Atalhos na raiz (links curtos históricos de cadastro)
+    path('v/', portal_verificar_resposta_direto, name='root_portal_v'),
+    path('c/', auto_cadastro_direto, name='root_portal_c'),
+    path('v', portal_verificar_resposta_direto),
+    path('c', auto_cadastro_direto),
 ]
