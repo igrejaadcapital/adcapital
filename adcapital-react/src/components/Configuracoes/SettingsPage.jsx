@@ -637,9 +637,10 @@ export default function SettingsPage() {
                         <Layers size={14} /> Stack Tecnológica
                      </h3>
                      <div className="space-y-4">
-                        <TechItem label="Frontend" value="React 19 + Vite + Tailwind CSS" />
+                        <TechItem label="Frontend" value="React 19 + Vite + Tailwind + React Router 7" />
                         <TechItem label="Backend" value="Django 6.0 (Python 3)" />
-                        <TechItem label="API" value="Django REST Framework" />
+                        <TechItem label="API" value="DRF + /api/v1/ (legado /api/)" />
+                        <TechItem label="OpenAPI" value="drf-spectacular (Swagger + ReDoc)" />
                         <TechItem label="Banco de Dados" value="PostgreSQL (Supabase)" />
                         <TechItem label="Servidor Web" value="Gunicorn 25.1" />
                         <TechItem label="Mídia/Fotos" value="Cloudinary (CDN)" />
@@ -658,9 +659,12 @@ export default function SettingsPage() {
                      </h3>
                      <div className="space-y-3">
                         <UrlItem label="Site Institucional" url="adcapitaligreja.com.br" />
-                        <UrlItem label="Sistema Admin" url="sistema.adcapitaligreja.com.br" />
-                        <UrlItem label="Portal de Cadastro" url="cadastro.adcapitaligreja.com.br" />
-                        <UrlItem label="API Backend" url="api.adcapitaligreja.com.br" />
+                        <UrlItem label="Login / Sistema" url="sistema.adcapitaligreja.com.br/login" />
+                        <UrlItem label="Painel Admin" url="sistema.adcapitaligreja.com.br/admin/inicio" />
+                        <UrlItem label="Portal Membro" url="sistema.adcapitaligreja.com.br/portal/mensagens" />
+                        <UrlItem label="Auto-cadastro" url="cadastro.adcapitaligreja.com.br" />
+                        <UrlItem label="API v1" url="api.adcapitaligreja.com.br/api/v1/" />
+                        <UrlItem label="Swagger (docs)" url="api.adcapitaligreja.com.br/api/v1/docs/" />
                         <UrlItem label="Django Admin" url="api.adcapitaligreja.com.br/admin/" />
                      </div>
                   </div>
@@ -679,7 +683,7 @@ export default function SettingsPage() {
                      <ServiceCard name="Cloudflare" role="DNS, CDN e Proteção" detail="Nameservers, Proxy, SSL, Cache" url="dash.cloudflare.com" color="orange" />
                      <ServiceCard name="Render" role="Hospedagem" detail="adcapital-api (Web Service) + adcapital-web (Static Site)" url="dashboard.render.com" color="blue" />
                      <ServiceCard name="Supabase" role="Banco de Dados PostgreSQL" detail="Região: sa-east-1 (São Paulo)" url="supabase.com/dashboard" color="emerald" />
-                     <ServiceCard name="Cron-Job.org" role="Keep-Alive / Pinger" detail="Evita suspensão do Banco de Dados e lentidão na API (Ping diário)" url="cron-job.org/en/" color="orange" />
+                     <ServiceCard name="Cron-Job.org" role="Keep-Alive + Aniversários" detail="A cada 10 min: GET /api/v1/configuracao-site/ — Diário: aniversários com X-Cron-Secret" url="cron-job.org/en/" color="orange" />
                      <ServiceCard name="Cloudinary" role="Armazenamento de Mídia" detail="Fotos, galeria, termos LGPD (PDF)" url="console.cloudinary.com" color="blue" />
                      <ServiceCard name="Resend" role="E-mail Transacional" detail="Domínio: adcapitaligreja.com.br | noreply@adcapitaligreja.com.br" url="resend.com" color="slate" />
                      <ServiceCard name="GitHub" role="Repositório de Código" detail="igrejaadcapital/adcapital (main)" url="github.com/igrejaadcapital/adcapital" color="slate" />
@@ -691,23 +695,32 @@ export default function SettingsPage() {
                {/* Arquitetura */}
                <div className="bg-white rounded-[2.5rem] p-8 shadow-xl border border-slate-100 space-y-8">
                   <h3 className="font-black text-[10px] uppercase tracking-[0.2em] text-slate-400">Arquitetura do Sistema</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                      <div className="p-6 bg-blue-50/50 rounded-[2rem] border border-blue-100/50 space-y-4">
-                        <h4 className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Frontend (Render Static Site)</h4>
+                        <h4 className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Frontend (adcapital-web)</h4>
                         <div className="space-y-2 text-[10px] font-bold text-slate-600">
-                           <p>• React 19 + Vite (pasta adcapital-react/)</p>
-                           <p>• Build: npm run build → dist/</p>
-                           <p>• Autenticação via token JWT</p>
-                           <p>• Axios com timeout de 120s (cold start)</p>
+                           <p>• React 19 + Vite + React Router 7</p>
+                           <p>• Rotas: /login, /admin/*, /portal/*, /cadastro</p>
+                           <p>• JWT no localStorage + Axios (120s timeout)</p>
+                           <p>• VITE_API_URL → /api/v1 em produção</p>
                         </div>
                      </div>
                      <div className="p-6 bg-emerald-50/50 rounded-[2rem] border border-emerald-100/50 space-y-4">
-                        <h4 className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Backend (Render Web Service)</h4>
+                        <h4 className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Backend (adcapital-api)</h4>
                         <div className="space-y-2 text-[10px] font-bold text-slate-600">
-                           <p>• Django 6.0 + Gunicorn (porta 10000)</p>
-                           <p>• Apps: membros, financeiro, agenda</p>
-                           <p>• Tarefas pesadas (PDF, e-mail) em threads background</p>
-                           <p>• Auto-deploy via git push (branch main)</p>
+                           <p>• Django 6 + DRF + Gunicorn (:10000)</p>
+                           <p>• Apps: membros, financeiro, agenda, analytics</p>
+                           <p>• membros/api/ + membros/services/ (Fase 1)</p>
+                           <p>• Deploy automático na branch main</p>
+                        </div>
+                     </div>
+                     <div className="p-6 bg-violet-50/50 rounded-[2rem] border border-violet-100/50 space-y-4">
+                        <h4 className="text-[10px] font-black text-violet-600 uppercase tracking-widest">API REST</h4>
+                        <div className="space-y-2 text-[10px] font-bold text-slate-600">
+                           <p>• Contrato: /api/v1/ (recomendado)</p>
+                           <p>• Legado: /api/ (mesmas rotas)</p>
+                           <p>• Docs: /api/v1/docs/ e /redoc/</p>
+                           <p>• JWT 30 min + refresh 7d + blacklist</p>
                         </div>
                      </div>
                   </div>
@@ -733,15 +746,16 @@ export default function SettingsPage() {
                      <ShieldAlert size={14} /> Variáveis de Ambiente (Render)
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                     <EnvItem name="DATABASE_URL" desc="Connection string PostgreSQL (Supabase)" />
-                     <EnvItem name="SECRET_KEY" desc="Chave secreta do Django" />
+                     <EnvItem name="DATABASE_URL" desc="PostgreSQL Supabase (API)" />
+                     <EnvItem name="SECRET_KEY" desc="Chave Django — obrigatória em produção" />
+                     <EnvItem name="CRON_SECRET" desc="Header X-Cron-Secret (cron aniversários)" />
+                     <EnvItem name="DEBUG" desc="False em produção" />
                      <EnvItem name="ALLOWED_HOSTS" desc="Domínios permitidos pela API" />
-                     <EnvItem name="RESEND_API_KEY" desc="Chave API do Resend (e-mail)" />
-                     <EnvItem name="CLOUDINARY_CLOUD_NAME" desc="Nome do cloud Cloudinary" />
-                     <EnvItem name="CLOUDINARY_API_KEY" desc="Chave pública Cloudinary" />
-                     <EnvItem name="CLOUDINARY_API_SECRET" desc="Chave secreta Cloudinary" />
-                     <EnvItem name="GOOGLE_CREDENTIALS_JSON" desc="Credenciais Google Calendar" />
-                     <EnvItem name="VITE_GA_MEASUREMENT_ID" desc="ID de Métrica do Google Analytics 4 (Front)" />
+                     <EnvItem name="VITE_API_URL" desc="Base da API no front (ex.: .../api/v1)" />
+                     <EnvItem name="VITE_GA_MEASUREMENT_ID" desc="Google Analytics 4 (adcapital-web)" />
+                     <EnvItem name="RESEND_API_KEY" desc="E-mail transacional Resend" />
+                     <EnvItem name="CLOUDINARY_*" desc="CLOUD_NAME, API_KEY, API_SECRET" />
+                     <EnvItem name="GOOGLE_CREDENTIALS_JSON" desc="Google Calendar (agenda)" />
                   </div>
                </div>
 
@@ -826,11 +840,12 @@ export default function SettingsPage() {
                      <Info size={14} /> Notas Importantes
                   </h3>
                   <div className="space-y-3 text-[10px] font-bold text-amber-800/70 leading-relaxed">
-                     <p>• <strong>Cold Start e Sleep:</strong> O Render Free (API) desliga após 15min e o Supabase Free (Banco) pausa após 7 dias de inatividade. Usamos o serviço externo <strong>cron-job.org</strong> para fazer um ping diário em <code>/api/configuracao-site/</code> e mantê-los ativos e rápidos.</p>
-                     <p>• <strong>SMTP Bloqueado:</strong> Render Free bloqueia portas SMTP. Usamos API HTTPS do Resend.</p>
-                     <p>• <strong>Limite de E-mail:</strong> Resend Free: 100 emails/dia, 3.000/mês.</p>
-                     <p>• <strong>Armazenamento:</strong> Fotos e PDFs ficam no Cloudinary (servidor Render é efêmero).</p>
-                     <p>• <strong>Deploy:</strong> Todo git push na branch main inicia deploy automático no Render.</p>
+                     <p>• <strong>Cold Start:</strong> API Render Free dorme após 15 min; Supabase pausa após 7 dias sem uso. <strong>cron-job.org</strong> chama <code>/api/v1/configuracao-site/</code> a cada 10 min.</p>
+                     <p>• <strong>Hashes antigos:</strong> <code>#/admin</code>, <code>#/portal</code> e <code>#/cadastro</code> redirecionam para as rotas novas do React Router.</p>
+                     <p>• <strong>Rollback:</strong> tag Git <code>prod-pre-fase1-20260522</code> (commit <code>def497c</code>). No Render: Manual Deploy nesse SHA. Ver <code>docs/ROLLBACK-FASE-1.md</code> e <code>ARQUITETURA.md</code> na raiz do repo.</p>
+                     <p>• <strong>Smoke pós-deploy:</strong> <code>python scripts/smoke_producao.py</code> ou <code>manage.py smoke_fase0</code>.</p>
+                     <p>• <strong>Deploy:</strong> push na <code>main</code> → build automático em adcapital-api e adcapital-web.</p>
+                     <p>• <strong>Manual completo:</strong> arquivo <code>ARQUITETURA.md</code> no GitHub (mesmo conteúdo expandido desta wiki).</p>
                   </div>
                </div>
             </section>
