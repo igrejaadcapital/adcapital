@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from django.db.models import Sum
 from .models import Transacao, CategoriaFinanceira
 from .serializers import TransacaoSerializer, CategoriaFinanceiraSerializer
+from .permissions import FinanceiroPermission
 from membros.models import Membro
 from ofxparse import OfxParser
 import io
@@ -11,12 +12,16 @@ import io
 class TransacaoViewSet(viewsets.ModelViewSet):
     queryset = Transacao.objects.all().order_by('-data')
     serializer_class = TransacaoSerializer
+    permission_classes = [FinanceiroPermission]
 
 class CategoriaFinanceiraViewSet(viewsets.ModelViewSet):
     queryset = CategoriaFinanceira.objects.all().order_by('nome')
     serializer_class = CategoriaFinanceiraSerializer
+    permission_classes = [FinanceiroPermission]
 
 class DashboardAPIView(APIView):
+    permission_classes = [FinanceiroPermission]
+
     def get(self, request):
         # Cálculos de Entradas e Saídas Globais (Em Fase 2 evoluiremos para Mensal)
         entradas = Transacao.objects.filter(tipo='ENTRADA').aggregate(total=Sum('valor'))['total'] or 0
@@ -32,6 +37,8 @@ class DashboardAPIView(APIView):
         })
 
 class ImportarOFXView(APIView):
+    permission_classes = [FinanceiroPermission]
+
     def post(self, request):
         file_obj = request.FILES.get('file')
         if not file_obj:

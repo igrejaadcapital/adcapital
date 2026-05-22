@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from membros.permissions import IsStaffChurch
 from django.db.models import Count, Sum
 from django.db.models.functions import TruncMonth
 from membros.models import Membro
@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 
 class DashboardStatsView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsStaffChurch]
 
     def get(self, request):
         today = timezone.now()

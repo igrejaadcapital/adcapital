@@ -16,11 +16,23 @@ from django.core.files.base import ContentFile
 
 from django.core.cache import cache
 
-from rest_framework.decorators import api_view, permission_classes, authentication_classes, action
+from rest_framework.decorators import api_view, permission_classes, authentication_classes, throttle_classes, action
 
 from rest_framework.response import Response
 
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from .permissions import (
+    IsAdmin,
+    IsAdminOrSecretario,
+    IsStaffChurch,
+    HasCronSecret,
+)
+from .throttles import (
+    LoginRateThrottle,
+    CadastroRateThrottle,
+    ResetSenhaRateThrottle,
+    CurtidasRateThrottle,
+)
 
 from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination
@@ -71,8 +83,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return data
 
 class CustomTokenObtainPairView(TokenObtainPairView):
-
     serializer_class = CustomTokenObtainPairSerializer
+    throttle_classes = [LoginRateThrottle]
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -222,6 +234,7 @@ def init_site(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 @authentication_classes([])
+@throttle_classes([CurtidasRateThrottle])
 def curtir_palavra(request):
     """Incrementa a contagem de curtidas na palavra pastoral."""
     _garantir_keep_alive()
@@ -346,9 +359,7 @@ def buscar_opcoes_funcao(request):
         return Response([{'id': 1, 'nome': 'Membro'}])
 
 @api_view(['DELETE'])
-
-@permission_classes([IsAuthenticated])
-
+@permission_classes([IsAdminOrSecretario])
 def excluir_funcao(request, pk):
 
     """Exclui uma função pelo ID (Apenas Admin)"""
@@ -366,9 +377,7 @@ def excluir_funcao(request, pk):
         return Response({'error': str(e)}, status=400)
 
 @api_view(['POST'])
-
-@permission_classes([IsAuthenticated])
-
+@permission_classes([IsAdminOrSecretario])
 def adicionar_funcao(request):
 
     """Cria uma nova função manualmente (Apenas Admin)"""
@@ -490,14 +499,14 @@ def verificar_resposta_portal(request):
     return Response({"success": False, "error": "Resposta incorreta. Dica: Tente 'Jesus'."}, status=401)
 
 class ConfiguracaoPortalViewSet(viewsets.ModelViewSet):
-
     """Gerenciamento da configuração pelo Admin (id fixo = 1)"""
-
     queryset = ConfiguracaoPortal.objects.all()
-
     serializer_class = ConfiguracaoPortalSerializer
 
-    permission_classes = [IsAuthenticated]
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [IsAuthenticated()]
+        return [IsAdmin()]
 
     def list(self, request, *args, **kwargs):
 
@@ -532,15 +541,11 @@ class ConfiguracaoSiteViewSet(viewsets.ModelViewSet):
     serializer_class = ConfiguracaoSiteSerializer
 
     def get_permissions(self):
-
         if self.action in ['list', 'retrieve']:
-
             return [AllowAny()]
-
-        return [IsAuthenticated()]
+        return [IsAdmin()]
 
     def list(self, request, *args, **kwargs):
-
         config = ConfiguracaoSite.objects.filter(id=1).first()
 
         if not config:
@@ -572,12 +577,9 @@ class FotoGaleriaViewSet(viewsets.ModelViewSet):
     serializer_class = FotoGaleriaSerializer
 
     def get_permissions(self):
-
         if self.action in ['list', 'retrieve']:
-
             return [AllowAny()]
-
-        return [IsAuthenticated()]
+        return [IsAdminOrSecretario()]
 
 class MembroPagination(PageNumberPagination):
     page_size = 1000
@@ -604,8 +606,7 @@ class MembroViewSet(viewsets.ModelViewSet):
     queryset = Membro.objects.all().select_related('funcao').prefetch_related('parentescos__membro_destino')
 
     serializer_class = MembroSerializer
-
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminOrSecretario]
 
     @action(detail=False, methods=['get'])
     def lista(self, request):
@@ -748,10 +749,9 @@ class AutoCadastroMembroView(APIView):
     """
 
     permission_classes = [AllowAny]
-
-    authentication_classes = [] # Desativa autenticação para o portal público
-
-    parser_classes = [MultiPartParser, FormParser, JSONParser] # Suporte a diversos formatos de dados
+    authentication_classes = []
+    throttle_classes = [CadastroRateThrottle]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def post(self, request):
 
@@ -858,51 +858,7 @@ class AutoCadastroMembroView(APIView):
             }, status=500)
 
 @api_view(['GET'])
-
-@permission_classes([AllowAny])
-
-@authentication_classes([])
-
-def run_migrations_debug(request):
-
-    """View temporária para forçar migrações e ver o log no navegador"""
-
-    from django.core.management import call_command
-
-    from io import StringIO
-
-    out = StringIO()
-
-    print("--- [DEBUG] Rodando migrações manualmente via endpoint ---")
-
-    try:
-
-        call_command('migrate', stdout=out, stderr=out)
-
-        result = out.getvalue()
-
-        return Response({"success": True, "output": result})
-
-    except Exception as e:
-
-        import traceback
-
-        return Response({
-
-            "success": False, 
-
-            "error": str(e), 
-
-            "traceback": traceback.format_exc(),
-
-            "output": out.getvalue()
-
-        }, status=500)
-
-@api_view(['GET'])
-
-@permission_classes([AllowAny])
-
+@permission_classes([IsAdminOrSecretario])
 def download_termo_lgpd(request, pk):
 
     """Endpoint para baixar o termo de LGPD via API usando o Cloudinary"""
@@ -1003,12 +959,9 @@ class MeusDadosView(APIView):
         return Response(serializer.errors, status=400)
 
 class UsuariosView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdmin]
 
     def get(self, request):
-        if not hasattr(request.user, 'perfil') or request.user.perfil.role != 'ADMIN':
-            return Response({'error': 'Acesso negado'}, status=403)
-        
         usuarios = User.objects.all().select_related('perfil__membro').order_by('username')
         data = []
         for u in usuarios:
@@ -1029,9 +982,6 @@ class UsuariosView(APIView):
         return Response(data)
 
     def patch(self, request, pk):
-        if not hasattr(request.user, 'perfil') or request.user.perfil.role != 'ADMIN':
-            return Response({'error': 'Acesso negado'}, status=403)
-        
         try:
             u = User.objects.get(pk=pk)
             role = request.data.get('role')
@@ -1060,7 +1010,8 @@ class TrocarSenhaView(APIView):
 class ResetarSenhaView(APIView):
     """Reseta a senha para o padrão (Adcapital + 5 primeiros dígitos do CPF) e avisa por email"""
     permission_classes = [AllowAny]
-    
+    throttle_classes = [ResetSenhaRateThrottle]
+
     def post(self, request):
         cpf = request.data.get('cpf')
         if not cpf:
@@ -1123,27 +1074,28 @@ class ResetarSenhaView(APIView):
 class ComentarioPalavraViewSet(viewsets.ModelViewSet):
     queryset = ComentarioPalavra.objects.all()
     serializer_class = ComentarioPalavraSerializer
-    permission_classes = [AllowAny]  # GET e POST livres, DELETE protegido no frontend ou aqui
+
+    def get_permissions(self):
+        if self.action in ['list', 'create', 'retrieve']:
+            return [AllowAny()]
+        return [IsAdmin()]
 
 class DevocionalViewSet(viewsets.ModelViewSet):
     queryset = Devocional.objects.all()
     serializer_class = DevocionalSerializer
-    
+
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
             return [AllowAny()]
-        return [IsAuthenticated()]
-
-    def get_permissions(self):
         if self.action == 'destroy':
-            return [IsAuthenticated()]
-        return [AllowAny()]
+            return [IsAdmin()]
+        return [IsStaffChurch()]
 
 import datetime
 from .utils import enviar_email_resend_api
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([HasCronSecret])
 @authentication_classes([])
 def verificar_aniversarios(request):
     try:
@@ -1177,10 +1129,9 @@ def verificar_aniversarios(request):
         return Response({'error': str(e)}, status=500)
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
-@authentication_classes([])
+@permission_classes([IsAdmin])
 def resetar_senhas_em_massa(request):
-    """Endpoint temporário para unificar todas as senhas para o padrão Adcapital + 5 primeiros dígitos do CPF."""
+    """Ferramenta administrativa: padroniza senhas (uso raro, apenas ADMIN autenticado)."""
     import re
     atualizados = 0
     erros = []

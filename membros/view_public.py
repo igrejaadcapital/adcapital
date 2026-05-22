@@ -2,32 +2,39 @@
 import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import Membro, ConfiguracaoPortal, Funcao, Parentesco
+from .cors_public import apply_public_cors
+from .rate_limit import rate_limit_or_none
+from .models import Membro, ConfiguracaoPortal, Parentesco
 from .serializers import MembroSerializer
+
+
+def _json(request, data, status=200):
+    response = JsonResponse(data, status=status)
+    return apply_public_cors(request, response)
+
 
 @csrf_exempt
 def portal_verificar_resposta_direto(request):
     """
     Função pura de Django (não DRF) para validar a resposta do portal.
-    Inclui suporte manual a CORS para evitar travamentos de 'Preflight'.
+    CORS restrito aos domínios configurados em settings.CORS_ALLOWED_ORIGINS.
     """
-    # Suporte manual a Preflight (OPTIONS)
     if request.method == 'OPTIONS':
-        response = JsonResponse({'status': 'ok'})
-        response["Access-Control-Allow-Origin"] = "*"
-        response["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS"
-        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
-        return response
+        return _json(request, {'status': 'ok'})
 
     if request.method != 'POST':
-        return JsonResponse({'error': 'Apenas POST permitido'}, status=405)
-    
+        return _json(request, {'error': 'Apenas POST permitido'}, status=405)
+
+    blocked = rate_limit_or_none(request, 'portal_verify', limit=20, period_seconds=60)
+    if blocked:
+        return apply_public_cors(request, blocked)
+
     try:
         data = json.loads(request.body)
         resposta_user = data.get('resposta', '').strip().lower()
         
         if not resposta_user:
-            return JsonResponse({'success': False, 'error': 'Digite uma resposta.'}, status=400)
+            return _json(request, {'success': False, 'error': 'Digite uma resposta.'}, status=400)
             
         config, _ = ConfiguracaoPortal.objects.get_or_create(id=1)
         # Forçamos uma resposta correta válida se o campo estiver vazio no banco
@@ -35,14 +42,14 @@ def portal_verificar_resposta_direto(request):
         resposta_correta = resposta_base.lower()
         
         if not config.is_ativo:
-            return JsonResponse({'error': 'Portal desativado'}, status=403)
-            
+            return _json(request, {'error': 'Portal desativado'}, status=403)
+
         if resposta_user == resposta_correta:
-            return JsonResponse({'success': True})
-        
-        return JsonResponse({'success': False, 'error': 'Resposta incorreta. Tente novamente.'}, status=401)
+            return _json(request, {'success': True})
+
+        return _json(request, {'success': False, 'error': 'Resposta incorreta. Tente novamente.'}, status=401)
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        return _json(request, {'error': str(e)}, status=500)
 
 @csrf_exempt
 def auto_cadastro_direto(request):
@@ -50,16 +57,16 @@ def auto_cadastro_direto(request):
     Função pura de Django para realizar o auto-cadastro sem DRF.
     Bypass total de erro 401.
     """
-    # Suporte manual a Preflight (OPTIONS)
     if request.method == 'OPTIONS':
-        response = JsonResponse({'status': 'ok'})
-        response["Access-Control-Allow-Origin"] = "*"
-        response["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS"
-        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
-        return response
+        return _json(request, {'status': 'ok'})
 
     if request.method != 'POST':
-        return JsonResponse({'error': 'Apenas POST permitido'}, status=405)
+        return _json(request, {'error': 'Apenas POST permitido'}, status=405)
+
+    blocked = rate_limit_or_none(request, 'cadastro_publico', limit=8, period_seconds=60)
+    if blocked:
+        return apply_public_cors(request, blocked)
+
     try:
         # Detecta o tipo de conteúdo para saber como ler os dados
         if request.content_type == 'application/json':
@@ -74,11 +81,11 @@ def auto_cadastro_direto(request):
         config, _ = ConfiguracaoPortal.objects.get_or_create(id=1)
         resposta_user = data.get('sync_resposta', '').strip().lower()
         if resposta_user != (config.resposta or "Jesus").strip().lower():
-             return JsonResponse({"error": "Acesso negado: Resposta incorreta."}, status=401)
+            return _json(request, {"error": "Acesso negado: Resposta incorreta."}, status=401)
 
         cpf_original = data.get('cpf')
         if not cpf_original:
-            return JsonResponse({"error": "CPF é obrigatório"}, status=400)
+            return _json(request, {"error": "CPF é obrigatório"}, status=400)
 
         cpf_limpo = "".join(filter(str.isdigit, cpf_original))
         membro_existente = Membro.objects.filter(cpf=cpf_limpo).first()
@@ -205,13 +212,13 @@ def auto_cadastro_direto(request):
                             defaults={'grau': grau}
                         )
             
-            return JsonResponse({
-                "success": True, 
+            return _json(request, {
+                "success": True,
                 "message": "Cadastro salvo!",
                 "id": membro.id,
-                "lgpd_url": membro.lgpd_documento.url if membro.lgpd_documento else None
+                "lgpd_url": membro.lgpd_documento.url if membro.lgpd_documento else None,
             })
-            
-        return JsonResponse(serializer.errors, status=400)
+
+        return _json(request, serializer.errors, status=400)
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        return _json(request, {'error': str(e)}, status=500)
