@@ -8,7 +8,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     # API versionada (contrato estável para web + mobile)
-    path('api/v1/', include('adcapitalcore.api_urls')),
+    path('api/v1/', include('adcapitalcore.api_v1_urls')),
 
     # Legado — mantido até o front usar VITE_API_URL com /api/v1/
     path('api/', include('adcapitalcore.api_urls')),
