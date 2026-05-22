@@ -208,6 +208,14 @@ CSRF_TRUSTED_ORIGINS = [
     'https://api.adcapitaligreja.com.br',
 ]
 
+# Cache compartilhado (PostgreSQL) — rate limit funciona com vários workers no Render
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'adcapital_django_cache',
+    }
+}
+
 # Cloudinary Credentials
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),

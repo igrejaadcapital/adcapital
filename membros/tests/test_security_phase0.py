@@ -58,3 +58,8 @@ class SecurityPhase0Tests(TestCase):
         from django.conf import settings
         lifetime = settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME']
         self.assertLessEqual(lifetime.total_seconds(), 3600)
+
+    def test_database_cache_configured(self):
+        from django.conf import settings
+        backend = settings.CACHES['default']['BACKEND']
+        self.assertIn('DatabaseCache', backend)

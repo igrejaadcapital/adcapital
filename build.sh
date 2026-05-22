@@ -5,6 +5,7 @@ set -o errexit
 pip install -r requirements.txt
 
 python manage.py collectstatic --no-input
+python manage.py createcachetable
 
 # Retry migrate up to 3 times
 echo "Running migrations..."
