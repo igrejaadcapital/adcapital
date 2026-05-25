@@ -4,8 +4,9 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .cors_public import apply_public_cors
 from .rate_limit import rate_limit_or_none
-from .models import Membro, ConfiguracaoPortal, Parentesco
+from .models import Membro, ConfiguracaoPortal
 from .serializers import MembroSerializer
+from membros.services.parentesco_service import salvar_parentescos
 
 
 def _json(request, data, status=200):
@@ -192,25 +193,7 @@ def auto_cadastro_direto(request):
 
             # Lógica de Parentesco (Apenas se enviado, para evitar apagar o que já existe em um update parcial)
             if 'parentescos_novo' in data:
-                parentescos_data = data.get('parentescos_novo', [])
-                if isinstance(parentescos_data, str):
-                    try:
-                        parentescos_data = json.loads(parentescos_data)
-                    except:
-                        parentescos_data = []
-
-                if membro_existente:
-                    Parentesco.objects.filter(membro_origem=membro).delete()
-                
-                for item in parentescos_data:
-                    p_id = item.get('parente_id') or item.get('membro_destino')
-                    grau = item.get('grau')
-                    if p_id and grau and str(p_id) != str(membro.id):
-                        Parentesco.objects.get_or_create(
-                            membro_origem=membro,
-                            membro_destino_id=p_id,
-                            defaults={'grau': grau}
-                        )
+                salvar_parentescos(membro, data.get('parentescos_novo', []))
             
             return _json(request, {
                 "success": True,

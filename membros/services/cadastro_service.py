@@ -4,8 +4,9 @@ import traceback
 from django.core.files.base import ContentFile
 from django.db import connection, close_old_connections
 
-from membros.models import Membro, Parentesco
+from membros.models import Membro
 from membros.utils import enviar_email_resend_api, gerar_termo_lgpd_pdf
+from membros.services.parentesco_service import salvar_parentescos
 
 
 def executar_tarefas_pos_cadastro(membro_id, parentescos_data):
@@ -38,16 +39,7 @@ def executar_tarefas_pos_cadastro(membro_id, parentescos_data):
         membro.lgpd_documento.save(nome_arquivo, ContentFile(pdf_bytes), save=True)
 
         if parentescos_data:
-            for item in parentescos_data:
-                p_id = item.get('parente_id') or item.get('membro_destino')
-                grau = item.get('grau')
-                if p_id and grau and str(p_id) != str(membro.id):
-                    if Membro.objects.filter(id=p_id).exists():
-                        Parentesco.objects.get_or_create(
-                            membro_origem=membro,
-                            membro_destino_id=p_id,
-                            defaults={'grau': grau},
-                        )
+            salvar_parentescos(membro, parentescos_data)
     except Exception:
         print('--- [BG-THREAD] ERRO CRÍTICO EM TAREFAS DE BACKGROUND ---')
         traceback.print_exc()

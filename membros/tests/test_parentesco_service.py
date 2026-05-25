@@ -15,6 +15,10 @@ class ParentescoServiceTests(TestCase):
         p = Parentesco.objects.get(membro_origem=self.a)
         self.assertEqual(p.membro_destino_id, self.b.id)
 
+    def test_salvar_com_parente_id(self):
+        salvar_parentescos(self.a, [{'parente_id': self.b.id, 'grau': 'PAI_MAE'}])
+        self.assertEqual(Parentesco.objects.get(membro_origem=self.a).membro_destino_id, self.b.id)
+
     def test_lista_vazia_nao_apaga_se_nao_chamar(self):
         Parentesco.objects.create(
             membro_origem=self.a,

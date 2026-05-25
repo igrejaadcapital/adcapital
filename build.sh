@@ -4,6 +4,12 @@ set -o errexit
 
 pip install -r requirements.txt
 
+# Fase 1.3c: app legado não deve voltar ao INSTALLED_APPS
+if grep -qE "['\"]adcapitalapp['\"]" adcapitalcore/settings.py 2>/dev/null; then
+  echo "ERRO: adcapitalapp está em INSTALLED_APPS. Use apenas o app membros."
+  exit 1
+fi
+
 python manage.py collectstatic --no-input
 python manage.py createcachetable
 

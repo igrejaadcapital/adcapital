@@ -1,5 +1,4 @@
 """CRUD administrativo de membros e auto-cadastro via API."""
-import json
 import threading
 
 from django.shortcuts import redirect
@@ -16,6 +15,7 @@ from membros.models import ConfiguracaoPortal, Membro
 from membros.permissions import IsAdminOrSecretario
 from membros.serializers import MembroSerializer
 from membros.services.cadastro_service import executar_tarefas_pos_cadastro
+from membros.contracts.parentesco import parse_parentescos_novo
 from membros.services.parentesco_service import salvar_parentescos
 from membros.throttles import CadastroRateThrottle
 
@@ -65,12 +65,7 @@ class MembroViewSet(viewsets.ModelViewSet):
         except Exception as e:
             print(f'Aviso: Erro ao salvar status LGPD no Admin: {e}')
 
-        parentescos_data = self.request.data.get('parentescos_novo', [])
-        if isinstance(parentescos_data, str):
-            try:
-                parentescos_data = json.loads(parentescos_data)
-            except json.JSONDecodeError:
-                parentescos_data = []
+        parentescos_data = parse_parentescos_novo(self.request.data.get('parentescos_novo', []))
         salvar_parentescos(membro, parentescos_data)
 
 
@@ -106,14 +101,7 @@ class AutoCadastroMembroView(APIView):
                 return Response(serializer.errors, status=400)
 
             membro = serializer.save()
-            parentescos_raw = request.data.get('parentescos_novo', [])
-            if isinstance(parentescos_raw, str) and parentescos_raw:
-                try:
-                    parentescos_data = json.loads(parentescos_raw)
-                except json.JSONDecodeError:
-                    parentescos_data = []
-            else:
-                parentescos_data = parentescos_raw
+            parentescos_data = parse_parentescos_novo(request.data.get('parentescos_novo', []))
 
             threading.Thread(
                 target=executar_tarefas_pos_cadastro,

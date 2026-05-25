@@ -31,9 +31,9 @@ Status atualizado após **Fase 1** em produção (maio/2026).
 - [x] **1.2** Prefixo `/api/v1/` + legado `/api/`
 - [x] **1.3** OpenAPI (`drf-spectacular`, `/api/v1/docs/`)
 - [x] **1.4** React Router (rotas `/admin/*`, `/portal/*`)
-- [ ] **1.3b** Unificar payload parentesco (schema único + testes de contrato)
-- [ ] **1.3c** Deprecar `adcapitalapp` no deploy
-- [ ] **1.4b** Testes API: login, cadastro público, RBAC financeiro
+- [x] **1.3b** Unificar payload parentesco (schema único + testes de contrato)
+- [x] **1.3c** Deprecar `adcapitalapp` no deploy
+- [x] **1.4b** Testes API: login, cadastro público, RBAC financeiro
 
 ---
 
@@ -80,5 +80,5 @@ Ver `docs/ROLLBACK-FASE-1.md` e tag `prod-pre-fase1-20260522`.
 
 ## Ordem sugerida agora
 
-1. Fechar pendências **1.3b / 1.4b** em PRs pequenos.
-2. Configurar secrets do backup (`DATABASE_URL`) e Sentry (opcional).
+1. Manter CI verde em novos PRs (`pytest` + `vitest`).
+2. Opcional: remover pasta `adcapitalapp/` após revisão final.

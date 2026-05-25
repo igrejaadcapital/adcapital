@@ -8,6 +8,7 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 """
 
 import os
+import sys
 from datetime import timedelta
 from pathlib import Path
 
@@ -119,6 +120,12 @@ WSGI_APPLICATION = 'adcapitalcore.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+def _running_tests():
+    return 'pytest' in sys.argv[0] or (
+        len(sys.argv) > 1 and sys.argv[1] == 'test' and 'manage.py' in sys.argv[0]
+    )
+
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -126,7 +133,7 @@ DATABASES = {
     }
 }
 
-if 'DATABASE_URL' in os.environ:
+if not _running_tests() and 'DATABASE_URL' in os.environ:
     DATABASES['default'] = dj_database_url.config(
         conn_max_age=600, # Reutiliza conexões por 10 min (reduz overhead TCP/SSL no cold start)
         conn_health_checks=True, # Descarta conexões zumbis automaticamente

@@ -3,10 +3,11 @@ from .models import Membro, Parentesco, Funcao, ConfiguracaoPortal, Configuracao
 
 class ParentescoDetalheSerializer(serializers.ModelSerializer):
     nome_parente = serializers.ReadOnlyField(source='membro_destino.nome')
-    
+    parente_id = serializers.IntegerField(source='membro_destino_id', read_only=True)
+
     class Meta:
         model = Parentesco
-        fields = ['id', 'membro_destino', 'nome_parente', 'grau']
+        fields = ['id', 'membro_destino', 'parente_id', 'nome_parente', 'grau']
 
 class FuncaoSlugField(serializers.SlugRelatedField):
     def to_internal_value(self, data):
