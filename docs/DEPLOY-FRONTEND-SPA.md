@@ -11,7 +11,17 @@ Isso aparece ao:
 
 O **service worker** antigo podia piorar o sintoma; a versão `adcapital-v3` usa rede primeiro em navegação.
 
-## Correção obrigatória no Render (1 minuto)
+## Solução aplicada no código (produção)
+
+O build de produção usa **`HashRouter`**: as URLs ficam como  
+`https://sistema.adcapitaligreja.com.br/#/admin/estatisticas`  
+em vez de `/admin/estatisticas`. Assim o Render só precisa servir `index.html` na raiz e a navegação **não se perde** ao atualizar (F5) ou abrir links internos.
+
+Em **desenvolvimento** (`npm run dev`) continua `BrowserRouter` com URLs limpas.
+
+## Correção opcional no Render (URLs sem `#`)
+
+Se quiser URLs sem hash no futuro:
 
 1. [dashboard.render.com](https://dashboard.render.com) → serviço **adcapital-web** (Static Site)
 2. Aba **Redirects / Rewrites**

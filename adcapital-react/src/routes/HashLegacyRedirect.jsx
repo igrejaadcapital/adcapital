@@ -23,7 +23,10 @@ export default function HashLegacyRedirect({ children }) {
     for (const [key, path] of HASH_TO_PATH) {
       if (hash.includes(key)) {
         navigate(`${path}${window.location.search}`, { replace: true });
-        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        // Só limpa o hash legado em dev (BrowserRouter). Em prod (HashRouter) o # é a rota.
+        if (import.meta.env.DEV) {
+          window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
         break;
       }
     }

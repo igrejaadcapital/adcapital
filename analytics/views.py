@@ -46,21 +46,42 @@ class DashboardStatsView(APIView):
             .order_by('mes')
         )
 
-        # 4. Formatação para o Frontend
         def format_mes(mes_date):
-            if not mes_date: return "N/A"
+            if not mes_date:
+                return 'N/A'
             return mes_date.strftime('%b/%y')
+
+        # 4. Tráfego Site vs Portal (tabela analytics.Acesso — não é Google Analytics)
+        acessos_por_mes = (
+            Acesso.objects.filter(timestamp__gte=six_months_ago)
+            .annotate(mes=TruncMonth('timestamp'))
+            .values('mes', 'pagina')
+            .annotate(total=Count('id'))
+            .order_by('mes')
+        )
+        historico_acessos_map = {}
+        for row in acessos_por_mes:
+            label = format_mes(row['mes'])
+            if label not in historico_acessos_map:
+                historico_acessos_map[label] = {'name': label, 'site': 0, 'portal': 0}
+            if row['pagina'] == 'SITE':
+                historico_acessos_map[label]['site'] = row['total']
+            elif row['pagina'] == 'PORTAL':
+                historico_acessos_map[label]['portal'] = row['total']
 
         stats = {
             'total_membros': Membro.objects.count(),
             'membros_ativos': Membro.objects.filter(status='LIGADO').count(),
+            'total_acessos_site': Acesso.objects.filter(pagina='SITE').count(),
+            'total_acessos_portal': Acesso.objects.filter(pagina='PORTAL').count(),
             'crescimento_membros': [
                 {'name': format_mes(c['mes']), 'total': c['total']} for c in crescimento
             ],
             'distribuicao_etaria': [{'faixa': k, 'quantidade': v} for k, v in faixas.items()],
             'historico_financeiro': [
                 {'name': format_mes(h['mes']), 'tipo': h['tipo'], 'valor': float(h['valor'])} for h in financeiro
-            ]
+            ],
+            'historico_acessos': list(historico_acessos_map.values()),
         }
 
         return Response(stats)

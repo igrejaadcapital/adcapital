@@ -114,11 +114,13 @@ api.interceptors.response.use(
 
             // Redireciona para o login apenas se necessário e se NÃO estivermos já nele
             const path = window.location.pathname;
-            const isPublicPortal = path.startsWith('/cadastro');
-            const isLoginPage = path === '/' || path === '/login';
+            const hashPath = (window.location.hash || '').replace(/^#/, '');
+            const isPublicPortal = path.startsWith('/cadastro') || hashPath.startsWith('/cadastro');
+            const isLoginPage =
+              path === '/' || path === '/login' || hashPath === '/login' || hashPath === '/';
 
             if (!isPublicPortal && !isLoginPage) {
-                window.location.href = '/login';
+                window.location.href = import.meta.env.DEV ? '/login' : '/#/login';
             }
         }
 

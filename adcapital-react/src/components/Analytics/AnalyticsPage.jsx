@@ -57,7 +57,12 @@ export default function AnalyticsPage({ preloadedData }) {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm gap-6">
         <div>
           <h1 className="text-2xl font-black text-slate-800 tracking-tight">Inteligência de Dados</h1>
-          <p className="text-slate-400 text-sm font-medium">Visão estratégica da AD Capital</p>
+          <p className="text-slate-400 text-sm font-medium">
+            Membros e finanças no sistema · Tráfego site/portal via API interna · GA4 em{' '}
+            <a href="https://analytics.google.com/" target="_blank" rel="noreferrer" className="text-blue-600 underline">
+              analytics.google.com
+            </a>
+          </p>
         </div>
         <div className="flex flex-wrap gap-6 justify-end items-center">
           <div className="text-center">
@@ -86,8 +91,8 @@ export default function AnalyticsPage({ preloadedData }) {
         {/* Gráfico de Crescimento de Membros */}
         <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
           <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6">📈 Crescimento de Membros</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-64 min-h-[16rem] w-full min-w-0">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={200}>
               <BarChart data={stats.crescimento_membros}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: 'bold'}} />
@@ -105,8 +110,8 @@ export default function AnalyticsPage({ preloadedData }) {
         {/* Distribuição Etária */}
         <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
           <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6">👥 Distribuição Etária</h3>
-          <div className="h-64 flex items-center">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-64 min-h-[16rem] w-full min-w-0 flex items-center">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={200}>
               <PieChart>
                 <Pie
                   data={stats.distribuicao_etaria}
@@ -132,8 +137,8 @@ export default function AnalyticsPage({ preloadedData }) {
         {/* Histórico Financeiro */}
         <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm lg:col-span-2">
           <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6">💰 Saúde Financeira (Entradas vs Saídas)</h3>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-80 min-h-[20rem] w-full min-w-0">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={280}>
               <AreaChart data={financeiroAgrupado}>
                 <defs>
                   <linearGradient id="colorEntrada" x1="0" y1="0" x2="0" y2="1">
@@ -163,8 +168,8 @@ export default function AnalyticsPage({ preloadedData }) {
         {/* Histórico de Acessos (Site vs Portal) */}
         <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm lg:col-span-2">
           <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6">📊 Tráfego Mensal (Site vs Portal do Membro)</h3>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-80 min-h-[20rem] w-full min-w-0">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={280}>
               <AreaChart data={stats.historico_acessos || []}>
                 <defs>
                   <linearGradient id="colorSite" x1="0" y1="0" x2="0" y2="1">
