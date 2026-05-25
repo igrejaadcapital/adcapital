@@ -30,3 +30,15 @@ export const agendaKeys = {
   eventos: ['agenda', 'eventos'],
   status: ['agenda', 'status'],
 };
+
+export const membrosKeys = {
+  lista: ['membros', 'lista'],
+};
+
+export const financeiroKeys = {
+  painel: ['financeiro', 'painel'],
+};
+
+export const dashboardKeys = {
+  resumo: ['dashboard', 'resumo'],
+};

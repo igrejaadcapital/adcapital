@@ -1,65 +1,65 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useMemo, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import financeiroService from '../../api/financeiroService';
+import { financeiroKeys } from '../../api/queryClient';
+
+async function fetchFinanceiroPainel() {
+  const [resTransacoes, resDash] = await Promise.all([
+    financeiroService.listar(),
+    financeiroService.getDashboard(),
+  ]);
+  return {
+    transacoes: resTransacoes.data,
+    dashboard: resDash.data,
+  };
+}
 
 export function useFinanceiro() {
-  const [transacoes, setTransacoes] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
-  const [dashboardData, setDashboardData] = useState({
-    total_entradas: 0,
-    total_saidas: 0,
-    saldo_atual: 0
-  });
-
+  const queryClient = useQueryClient();
   const [buscaTexto, setBuscaTexto] = useState('');
   const [buscaMes, setBuscaMes] = useState('');
 
-  const carregarDados = useCallback(async () => {
-    setLoading(true);
-    setError(false);
-    try {
-      const [resTransacoes, resDash] = await Promise.all([
-        financeiroService.listar(),
-        financeiroService.getDashboard()
-      ]);
-      setTransacoes(resTransacoes.data);
-      setDashboardData(resDash.data);
-    } catch (err) {
-      console.error('Erro ao carregar o financeiro:', err);
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const query = useQuery({
+    queryKey: financeiroKeys.painel,
+    queryFn: fetchFinanceiroPainel,
+  });
 
-  useEffect(() => {
-    carregarDados();
-  }, [carregarDados]);
+  const transacoes = query.data?.transacoes ?? [];
+  const dashboardData = query.data?.dashboard ?? {
+    total_entradas: 0,
+    total_saidas: 0,
+    saldo_atual: 0,
+  };
 
   const transacoesFiltradas = useMemo(() => {
-    return transacoes.filter(t => {
+    return transacoes.filter((t) => {
       const termo = buscaTexto.toLowerCase();
-      // O modelo salva na prop 'categoria', não tem mais 'sub'
       const descricaoEfetiva = t.descricao?.trim() || t.categoria || '';
-      
-      const matchTexto = 
-        descricaoEfetiva.toLowerCase().includes(termo) || 
+
+      const matchTexto =
+        descricaoEfetiva.toLowerCase().includes(termo) ||
         (t.categoria || '').toLowerCase().includes(termo);
-      
+
       const matchMes = buscaMes ? t.data.startsWith(buscaMes) : true;
       return matchTexto && matchMes;
     });
   }, [transacoes, buscaTexto, buscaMes]);
 
+  const atualizarTransacoes = () =>
+    queryClient.invalidateQueries({ queryKey: financeiroKeys.painel });
+
   return {
     transacoes,
     transacoesFiltradas,
-    buscaTexto, setBuscaTexto,
-    buscaMes, setBuscaMes,
-    atualizarTransacoes: carregarDados,
+    buscaTexto,
+    setBuscaTexto,
+    buscaMes,
+    setBuscaMes,
+    atualizarTransacoes,
     totalEntradas: dashboardData.total_entradas,
     totalSaidas: dashboardData.total_saidas,
     saldoAtual: dashboardData.saldo_atual,
-    loading
+    loading: query.isPending || query.isFetching,
+    error: query.isError,
   };
 }

@@ -1,54 +1,49 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import membroService from '../../api/membroService';
+import { membrosKeys } from '../../api/queryClient';
+
+async function fetchMembrosBundle() {
+  const [m, f, g] = await Promise.all([
+    membroService.listar(),
+    membroService.getFuncoes(),
+    membroService.getGraus(),
+  ]);
+  const listaMembros = Array.isArray(m.data) ? m.data : m.data.results || [];
+  return { membros: listaMembros, funcoes: f.data, graus: g.data };
+}
 
 export function useMembros() {
-    const [membros, setMembros] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(false);
-    const [busca, setBusca] = useState('');
-    const [funcoes, setFuncoes] = useState([]);
-    const [graus, setGraus] = useState([]);
+  const queryClient = useQueryClient();
+  const [busca, setBusca] = useState('');
 
-    const carregarDados = useCallback(async () => {
-        setLoading(true);
-        setError(false);
-        try {
-            const [m, f, g] = await Promise.all([
-                membroService.listar(),
-                membroService.getFuncoes(),
-                membroService.getGraus()
-            ]);
-            // Se os dados vierem paginados, pegamos o array de 'results'. Caso contrário, usamos o array direto.
-            const listaMembros = Array.isArray(m.data) ? m.data : (m.data.results || []);
-            setMembros(listaMembros);
-            setFuncoes(f.data);
-            setGraus(g.data);
-        } catch (err) {
-            console.error("Erro ao carregar dados do servidor:", err);
-            setError(true);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+  const query = useQuery({
+    queryKey: membrosKeys.lista,
+    queryFn: fetchMembrosBundle,
+  });
 
-    useEffect(() => {
-        carregarDados();
-    }, [carregarDados]);
+  const membros = query.data?.membros ?? [];
+  const funcoes = query.data?.funcoes ?? [];
+  const graus = query.data?.graus ?? [];
 
-    const membrosFiltrados = membros.filter(m =>
-        (m.nome?.toLowerCase().includes(busca.toLowerCase())) ||
-        (m.funcao?.toLowerCase().includes(busca.toLowerCase()))
-    );
+  const membrosFiltrados = membros.filter(
+    (m) =>
+      m.nome?.toLowerCase().includes(busca.toLowerCase()) ||
+      m.funcao?.toLowerCase().includes(busca.toLowerCase())
+  );
 
-    return { 
-        membros, 
-        membrosFiltrados, 
-        busca, 
-        setBusca, 
-        funcoes, 
-        graus, 
-        carregarDados,
-        loading,
-        error
-    };
+  const carregarDados = () =>
+    queryClient.invalidateQueries({ queryKey: membrosKeys.lista });
+
+  return {
+    membros,
+    membrosFiltrados,
+    busca,
+    setBusca,
+    funcoes,
+    graus,
+    carregarDados,
+    loading: query.isPending || query.isFetching,
+    error: query.isError,
+  };
 }

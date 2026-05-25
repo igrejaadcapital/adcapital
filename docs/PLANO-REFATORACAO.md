@@ -43,7 +43,7 @@ Status atualizado após **Fase 1** em produção (maio/2026).
 - [ ] **2.2** Pastas `features/` + `shared/` (migração gradual)
 - [x] **2.3** TanStack Query (cache/retry unificado)
 - [x] **2.4** Bottom navigation no portal (mobile)
-- [ ] **2.3b** Migrar `useMembros`, `useFinanceiro`, `useDashboard`
+- [x] **2.3b** Migrar `useMembros`, `useFinanceiro`, `useDashboard` (TanStack Query)
 - [ ] **2.4b** Inputs mobile (`tel`, máscara CPF)
 
 ---
