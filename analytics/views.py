@@ -1,3 +1,5 @@
+import os
+
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -63,17 +65,22 @@ class DashboardStatsView(APIView):
         for row in acessos_por_mes:
             label = format_mes(row['mes'])
             if label not in historico_acessos_map:
-                historico_acessos_map[label] = {'name': label, 'site': 0, 'portal': 0}
+                historico_acessos_map[label] = {'name': label, 'site': 0, 'portal': 0, 'sistema': 0}
             if row['pagina'] == 'SITE':
                 historico_acessos_map[label]['site'] = row['total']
             elif row['pagina'] == 'PORTAL':
                 historico_acessos_map[label]['portal'] = row['total']
+            elif row['pagina'] == 'SISTEMA':
+                historico_acessos_map[label]['sistema'] = row['total']
 
         stats = {
             'total_membros': Membro.objects.count(),
             'membros_ativos': Membro.objects.filter(status='LIGADO').count(),
             'total_acessos_site': Acesso.objects.filter(pagina='SITE').count(),
             'total_acessos_portal': Acesso.objects.filter(pagina='PORTAL').count(),
+            'total_acessos_sistema': Acesso.objects.filter(pagina='SISTEMA').count(),
+            'ga_measurement_id': os.environ.get('GA4_MEASUREMENT_ID', 'G-7KZ3C5J6TH'),
+            'fonte_trafego': 'interno',
             'crescimento_membros': [
                 {'name': format_mes(c['mes']), 'total': c['total']} for c in crescimento
             ],
@@ -92,7 +99,7 @@ class TrackAcessoView(APIView):
 
     def post(self, request):
         pagina = request.data.get('pagina')
-        if pagina not in ('SITE', 'PORTAL'):
+        if pagina not in ('SITE', 'PORTAL', 'SISTEMA'):
             return Response({'error': 'pagina inválida'}, status=status.HTTP_400_BAD_REQUEST)
         Acesso.objects.create(pagina=pagina)
         return Response({'ok': True}, status=status.HTTP_201_CREATED)

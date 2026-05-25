@@ -7,6 +7,7 @@ import { ChevronDown, BookOpen, Camera, UserPlus, Trash2 } from 'lucide-react';
 import MemberAgenda from './MemberAgenda';
 import ParentescoFormPublico from '../ParentescoFormPublico';
 import { trackPageView } from '../../../hooks/useAnalytics';
+import { trackInternalAcesso } from '../../../api/internalAnalytics';
 
 export default function MemberPortal({ abaAtiva = 'mensagens' }) {
   const [dados, setDados] = useState(null);
@@ -60,7 +61,7 @@ export default function MemberPortal({ abaAtiva = 'mensagens' }) {
 
   useEffect(() => {
     carregarDados();
-    api.post('/analytics/track/', { pagina: 'PORTAL' }).catch(() => {});
+    trackInternalAcesso('PORTAL');
   }, []);
 
   useEffect(() => {

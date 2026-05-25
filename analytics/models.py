@@ -5,6 +5,7 @@ class Acesso(models.Model):
     PAGINA_CHOICES = [
         ('SITE', 'Site Público'),
         ('PORTAL', 'Portal do Membro'),
+        ('SISTEMA', 'Painel Administrativo'),
     ]
     pagina = models.CharField(max_length=20, choices=PAGINA_CHOICES)
     timestamp = models.DateTimeField(default=timezone.now)

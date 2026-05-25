@@ -3,6 +3,7 @@ import { NavLink, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../components/Auth/AuthProvider';
 import { ADMIN_ANALYTICS, PATHS } from './paths';
 import { trackPageView } from '../hooks/useAnalytics';
+import { trackInternalAcesso } from '../api/internalAnalytics';
 
 export default function AdminLayout() {
   const { user, logout } = useAuth();
@@ -13,6 +14,7 @@ export default function AdminLayout() {
     if (page) {
       trackPageView(page.path, page.title);
     }
+    trackInternalAcesso('SISTEMA');
   }, [location.pathname]);
 
   if (user?.role === 'MEMBRO') {

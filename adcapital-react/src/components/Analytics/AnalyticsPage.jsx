@@ -57,11 +57,9 @@ export default function AnalyticsPage({ preloadedData }) {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm gap-6">
         <div>
           <h1 className="text-2xl font-black text-slate-800 tracking-tight">Inteligência de Dados</h1>
-          <p className="text-slate-400 text-sm font-medium">
-            Membros e finanças no sistema · Tráfego site/portal via API interna · GA4 em{' '}
-            <a href="https://analytics.google.com/" target="_blank" rel="noreferrer" className="text-blue-600 underline">
-              analytics.google.com
-            </a>
+          <p className="text-slate-400 text-sm font-medium max-w-xl">
+            Membros e finanças vêm do banco da igreja. Os contadores de visitas abaixo são{' '}
+            <strong className="text-slate-600">rastreamento interno</strong> (não copiam o Google Analytics).
           </p>
         </div>
         <div className="flex flex-wrap gap-6 justify-end items-center">
@@ -76,15 +74,38 @@ export default function AnalyticsPage({ preloadedData }) {
           </div>
           <div className="hidden sm:block w-px h-10 bg-slate-100 self-center"></div>
           <div className="text-center">
-            <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest block">Acessos ao Site</span>
+            <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest block">Visitas Site</span>
             <span className="text-2xl font-black text-slate-800">{stats.total_acessos_site || 0}</span>
           </div>
           <div className="hidden sm:block w-px h-10 bg-slate-100 self-center"></div>
           <div className="text-center">
-            <span className="text-[10px] font-black text-violet-600 uppercase tracking-widest block">Acessos ao Portal</span>
+            <span className="text-[10px] font-black text-violet-600 uppercase tracking-widest block">Visitas Portal</span>
             <span className="text-2xl font-black text-slate-800">{stats.total_acessos_portal || 0}</span>
           </div>
+          <div className="hidden sm:block w-px h-10 bg-slate-100 self-center"></div>
+          <div className="text-center">
+            <span className="text-[10px] font-black text-amber-600 uppercase tracking-widest block">Painel Admin</span>
+            <span className="text-2xl font-black text-slate-800">{stats.total_acessos_sistema || 0}</span>
+          </div>
         </div>
+      </div>
+
+      <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-100 rounded-[2rem] p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-sm font-black text-orange-800 uppercase tracking-widest">Google Analytics 4</h2>
+          <p className="text-sm text-orange-900/80 mt-1">
+            Page views, tempo real e funis completos ficam no GA ({stats.ga_measurement_id || 'G-7KZ3C5J6TH'}).
+            O painel interno não importa esses números automaticamente.
+          </p>
+        </div>
+        <a
+          href="https://analytics.google.com/"
+          target="_blank"
+          rel="noreferrer"
+          className="shrink-0 px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg shadow-orange-200"
+        >
+          Abrir GA4 →
+        </a>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -167,7 +188,8 @@ export default function AnalyticsPage({ preloadedData }) {
 
         {/* Histórico de Acessos (Site vs Portal) */}
         <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm lg:col-span-2">
-          <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6">📊 Tráfego Mensal (Site vs Portal do Membro)</h3>
+          <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">📊 Visitas mensais (rastreamento interno)</h3>
+          <p className="text-xs text-slate-400 mb-6">Site público, portal do membro e painel admin (sistema.adcapitaligreja.com.br)</p>
           <div className="h-80 min-h-[20rem] w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={280}>
               <AreaChart data={stats.historico_acessos || []}>
@@ -180,6 +202,10 @@ export default function AnalyticsPage({ preloadedData }) {
                     <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.15}/>
                     <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
                   </linearGradient>
+                  <linearGradient id="colorSistema" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.15}/>
+                    <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
+                  </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 10, fontWeight: 'bold'}} />
@@ -191,6 +217,7 @@ export default function AnalyticsPage({ preloadedData }) {
                 <Legend verticalAlign="top" align="right" iconType="circle" />
                 <Area type="monotone" dataKey="site" stroke="#6366f1" fillOpacity={1} fill="url(#colorSite)" name="Site Público" strokeWidth={3} />
                 <Area type="monotone" dataKey="portal" stroke="#8b5cf6" fillOpacity={1} fill="url(#colorPortal)" name="Portal do Membro" strokeWidth={3} />
+                <Area type="monotone" dataKey="sistema" stroke="#f59e0b" fillOpacity={1} fill="url(#colorSistema)" name="Painel Admin" strokeWidth={3} />
               </AreaChart>
             </ResponsiveContainer>
           </div>

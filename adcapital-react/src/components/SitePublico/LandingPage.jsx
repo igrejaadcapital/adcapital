@@ -17,6 +17,7 @@ import qrcode from '../../assets/qrcode.png';
 import api from '../../api/config';
 import { clsx } from 'clsx';
 import { trackPageView, trackCustomEvent } from '../../hooks/useAnalytics';
+import { trackInternalAcesso } from '../../api/internalAnalytics';
 import { twMerge } from 'tailwind-merge';
 
 function cn(...inputs) {
@@ -29,7 +30,7 @@ const LandingPage = () => {
 
   useEffect(() => {
     trackPageView('/', 'AD Capital - Site Oficial');
-    api.post('/analytics/track/', { pagina: 'SITE' }).catch(() => {});
+    trackInternalAcesso('SITE');
   }, []);
 
   const [programacao, setProgramacao] = useState([]);
