@@ -3,9 +3,7 @@
   "appName": "AD Capital",
   "webDir": "dist",
   "server": {
-    "url": "https://sistema.adcapitaligreja.com.br",
-    "androidScheme": "https",
-    "cleartext": false
+    "androidScheme": "https"
   },
   "android": {
     "allowNavigation": [

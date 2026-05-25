@@ -1,15 +1,10 @@
-// Service Worker — AD Capital PWA (SPA-safe)
-const CACHE_NAME = 'adcapital-v3';
-const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/logo.png',
-  '/manifest.json',
-];
+// Service Worker — AD Capital PWA (rede primeiro; sem travar index.html antigo)
+const CACHE_NAME = 'adcapital-v4-shell';
+const OFFLINE_ASSETS = ['/logo.png', '/manifest.json'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(OFFLINE_ASSETS))
   );
   self.skipWaiting();
 });
@@ -18,34 +13,51 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
-    )
+    ).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // API: sempre rede (sem cache)
   if (url.pathname.includes('/api/')) {
     return;
   }
 
-  // Navegação (F5, link direto, /portal/perfil): rede primeiro, fallback index.html
+  // HTML / navegação SPA: sempre rede (evita menu e rotas antigas após deploy)
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          if (response.ok) return response;
-          return caches.match('/index.html');
-        })
-        .catch(() => caches.match('/index.html'))
+      fetch(event.request).catch(() => caches.match('/index.html'))
     );
     return;
   }
 
-  // Assets estáticos: cache-first
+  const dest = event.request.destination;
+  if (dest === 'script' || dest === 'style' || dest === 'document') {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Imagens e demais: rede primeiro, cache só como fallback offline
   event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request))
+    fetch(event.request)
+      .then((response) => {
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        }
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });

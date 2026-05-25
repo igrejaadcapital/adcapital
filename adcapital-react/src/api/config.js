@@ -1,8 +1,9 @@
 // src/api/config.js
 import axios from 'axios';
+import { getApiBaseUrl } from '../config/apiBase';
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'https://api.adcapitaligreja.com.br/api/v1',
+    baseURL: getApiBaseUrl(),
     timeout: 90000 // 90s para suportar Cold Starts do Render
 });
 

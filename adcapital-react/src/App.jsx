@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import AutoCadastroPage from './components/Membros/AutoCadastroPage';
+import { getApiBaseUrl } from './config/apiBase';
 import { initializeGA } from './hooks/useAnalytics';
 import AppRoutes from './routes/AppRoutes';
 import HashLegacyRedirect from './routes/HashLegacyRedirect';
@@ -25,8 +26,7 @@ function App() {
       const timeoutId = setTimeout(() => controller.abort(), 20000);
 
       try {
-        const baseUrl =
-          import.meta.env.VITE_API_URL || 'https://api.adcapitaligreja.com.br/api/v1';
+        const baseUrl = getApiBaseUrl();
         console.log(`[Warm-up] Tentativa ${attempt}/${maxAttempts}...`);
 
         if (attempt > 1) setIsWakingUp(true);
@@ -45,6 +45,7 @@ function App() {
           return warmup(attempt + 1);
         }
         console.warn('[Warm-up] Servidor não respondeu após todas as tentativas.');
+        setIsWakingUp(false);
       } finally {
         clearTimeout(timeoutId);
       }

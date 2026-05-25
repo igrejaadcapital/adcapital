@@ -53,7 +53,8 @@ Status atualizado após **Fase 1** em produção (maio/2026).
 - [x] PWA básica (`manifest`, `sw.js`)
 - [x] **3.1** Splash/status bar + `viewport-fit` + `start_url` `/login`
 - [x] **3.2** Capacitor Android (`android/`, `capacitor.config.json`)
-- [ ] **3.3** Build AAB assinado e Play Store (teste interno) — ver `docs/MOBILE-ANDROID.md`
+- [x] **3.3** APK instalável modo **live** (abre produção; atualiza com deploy Render, sem loja)
+- [ ] **3.3b** APK release assinado para distribuição interna (opcional; Play Store fora de escopo)
 - [ ] **3.4** Push (opcional — Firebase)
 
 **Recomendação:** PWA + Capacitor (um código React, mesma API).
