@@ -9,3 +9,5 @@ Arquivo gerado automaticamente por `scripts/build-apk.ps1` ou GitHub Actions.
 | **Local** | `adcapital-react/releases/adcapital-sistema-latest.apk` após rodar o script |
 
 O app abre o site em produção; não é necessário novo APK a cada mudança de tela.
+
+Versão nativa atual: **1.1.0** (versionCode 4). Só gere novo APK ao mudar plugins Capacitor, permissões ou ícone/splash.

@@ -18,6 +18,7 @@
     "cap:run:bundle": "npm run cap:sync:bundle && npx cap run android --target Pixel_7",
     "cap:devices": "npx cap run android --list",
     "apk:build": "powershell -ExecutionPolicy Bypass -File scripts/build-apk.ps1",
+    "apk:export-secret": "powershell -ExecutionPolicy Bypass -File scripts/export-keystore-for-ci.ps1",
     "icons:android": "node scripts/prepare-icon-assets.cjs && npx capacitor-assets generate --android --iconBackgroundColor \"#0f172a\" --splashBackgroundColor \"#0f172a\""
   },
   "dependencies": {

@@ -1,4 +1,5 @@
 import { Capacitor } from '@capacitor/core';
+import { App } from '@capacitor/app';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { StatusBar, Style } from '@capacitor/status-bar';
 
@@ -26,5 +27,17 @@ export async function initCapacitor() {
     await SplashScreen.hide();
   } catch (err) {
     console.warn('[Capacitor] SplashScreen:', err);
+  }
+
+  try {
+    App.addListener('backButton', () => {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        App.minimizeApp();
+      }
+    });
+  } catch (err) {
+    console.warn('[Capacitor] App backButton:', err);
   }
 }

@@ -134,6 +134,21 @@ npm run apk:build
 
 Saída: `releases/adcapital-sistema-latest.apk` (keystore gerado automaticamente em `android/`, gitignored).
 
+### Assinatura persistente (CI)
+
+Para que **novos APKs substituam o anterior** sem desinstalar (mesma assinatura):
+
+1. Gere o keystore localmente uma vez: `npm run apk:build`
+2. Exporte para GitHub Secrets:
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File scripts/export-keystore-for-ci.ps1
+   ```
+3. No repositório GitHub → **Settings → Secrets → Actions**, crie:
+   - `APK_KEYSTORE_BASE64` — string base64 do `.jks`
+   - `APK_KEYSTORE_PASS` — senha do keystore
+
+Sem esses secrets, o CI ainda gera APK assinado, mas com keystore efêmero (pode exigir reinstalação).
+
 ## Build para Play Store (AAB)
 
 No Android Studio:
@@ -218,9 +233,14 @@ Feche e reabra o Android Studio e o terminal depois disso.
 
 ## Rollback
 
-O app Android é independente do deploy web. Para voltar versão anterior, publique outro AAB na Play Store ou reinstale build antigo.
+O app Android é independente do deploy web. Para voltar versão anterior, redistribua um APK antigo da release `apk-latest` ou reinstale build anterior.
 
-## Próximo (opcional)
+## Push notifications (futuro)
 
-- Push notifications (Firebase + endpoint Django)
-- Ícones adaptativos dedicados (mipmap em `android/app/src/main/res`)
+Fora de escopo da v1 (distribuição interna, sem Play Store). Quando necessário:
+
+1. Projeto Firebase + `google-services.json` em `android/app/`
+2. Plugin `@capacitor/push-notifications`
+3. Endpoint Django para registrar tokens FCM
+
+O `build.gradle` já detecta `google-services.json` e aplica o plugin automaticamente.

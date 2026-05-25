@@ -9,7 +9,7 @@ Status atualizado após **Fase 1** em produção (maio/2026).
 | **0** | Segurança (CORS, RBAC, JWT, cron) | Concluída |
 | **1** | Backend + API v1 + OpenAPI + Router | Concluída |
 | **2** | Front moderno (Query, UX mobile, pastas) | Concluída |
-| **3** | Android (PWA + Capacitor) | Em andamento |
+| **3** | Android (PWA + Capacitor) | Concluída |
 | **4** | CI, staging, observabilidade | Backlog |
 
 ---
@@ -54,8 +54,8 @@ Status atualizado após **Fase 1** em produção (maio/2026).
 - [x] **3.1** Splash/status bar + `viewport-fit` + `start_url` `/login`
 - [x] **3.2** Capacitor Android (`android/`, `capacitor.config.json`)
 - [x] **3.3** APK instalável modo **live** (abre produção; atualiza com deploy Render, sem loja)
-- [ ] **3.3b** APK release assinado para distribuição interna (opcional; Play Store fora de escopo)
-- [ ] **3.4** Push (opcional — Firebase)
+- [x] **3.3b** APK release assinado para distribuição interna (CI + script local + keystore persistente)
+- [~] **3.4** Push (Firebase) — **fora de escopo v1** (sem Play Store; ver `docs/MOBILE-ANDROID.md`)
 
 **Recomendação:** PWA + Capacitor (um código React, mesma API).
 
@@ -78,5 +78,5 @@ Ver `docs/ROLLBACK-FASE-1.md` e tag `prod-pre-fase1-20260522`.
 
 ## Ordem sugerida agora
 
-1. Iniciar **Fase 3** com Capacitor em branch separada (ou fechar pendências 3.3b).
-2. Fechar pendências **1.3b / 1.4b** em PRs pequenos.
+1. Fechar pendências **1.3b / 1.4b** em PRs pequenos.
+2. Iniciar **Fase 4** (CI completo, staging, observabilidade).

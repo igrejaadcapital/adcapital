@@ -1,5 +1,6 @@
-﻿AD Capital â€” APK modo live
-Gerado: 2026-05-25 17:59:08
+﻿AD Capital — APK modo live (v1.1.0)
+Assinatura: release (keystore interno)
 URL no app: https://sistema.adcapitaligreja.com.br
 API: https://api.adcapitaligreja.com.br/api/v1
 Arquivo: adcapital-sistema-latest.apk
+Gerado pelo CI ou npm run apk:build
