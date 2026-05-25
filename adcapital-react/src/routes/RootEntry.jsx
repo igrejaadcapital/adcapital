@@ -1,6 +1,6 @@
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../components/Auth/AuthProvider';
-import LandingPage from '../components/SitePublico/LandingPage';
+import { useAuth } from '../features/auth/AuthProvider';
+import LandingPage from '../features/site/LandingPage';
 import { isNativeApp } from '../mobile/capacitorSetup';
 import { isValidToken, PATHS } from './paths';
 import { PostAuthRedirect } from './guards';

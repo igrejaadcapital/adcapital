@@ -8,7 +8,7 @@ Status atualizado após **Fase 1** em produção (maio/2026).
 |------|------|--------|
 | **0** | Segurança (CORS, RBAC, JWT, cron) | Concluída |
 | **1** | Backend + API v1 + OpenAPI + Router | Concluída |
-| **2** | Front moderno (Query, UX mobile, pastas) | Concluída (core) |
+| **2** | Front moderno (Query, UX mobile, pastas) | Concluída |
 | **3** | Android (PWA + Capacitor) | Em andamento |
 | **4** | CI, staging, observabilidade | Backlog |
 
@@ -40,11 +40,11 @@ Status atualizado após **Fase 1** em produção (maio/2026).
 ## Fase 2 — Frontend
 
 - [x] **2.1** React Router (feito na Fase 1.4)
-- [ ] **2.2** Pastas `features/` + `shared/` (migração gradual)
+- [x] **2.2** Pastas `features/` + `shared/` (migração gradual)
 - [x] **2.3** TanStack Query (cache/retry unificado)
 - [x] **2.4** Bottom navigation no portal (mobile)
 - [x] **2.3b** Migrar `useMembros`, `useFinanceiro`, `useDashboard` (TanStack Query)
-- [ ] **2.4b** Inputs mobile (`tel`, máscara CPF)
+- [x] **2.4b** Inputs mobile (`tel`, máscara CPF)
 
 ---
 
@@ -78,6 +78,5 @@ Ver `docs/ROLLBACK-FASE-1.md` e tag `prod-pre-fase1-20260522`.
 
 ## Ordem sugerida agora
 
-1. Concluir **Fase 2** (Query + UX portal + migrar hooks principais).
-2. Iniciar **Fase 3** com Capacitor em branch separada.
-3. Fechar pendências **1.3b / 1.4b** em PRs pequenos.
+1. Iniciar **Fase 3** com Capacitor em branch separada (ou fechar pendências 3.3b).
+2. Fechar pendências **1.3b / 1.4b** em PRs pequenos.

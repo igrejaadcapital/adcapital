@@ -1,6 +1,6 @@
 import { NavLink, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { Calendar, LogOut, MessageSquare, User } from 'lucide-react';
-import { useAuth } from '../components/Auth/AuthProvider';
+import { useAuth } from '../features/auth/AuthProvider';
 import { PATHS } from './paths';
 
 function portalTabClass({ isActive }) {

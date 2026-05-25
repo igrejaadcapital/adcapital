@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router-dom';
-import DashboardHome from '../components/Apresentacao/DashboardHome';
-import MembrosPage from '../components/Membros/MembrosPage';
-import FinanceiroMain from '../components/Financeiro/FinanceiroMain';
-import AgendaPage from '../components/Agenda/AgendaPage';
-import AnalyticsPage from '../components/Analytics/AnalyticsPage';
-import SettingsPage from '../components/Configuracoes/SettingsPage';
+import DashboardHome from '../features/dashboard/DashboardHome';
+import MembrosPage from '../features/membros/MembrosPage';
+import FinanceiroMain from '../features/financeiro/FinanceiroMain';
+import AgendaPage from '../features/agenda/AgendaPage';
+import AnalyticsPage from '../features/analytics/AnalyticsPage';
+import SettingsPage from '../features/configuracoes/SettingsPage';
 import { PATHS } from './paths';
 
 export function AdminInicioPage() {

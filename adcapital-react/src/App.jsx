@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import AutoCadastroPage from './components/Membros/AutoCadastroPage';
+import AutoCadastroPage from './features/membros/AutoCadastroPage';
 import { getApiBaseUrl } from './config/apiBase';
-import { initializeGA } from './hooks/useAnalytics';
+import { initializeGA } from './shared/hooks/useAnalytics';
 import AppRoutes from './routes/AppRoutes';
 import HashLegacyRedirect from './routes/HashLegacyRedirect';
 

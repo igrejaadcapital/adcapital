@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { NavLink, Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useAuth } from '../components/Auth/AuthProvider';
+import { useAuth } from '../features/auth/AuthProvider';
 import { ADMIN_ANALYTICS, PATHS } from './paths';
-import { trackPageView } from '../hooks/useAnalytics';
+import { trackPageView } from '../shared/hooks/useAnalytics';
 import { trackInternalAcesso } from '../api/internalAnalytics';
 
 export default function AdminLayout() {

@@ -1,5 +1,5 @@
 import { useOutletContext } from 'react-router-dom';
-import MemberPortal from '../components/Membros/Portal/MemberPortal';
+import MemberPortal from '../features/portal/MemberPortal';
 import { PORTAL_TAB_FROM_PATH, PATHS } from './paths';
 
 function PortalPage({ tab }) {

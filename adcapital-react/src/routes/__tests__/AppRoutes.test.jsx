@@ -4,19 +4,19 @@ import { MemoryRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
 import AppRoutes from '../AppRoutes';
 
-vi.mock('../../components/Auth/Login', () => ({
+vi.mock('../../features/auth/Login', () => ({
   default: () => <div data-testid="login-page">Login</div>,
 }));
 
-vi.mock('../../components/Membros/AutoCadastroPage', () => ({
+vi.mock('../../features/membros/AutoCadastroPage', () => ({
   default: () => <div data-testid="cadastro-page">Cadastro</div>,
 }));
 
-vi.mock('../../components/SitePublico/LandingPage', () => ({
+vi.mock('../../features/site/LandingPage', () => ({
   default: () => <div data-testid="landing-page">Landing</div>,
 }));
 
-vi.mock('../../components/Auth/AuthProvider', () => ({
+vi.mock('../../features/auth/AuthProvider', () => ({
   useAuth: () => ({ token: null, user: null, logout: vi.fn() }),
 }));
 

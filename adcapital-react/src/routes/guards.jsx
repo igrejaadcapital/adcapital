@@ -1,5 +1,5 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useAuth } from '../components/Auth/AuthProvider';
+import { useAuth } from '../features/auth/AuthProvider';
 import { isValidToken, PATHS } from './paths';
 
 export function PostAuthRedirect() {

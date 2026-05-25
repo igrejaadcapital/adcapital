@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import Login from '../components/Auth/Login';
-import AutoCadastroPage from '../components/Membros/AutoCadastroPage';
-import LandingPage from '../components/SitePublico/LandingPage';
-import { trackPageView } from '../hooks/useAnalytics';
+import Login from '../features/auth/Login';
+import AutoCadastroPage from '../features/membros/AutoCadastroPage';
+import LandingPage from '../features/site/LandingPage';
+import { trackPageView } from '../shared/hooks/useAnalytics';
 import AdminLayout from './AdminLayout';
 import PortalLayout from './PortalLayout';
 import {

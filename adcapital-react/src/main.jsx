@@ -4,7 +4,7 @@ import { BrowserRouter, HashRouter } from 'react-router-dom'
 import { QueryClientProvider } from '@tanstack/react-query'
 import './index.css'
 import App from './App.jsx'
-import { AuthProvider } from './components/Auth/AuthProvider'
+import { AuthProvider } from './features/auth/AuthProvider'
 import { queryClient } from './api/queryClient'
 import { initCapacitor, isNativeApp } from './mobile/capacitorSetup'
 
