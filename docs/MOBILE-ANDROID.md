@@ -103,6 +103,16 @@ npm run cap:run:android
 npm run cap:devices
 ```
 
+## Ícone do app (logo da igreja)
+
+O ícone do launcher usa `public/logo.png`. Para regerar após trocar a logo:
+
+```powershell
+npm run icons:android
+```
+
+Isso atualiza `android/app/src/main/res/mipmap-*` e a tela de splash. O `npm run apk:build` já roda isso automaticamente.
+
 ## Distribuição automática do APK (sem Play Store)
 
 ### GitHub Actions (recomendado)

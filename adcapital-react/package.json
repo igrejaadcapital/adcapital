@@ -17,7 +17,8 @@
     "cap:run:android": "npx cap sync && npx cap run android --target Pixel_7",
     "cap:run:bundle": "npm run cap:sync:bundle && npx cap run android --target Pixel_7",
     "cap:devices": "npx cap run android --list",
-    "apk:build": "powershell -ExecutionPolicy Bypass -File scripts/build-apk.ps1"
+    "apk:build": "powershell -ExecutionPolicy Bypass -File scripts/build-apk.ps1",
+    "icons:android": "node scripts/prepare-icon-assets.cjs && npx capacitor-assets generate --android --iconBackgroundColor \"#0f172a\" --splashBackgroundColor \"#0f172a\""
   },
   "dependencies": {
     "@capacitor/android": "^8.3.4",
@@ -42,6 +43,7 @@
     "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
     "@eslint/js": "^9.39.1",
     "@tailwindcss/postcss": "^4.1.18",
     "@testing-library/jest-dom": "^6.9.1",

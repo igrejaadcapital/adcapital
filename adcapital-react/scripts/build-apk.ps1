@@ -39,6 +39,9 @@ storeFile=adcapital-release.jks
 "@ | Set-Content -Path $Props -Encoding ASCII
 }
 
+Write-Host '[apk] Icones Android (logo da igreja)...' -ForegroundColor Cyan
+npm run icons:android
+
 Write-Host '[apk] npm run cap:sync...' -ForegroundColor Cyan
 npm run cap:sync
 Ensure-Keystore

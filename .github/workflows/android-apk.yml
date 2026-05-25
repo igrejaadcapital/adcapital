@@ -35,6 +35,7 @@ jobs:
         working-directory: adcapital-react
         run: |
           npm ci
+          npm run icons:android
           npm run build:mobile
           npx cap sync
 
