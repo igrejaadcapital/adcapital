@@ -19,6 +19,9 @@ adcapital-react/android/**/build/
 adcapital-react/android/capacitor-cordova-android-plugins/
 *.keystore
 *.jks
+adcapital-react/android/keystore.properties
+adcapital-react/android/adcapital-release.jks
+adcapital-react/releases/*.apk
 
 # Editor
 .vscode/

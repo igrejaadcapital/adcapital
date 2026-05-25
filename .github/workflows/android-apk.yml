@@ -1,0 +1,93 @@
+name: Build Android APK
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'adcapital-react/**'
+      - '.github/workflows/android-apk.yml'
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: adcapital-react/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies and sync Capacitor
+        working-directory: adcapital-react
+        run: |
+          npm ci
+          npm run build:mobile
+          npx cap sync
+
+      - name: Create release keystore
+        working-directory: adcapital-react/android
+        env:
+          APK_STORE_PASS: ${{ secrets.APK_KEYSTORE_PASS }}
+        run: |
+          PASS="${APK_STORE_PASS:-adcapital-ci-2026}"
+          keytool -genkey -v \
+            -keystore adcapital-release.jks \
+            -alias adcapital \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass "$PASS" -keypass "$PASS" \
+            -dname "CN=AD Capital, OU=Igreja, O=AD Capital, C=BR"
+          printf '%s\n' \
+            "storePassword=$PASS" \
+            "keyPassword=$PASS" \
+            "keyAlias=adcapital" \
+            "storeFile=adcapital-release.jks" > keystore.properties
+
+      - name: Assemble release APK
+        working-directory: adcapital-react/android
+        run: chmod +x gradlew && ./gradlew assembleRelease --no-daemon
+
+      - name: Prepare release artifact
+        run: |
+          mkdir -p adcapital-react/releases
+          cp adcapital-react/android/app/build/outputs/apk/release/app-release.apk \
+            adcapital-react/releases/adcapital-sistema-latest.apk || \
+          cp adcapital-react/android/app/build/outputs/apk/release/app-release-unsigned.apk \
+            adcapital-react/releases/adcapital-sistema-latest.apk
+          echo "Built $(date -u +%Y-%m-%dT%H:%M:%SZ)" > adcapital-react/releases/BUILD_INFO.txt
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: adcapital-sistema-apk
+          path: |
+            adcapital-react/releases/adcapital-sistema-latest.apk
+            adcapital-react/releases/BUILD_INFO.txt
+          retention-days: 90
+
+      - name: Create GitHub Release (tag apk-latest)
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-latest
+          name: AD Capital APK (instalação interna)
+          body: |
+            APK modo **live** — abre https://sistema.adcapitaligreja.com.br (atualiza com cada deploy do site).
+            Requer internet. Instale no Android permitindo "apps desconhecidos".
+          files: adcapital-react/releases/adcapital-sistema-latest.apk
+          overwrite_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

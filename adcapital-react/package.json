@@ -16,7 +16,8 @@
     "cap:android": "npx cap open android",
     "cap:run:android": "npx cap sync && npx cap run android --target Pixel_7",
     "cap:run:bundle": "npm run cap:sync:bundle && npx cap run android --target Pixel_7",
-    "cap:devices": "npx cap run android --list"
+    "cap:devices": "npx cap run android --list",
+    "apk:build": "powershell -ExecutionPolicy Bypass -File scripts/build-apk.ps1"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.4",

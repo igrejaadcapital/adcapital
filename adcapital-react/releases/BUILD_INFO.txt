@@ -1,0 +1,5 @@
+﻿AD Capital â€” APK modo live
+Gerado: 2026-05-25 17:59:08
+URL no app: https://sistema.adcapitaligreja.com.br
+API: https://api.adcapitaligreja.com.br/api/v1
+Arquivo: adcapital-sistema-latest.apk

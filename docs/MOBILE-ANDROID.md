@@ -84,7 +84,7 @@ Fluxo enquanto monta o projeto:
 
 ```powershell
 npm install
-npm run cap:sync          # aplica capacitor.config.ts (modo live)
+npm run cap:sync          # modo live (capacitor.config.json)
 npm run cap:android       # Run no Studio → instalar APK uma vez
 ```
 
@@ -102,6 +102,27 @@ npm run cap:android
 npm run cap:run:android
 npm run cap:devices
 ```
+
+## Distribuição automática do APK (sem Play Store)
+
+### GitHub Actions (recomendado)
+
+A cada push em `main` que altera `adcapital-react/`:
+
+1. Workflow **Build Android APK** gera `adcapital-sistema-latest.apk`
+2. Artifact **adcapital-sistema-apk** (90 dias) em Actions
+3. Release **[apk-latest](https://github.com/igrejaadcapital/adcapital/releases/tag/apk-latest)** com o APK para download direto
+
+Envie o link da release ou o arquivo para WhatsApp/Drive da igreja.
+
+### Build local (script)
+
+```powershell
+cd adcapital-react
+npm run apk:build
+```
+
+Saída: `releases/adcapital-sistema-latest.apk` (keystore gerado automaticamente em `android/`, gitignored).
 
 ## Build para Play Store (AAB)
 
