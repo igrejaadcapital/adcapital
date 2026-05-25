@@ -10,6 +10,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Área segura — status bar / notch (APK e PWA com viewport-fit=cover) */
+.safe-area-pt {
+  padding-top: max(2rem, env(safe-area-inset-top, 0px));
+}
+
 .safe-area-pb {
   padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
 }

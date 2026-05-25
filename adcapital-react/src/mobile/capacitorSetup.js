@@ -11,9 +11,13 @@ export async function initCapacitor() {
     return;
   }
 
+  document.documentElement.classList.add('capacitor-native');
+
   try {
     await StatusBar.setStyle({ style: Style.Dark });
     await StatusBar.setBackgroundColor({ color: '#0f172a' });
+    // Android 14 e anteriores: evita conteúdo sob a status bar
+    await StatusBar.setOverlaysWebView({ overlay: false });
   } catch (err) {
     console.warn('[Capacitor] StatusBar:', err);
   }

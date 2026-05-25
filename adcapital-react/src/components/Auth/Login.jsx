@@ -35,7 +35,7 @@ export default function Login({ isWakingUp }) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4 safe-area-pt safe-area-pb">
       <div className="bg-white p-10 rounded-[2.5rem] shadow-xl w-full max-w-md border border-slate-200">
         <div className="flex flex-col items-center mb-8">
           <img src="/logo.png" alt="Logo AD Capital" className="h-16 w-auto mb-4 object-contain rounded-sm" />

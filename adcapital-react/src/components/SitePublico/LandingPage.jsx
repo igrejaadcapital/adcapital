@@ -191,7 +191,7 @@ const LandingPage = () => {
     <div className="min-h-screen bg-[#020617] text-white selection:bg-blue-500 selection:text-white overflow-x-hidden font-sans">
 
       {/* --- STICKY NAVBAR --- */}
-      <nav className="fixed top-0 left-0 w-full z-50 px-6 py-2">
+      <nav className="fixed top-0 left-0 w-full z-50 px-6 pb-2 safe-area-pt">
         <div className="max-w-7xl mx-auto flex items-center justify-between bg-white/5 backdrop-blur-xl border border-white/10 px-6 py-2 rounded-2xl shadow-2xl">
           <div className="flex items-center gap-3">
             <img src="/logo.png" alt="Logo" className="w-8 h-8 rounded-full" />
