@@ -48,7 +48,7 @@ Este documento consolida todos os serviços e endereços que compõem o ecossist
 | Componente | Pasta / serviço | Deploy |
 | :--- | :--- | :--- |
 | Backend | Raiz do repo → **adcapital-api** (Web Service) | `build.sh`: pip, migrate, `createcachetable`, collectstatic |
-| Frontend | **adcapital-react/** → **adcapital-web** (Static Site) | `npm run build` → `dist/` |
+| Frontend | **adcapital-react/** → **adcapital-web** (Static Site) | `npm run build` → `dist/`; `public/_redirects` envia `/*` → `index.html` (SPA) |
 | Banco | Supabase PostgreSQL (`DATABASE_URL`) | Sem deploy separado |
 
 ### 🧩 Fase 1 — Organização do código (em produção)
