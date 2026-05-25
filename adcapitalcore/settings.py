@@ -55,6 +55,9 @@ render_host = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if render_host and render_host not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(render_host)
 
+# staging | production | development
+DJANGO_ENV = os.environ.get('DJANGO_ENV', 'production').strip().lower()
+
 
 # Application definition
 
@@ -209,6 +212,20 @@ CSRF_TRUSTED_ORIGINS = [
     'https://api.adcapitaligreja.com.br',
 ]
 
+if DJANGO_ENV == 'staging':
+    ALLOWED_HOSTS.extend([
+        'staging-api.adcapitaligreja.com.br',
+        'staging.sistema.adcapitaligreja.com.br',
+        'staging.cadastro.adcapitaligreja.com.br',
+    ])
+    _staging_origins = [
+        'https://staging.sistema.adcapitaligreja.com.br',
+        'https://staging.cadastro.adcapitaligreja.com.br',
+        'https://staging-api.adcapitaligreja.com.br',
+    ]
+    CORS_ALLOWED_ORIGINS.extend(_staging_origins)
+    CSRF_TRUSTED_ORIGINS.extend(_staging_origins)
+
 CRON_SECRET = os.environ.get('CRON_SECRET', '').strip()
 
 # Cache compartilhado (PostgreSQL) — rate limit funciona com vários workers no Render
@@ -288,6 +305,20 @@ if not DEBUG:
     CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# Sentry (opcional — ative com SENTRY_DSN no Render)
+_sentry_dsn = os.environ.get('SENTRY_DSN', '').strip()
+if _sentry_dsn:
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+
+    sentry_sdk.init(
+        dsn=_sentry_dsn,
+        integrations=[DjangoIntegration()],
+        environment=os.environ.get('SENTRY_ENVIRONMENT', DJANGO_ENV),
+        traces_sample_rate=float(os.environ.get('SENTRY_TRACES_SAMPLE_RATE', '0.1')),
+        send_default_pii=False,
+    )
 
 # Email Configuration
 EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')

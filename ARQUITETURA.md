@@ -12,6 +12,7 @@ Este documento consolida todos os serviços e endereços que compõem o ecossist
 | **Banco/API (Back)** | Supabase | Onde os dados dos membros ficam permanentemente | [supabase.com](https://supabase.com) |
 | **Fotos & Mídia** | Cloudinary | Armazena fotos dos membros e logos | [cloudinary.com](https://cloudinary.com) |
 | **Código Fonte** | GitHub | Onde todo o código do projeto é salvo | [github.com](https://github.com) |
+| **CI / Backup** | GitHub Actions | Testes, build e backup diário | Ver `docs/OPERACAO-FASE-4.md` |
 | **Estatísticas & BI** | Google | Monitoramento e conversões do site e portal | [analytics.google.com](https://analytics.google.com) |
 
 ### 🔗 Estrutura de Endereços (URLs)

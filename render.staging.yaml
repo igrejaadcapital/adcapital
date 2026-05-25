@@ -1,0 +1,44 @@
+# Blueprint Render — ambiente STAGING (opcional, branch develop ou manual)
+# Crie serviços separados da produção; use o mesmo Supabase com schema isolado OU projeto Supabase de teste.
+services:
+  - type: web
+    name: adcapital-api-staging
+    runtime: python
+    plan: free
+    branch: main
+    buildCommand: ./build.sh
+    startCommand: gunicorn adcapitalcore.wsgi --workers 2 --threads 2 --preload --timeout 120 --log-file -
+    envVars:
+      - key: DJANGO_ENV
+        value: staging
+      - key: DEBUG
+        value: 'false'
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: CRON_SECRET
+        generateValue: true
+      - key: SENTRY_ENVIRONMENT
+        value: staging
+      - key: SENTRY_DSN
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+
+  - type: web
+    name: adcapital-web-staging
+    runtime: static
+    plan: free
+    branch: main
+    rootDir: adcapital-react
+    buildCommand: npm install && VITE_API_URL=https://staging-api.adcapitaligreja.com.br/api/v1 VITE_SENTRY_ENVIRONMENT=staging npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

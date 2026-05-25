@@ -10,7 +10,7 @@ Status atualizado após **Fase 1** em produção (maio/2026).
 | **1** | Backend + API v1 + OpenAPI + Router | Concluída |
 | **2** | Front moderno (Query, UX mobile, pastas) | Concluída |
 | **3** | Android (PWA + Capacitor) | Concluída |
-| **4** | CI, staging, observabilidade | Backlog |
+| **4** | CI, staging, observabilidade | Concluída |
 
 ---
 
@@ -63,10 +63,12 @@ Status atualizado após **Fase 1** em produção (maio/2026).
 
 ## Fase 4 — Operação
 
-- [ ] GitHub Actions: `pytest` + `vitest` + `build`
-- [ ] Ambiente staging
-- [ ] Sentry (front + API)
-- [ ] Backup automático Supabase
+- [x] GitHub Actions: `pytest` + `vitest` + `build` (`.github/workflows/ci.yml`)
+- [x] Ambiente staging (`render.staging.yaml`, `DJANGO_ENV=staging`, `docs/STAGING.md`)
+- [x] Sentry (front + API, opcional via `SENTRY_DSN` / `VITE_SENTRY_DSN`)
+- [x] Backup automático Supabase (`.github/workflows/backup-supabase.yml` + `fast_backup.py`)
+
+Ver [OPERACAO-FASE-4.md](./OPERACAO-FASE-4.md).
 
 ---
 
@@ -79,4 +81,4 @@ Ver `docs/ROLLBACK-FASE-1.md` e tag `prod-pre-fase1-20260522`.
 ## Ordem sugerida agora
 
 1. Fechar pendências **1.3b / 1.4b** em PRs pequenos.
-2. Iniciar **Fase 4** (CI completo, staging, observabilidade).
+2. Configurar secrets do backup (`DATABASE_URL`) e Sentry (opcional).

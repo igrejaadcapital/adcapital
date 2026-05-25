@@ -6,7 +6,10 @@ import './index.css'
 import App from './App.jsx'
 import { AuthProvider } from './features/auth/AuthProvider'
 import { queryClient } from './api/queryClient'
+import { initSentry } from './shared/lib/sentryInit'
 import { initCapacitor, isNativeApp } from './mobile/capacitorSetup'
+
+initSentry();
 
 // Em produção no Render (static site), URLs reais (/admin/...) dão 404 sem rewrite.
 // HashRouter usa /#/admin/... — o servidor só precisa servir index.html em /.
