@@ -1,0 +1,14 @@
+# Blueprint Render — serviço estático do frontend (SPA)
+# Se o site já existir no Dashboard, adicione a mesma regra em Redirects/Rewrites:
+#   Source: /*  →  Destination: /index.html  →  Action: Rewrite
+services:
+  - type: web
+    name: adcapital-web
+    runtime: static
+    rootDir: adcapital-react
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
