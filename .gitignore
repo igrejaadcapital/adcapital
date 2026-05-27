@@ -30,6 +30,9 @@ adcapital-react/releases/*.apk
 # Google Cloud
 google_credentials.json
 
+# Relatórios gerados localmente (Excel contabilidade)
+relatorios/
+
 # Temporary / Log files
 *.log
 tmp/

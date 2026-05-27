@@ -3,9 +3,11 @@ from django.contrib.auth.hashers import make_password
 
 def create_superuser(apps, schema_editor):
     User = apps.get_model('auth', 'User')
-    if not User.objects.filter(username='admin').exists():
+    # Login numérico (CPF/CNPJ customizado) para compatibilidade com o portal.
+    admin_username = '45595281000'
+    if not User.objects.filter(username=admin_username).exists():
         User.objects.create(
-            username='admin',
+            username=admin_username,
             email='admin@igreja.com',
             password=make_password('admin123'),
             is_superuser=True,

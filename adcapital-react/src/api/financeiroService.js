@@ -26,6 +26,12 @@ const financeiroService = {
     },
 
     excluir: (id) => api.delete(`/financeiro/transacoes/${id}/`),
+
+    exportarContabilidade: (params) =>
+        api.get('/financeiro/exportar-contabilidade/', {
+            params,
+            responseType: 'blob',
+        }),
 };
 
 export default financeiroService;

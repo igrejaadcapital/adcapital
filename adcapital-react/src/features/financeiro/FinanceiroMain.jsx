@@ -4,6 +4,7 @@ import LancamentoFinanceiroFormModal from './ModalLancamentosFinanceiro/Lancamen
 import financeiroService from '../../api/financeiroService';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import ImportarOFXModal from './ImportarOFXModal';
+import ExportarContabilidadeModal from './ExportarContabilidadeModal';
 import { useFinanceiro } from './useFinanceiro';
 import { useCategoriasFinanceiras } from './useCategoriasFinanceiras';
 
@@ -32,6 +33,7 @@ export default function FinanceiroMain() {
     const [tipoLancamento, setTipoLancamento] = useState('ENTRADA');
     const [lancamentoParaEditar, setLancamentoParaEditar] = useState(null);
     const [mostrarImportarOFX, setMostrarImportarOFX] = useState(false);
+    const [mostrarExportarContabilidade, setMostrarExportarContabilidade] = useState(false);
 
     const abrirModalNovo = (tipo) => {
         setLancamentoParaEditar(null);
@@ -205,6 +207,13 @@ export default function FinanceiroMain() {
                 >
                     <span>🏦</span> Importar Extrato (OFX)
                 </button>
+                <button
+                    type="button"
+                    onClick={() => setMostrarExportarContabilidade(true)}
+                    className="bg-blue-700 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-blue-800 transition-all flex items-center gap-2"
+                >
+                    <span>📊</span> Exportar para Contabilidade
+                </button>
             </div>
 
             <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
@@ -280,6 +289,11 @@ export default function FinanceiroMain() {
                 onSuccess={atualizarTransacoes}
                 categoriasEntrada={categoriasEntrada}
                 categoriasSaida={categoriasSaida}
+            />
+
+            <ExportarContabilidadeModal
+                isOpen={mostrarExportarContabilidade}
+                onClose={() => setMostrarExportarContabilidade(false)}
             />
         </div>
     );
