@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { formatCpf } from '../../shared/lib/masks';
+import MembroFotoAvatar from './MembroFotoAvatar';
 import { Loader2, ArrowUpDown, ChevronUp, ChevronDown } from 'lucide-react';
 
 export default function MembroTable({ membros, onEdit, onDelete, deletandoId }) {
@@ -88,15 +89,11 @@ export default function MembroTable({ membros, onEdit, onDelete, deletandoId }) 
                   <td className="px-6 py-4 text-sm font-mono text-slate-500 whitespace-nowrap">
                   {formatCpf(m.cpf)}
                 </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
+                <td className="px-6 py-4 overflow-visible">
+                  <div className="flex items-center gap-3 overflow-visible">
                     {/* Avatar */}
                     {m.foto ? (
-                      <img 
-                        src={m.foto} 
-                        alt={m.nome} 
-                        className="w-8 h-8 rounded-full object-cover border border-slate-200 shrink-0 transition-all duration-300 hover:scale-[3] hover:z-50 relative hover:shadow-xl cursor-zoom-in" 
-                      />
+                      <MembroFotoAvatar src={m.foto} nome={m.nome} size="sm" />
                     ) : (
                       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shrink-0 transition-all duration-300 hover:scale-110">
                         <span className="text-white font-black text-xs leading-none">{m.nome?.charAt(0) || '?'}</span>

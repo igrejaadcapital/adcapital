@@ -1,4 +1,5 @@
 import { Loader2 } from 'lucide-react';
+import MembroFotoAvatar from './MembroFotoAvatar';
 
 export default function MembroCard({ m, graus, onEdit, onDelete, deletandoId }) {
     const isDeleting = deletandoId === m.id;
@@ -12,11 +13,7 @@ export default function MembroCard({ m, graus, onEdit, onDelete, deletandoId }) 
                         {/* Avatar */}
                         <div className="shrink-0">
                             {m.foto ? (
-                                <img
-                                    src={m.foto}
-                                    alt={m.nome}
-                                    className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm transition-all duration-300 hover:scale-[2.5] hover:z-50 relative hover:shadow-xl cursor-zoom-in"
-                                />
+                                <MembroFotoAvatar src={m.foto} nome={m.nome} size="md" />
                             ) : (
                                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center border-2 border-white shadow-sm shrink-0 transition-all duration-300 hover:scale-110">
                                     <span className="text-white font-black text-lg leading-none">

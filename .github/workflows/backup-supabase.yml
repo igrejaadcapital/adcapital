@@ -28,7 +28,11 @@ jobs:
           DEBUG: 'False'
         run: |
           if [ -z "$DATABASE_URL" ]; then
-            echo "::error::Configure o secret DATABASE_URL no repositório para backups automáticos."
+            echo "::error::Secret DATABASE_URL ausente. GitHub → Settings → Secrets and variables → Actions → New repository secret."
+            exit 1
+          fi
+          if [ -z "$SECRET_KEY" ]; then
+            echo "::error::Secret SECRET_KEY ausente (use o mesmo valor do serviço adcapital-api no Render)."
             exit 1
           fi
           python fast_backup.py
