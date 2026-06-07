@@ -7,12 +7,14 @@ from django.db import connection, close_old_connections
 from membros.models import Membro
 from membros.utils import enviar_email_resend_api, gerar_termo_lgpd_pdf
 from membros.services.parentesco_service import salvar_parentescos
+from membros.services.acesso_service import garantir_acesso_membro
 
 
 def executar_tarefas_pos_cadastro(membro_id, parentescos_data):
     try:
         close_old_connections()
         membro = Membro.objects.get(id=membro_id)
+        garantir_acesso_membro(membro)
         membro_nome = membro.nome
         membro_email = membro.email
         connection.close()

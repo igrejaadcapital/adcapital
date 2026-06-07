@@ -1,5 +1,5 @@
 // Service Worker — AD Capital PWA (rede primeiro; sem travar index.html antigo)
-const CACHE_NAME = 'adcapital-v4-shell';
+const CACHE_NAME = 'adcapital-v5-shell';
 const OFFLINE_ASSETS = ['/logo.png', '/manifest.json'];
 
 self.addEventListener('install', (event) => {
@@ -48,7 +48,10 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Imagens e demais: rede primeiro, cache só como fallback offline
+  // Imagens e demais: rede primeiro, cache só como fallback offline (apenas GET)
+  if (event.request.method !== 'GET') {
+    return;
+  }
   event.respondWith(
     fetch(event.request)
       .then((response) => {

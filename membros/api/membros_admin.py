@@ -14,6 +14,7 @@ from rest_framework.views import APIView
 from membros.models import ConfiguracaoPortal, Membro
 from membros.permissions import IsAdminOrSecretario
 from membros.serializers import MembroSerializer
+from membros.services.acesso_service import garantir_acesso_membro
 from membros.services.cadastro_service import executar_tarefas_pos_cadastro
 from membros.contracts.parentesco import parse_parentescos_novo
 from membros.services.parentesco_service import salvar_parentescos
@@ -56,6 +57,7 @@ class MembroViewSet(viewsets.ModelViewSet):
 
     def _salvar_com_parentescos(self, serializer):
         membro = serializer.save()
+        garantir_acesso_membro(membro)
         try:
             if self.request.data.get('lgpd_documento'):
                 membro.lgpd_consentido = True
@@ -101,6 +103,7 @@ class AutoCadastroMembroView(APIView):
                 return Response(serializer.errors, status=400)
 
             membro = serializer.save()
+            garantir_acesso_membro(membro)
             parentescos_data = parse_parentescos_novo(request.data.get('parentescos_novo', []))
 
             threading.Thread(

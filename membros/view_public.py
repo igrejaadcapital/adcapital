@@ -7,6 +7,7 @@ from .rate_limit import rate_limit_or_none
 from .models import Membro, ConfiguracaoPortal
 from .serializers import MembroSerializer
 from membros.services.parentesco_service import salvar_parentescos
+from membros.services.acesso_service import garantir_acesso_membro, senha_padrao
 
 
 def _json(request, data, status=200):
@@ -105,27 +106,8 @@ def auto_cadastro_direto(request):
             
             # --- START USER ACCESS & LGPD LOGIC ---
             try:
-                # 1. Criar Usuário para o Portal (se não existir)
-                from django.contrib.auth.models import User
-                from .models import Perfil
-                
-                username = cpf_limpo
-                senha_padrao = f"Adcapital{cpf_limpo[:5]}" # Prefixo + 5 primeiros dígitos do CPF
-                
-                user, created = User.objects.get_or_create(username=username, defaults={'email': membro.email or '', 'first_name': membro.nome})
-                if created:
-                    user.set_password(senha_padrao)
-                    user.save()
-                elif not user.first_name:
-                    # Se o usuário já existia (ex: de um teste anterior) mas estava sem nome, atualiza
-                    user.first_name = membro.nome
-                    user.save()
-                
-                # Garante vínculo Perfil -> Membro
-                perfil, _ = Perfil.objects.get_or_create(user=user)
-                perfil.membro = membro
-                perfil.role = 'MEMBRO'
-                perfil.save()
+                user, _created = garantir_acesso_membro(membro)
+                senha_inicial = senha_padrao(cpf_limpo)
 
                 # 2. Geração de PDF do Termo
                 from .utils import gerar_termo_lgpd_pdf
@@ -160,7 +142,7 @@ def auto_cadastro_direto(request):
                                 f"Para acessar seu perfil e acompanhar a igreja, use os dados abaixo:\n"
                                 f"Site: https://adcapitaligreja.com.br/#/portal\n"
                                 f"Usuário (CPF): {membro.cpf}\n"
-                                f"Senha Padrão: {senha_padrao}\n"
+                                f"Senha Padrão: {senha_inicial}\n"
                                 "(Recomendamos alterar sua senha após o primeiro acesso)\n\n"
                                 "📄 **TERMO LGPD:**\n"
                                 "Enviamos em anexo o Termo de Consentimento de Dados Pessoais. "
