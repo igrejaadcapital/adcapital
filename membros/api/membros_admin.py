@@ -16,6 +16,7 @@ from membros.permissions import IsAdminOrSecretario
 from membros.serializers import MembroSerializer
 from membros.services.acesso_service import garantir_acesso_membro
 from membros.services.cadastro_service import executar_tarefas_pos_cadastro
+from membros.services.lgpd_service import provisionar_termo_lgpd
 from membros.contracts.parentesco import parse_parentescos_novo
 from membros.services.parentesco_service import salvar_parentescos
 from membros.throttles import CadastroRateThrottle
@@ -58,14 +59,18 @@ class MembroViewSet(viewsets.ModelViewSet):
     def _salvar_com_parentescos(self, serializer):
         membro = serializer.save()
         garantir_acesso_membro(membro)
+
+        uploading_signed = 'lgpd_documento' in self.request.FILES
         try:
-            if self.request.data.get('lgpd_documento'):
+            if uploading_signed:
                 membro.lgpd_consentido = True
                 if not membro.lgpd_data_aceite:
                     membro.lgpd_data_aceite = timezone.now()
                 membro.save()
+            elif not membro.lgpd_documento:
+                provisionar_termo_lgpd(membro, enviar_email=bool(membro.email))
         except Exception as e:
-            print(f'Aviso: Erro ao salvar status LGPD no Admin: {e}')
+            print(f'Aviso: Erro ao processar LGPD no Admin: {e}')
 
         parentescos_data = parse_parentescos_novo(self.request.data.get('parentescos_novo', []))
         salvar_parentescos(membro, parentescos_data)
