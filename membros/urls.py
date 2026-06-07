@@ -8,7 +8,7 @@ from membros.api.configuracao import (
 )
 from membros.api.cron import resetar_senhas_em_massa, verificar_aniversarios
 from membros.api.funcoes import adicionar_funcao, buscar_opcoes_funcao, excluir_funcao
-from membros.api.membros_admin import MembroViewSet, download_termo_lgpd
+from membros.api.membros_admin import MembroViewSet, download_termo_lgpd, download_termo_lgpd_em_branco
 from membros.api.portal import ComentarioPalavraViewSet, DevocionalViewSet, MeusDadosView
 from membros.api.publico import (
     buscar_configuracao_publica,
@@ -57,6 +57,7 @@ urlpatterns = [
     # Rotas Administrativas
     path('funcoes/', adicionar_funcao, name='adicionar-funcao-admin'),
     path('funcoes/<int:pk>/', excluir_funcao, name='excluir-funcao-admin'),
+    path('membros/termo-lgpd-em-branco/', download_termo_lgpd_em_branco, name='download-lgpd-em-branco'),
     path('membros/<int:pk>/download-lgpd/', download_termo_lgpd, name='download-lgpd'),
     
     path('membros/meus-dados/', MeusDadosView.as_view(), name='meus-dados'),

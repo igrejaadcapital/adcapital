@@ -132,6 +132,18 @@ class AutoCadastroMembroView(APIView):
 
 @api_view(['GET'])
 @permission_classes([IsAdminOrSecretario])
+def download_termo_lgpd_em_branco(request):
+    from django.http import HttpResponse
+    from membros.utils_termo_lgpd import gerar_termo_lgpd_pdf_em_branco
+
+    nome_arquivo, pdf_file = gerar_termo_lgpd_pdf_em_branco()
+    response = HttpResponse(pdf_file.read(), content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{nome_arquivo}"'
+    return response
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminOrSecretario])
 def download_termo_lgpd(request, pk):
     try:
         membro = Membro.objects.get(pk=pk)

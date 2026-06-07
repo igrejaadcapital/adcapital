@@ -113,3 +113,31 @@ class AdminCadastroLgpdTests(TestCase):
         self.assertEqual(res.status_code, 200, res.content)
         membro.refresh_from_db()
         self.assertTrue(bool(membro.lgpd_documento))
+
+
+@override_settings(DEBUG=True, SECRET_KEY='test-secret-key-for-dev-only')
+class TermoLgpdEmBrancoTests(TestCase):
+    def test_gerar_pdf_em_branco(self):
+        from membros.utils_termo_lgpd import gerar_termo_lgpd_pdf_em_branco
+
+        nome, pdf = gerar_termo_lgpd_pdf_em_branco()
+        self.assertEqual(nome, 'termo_lgpd_em_branco.pdf')
+        content = pdf.read()
+        self.assertTrue(content.startswith(b'%PDF'))
+        self.assertGreater(len(content), 1000)
+
+    def test_endpoint_termo_em_branco_requer_admin(self):
+        client = APIClient()
+        res = client.get('/api/v1/membros/termo-lgpd-em-branco/')
+        self.assertEqual(res.status_code, 401)
+
+    def test_endpoint_termo_em_branco_ok(self):
+        client = APIClient()
+        admin = User.objects.create_user(username='44444444444', password='admin-pass')
+        admin.perfil.role = 'ADMIN'
+        admin.perfil.save(update_fields=['role'])
+        client.force_authenticate(user=admin)
+        res = client.get('/api/v1/membros/termo-lgpd-em-branco/')
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res['Content-Type'], 'application/pdf')
+        self.assertTrue(res.content.startswith(b'%PDF'))

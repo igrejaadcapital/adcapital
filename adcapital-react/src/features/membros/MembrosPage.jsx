@@ -25,6 +25,23 @@ export default function MembrosPage() {
   const [viewType, setViewType] = useState('list'); // 'list' ou 'grid'
   const [deletandoId, setDeletandoId] = useState(null);
 
+  const baixarTermoLgpd = async () => {
+    try {
+      const response = await membroService.baixarTermoLgpdEmBranco();
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'termo_lgpd_em_branco.pdf';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert('Não foi possível baixar o termo LGPD em branco.');
+    }
+  };
+
   const abrirNovo = () => {
     setMembroParaEditar(null);
     setMostrarModal(true);
@@ -71,6 +88,7 @@ export default function MembrosPage() {
           totalOriginal={membros.length}
           totalFiltrado={membrosFiltrados.length}
           onNovo={abrirNovo}
+          onBaixarTermoLgpd={baixarTermoLgpd}
         />
 
         {/* Barra de Ações da Lista */}

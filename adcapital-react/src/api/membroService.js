@@ -19,7 +19,10 @@ const membroService = {
     // Administração de Funções
     getFuncoes: () => api.get('/opcoes-funcao/'),
     excluirFuncao: (id) => api.delete(`/funcoes/${id}/`),
-    getGraus: () => api.get('/opcoes-parentesco/')
+    getGraus: () => api.get('/opcoes-parentesco/'),
+
+    baixarTermoLgpdEmBranco: () =>
+        api.get('/membros/termo-lgpd-em-branco/', { responseType: 'blob' }),
 };
 
 export default membroService;
