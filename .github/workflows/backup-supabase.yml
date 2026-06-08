@@ -38,7 +38,7 @@ jobs:
           python fast_backup.py
 
       - name: Upload backup artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: backup-adcapital-${{ github.run_id }}
           path: backup_adcapital.json
