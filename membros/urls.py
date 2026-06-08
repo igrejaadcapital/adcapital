@@ -8,7 +8,12 @@ from membros.api.configuracao import (
 )
 from membros.api.cron import resetar_senhas_em_massa, verificar_aniversarios
 from membros.api.funcoes import adicionar_funcao, buscar_opcoes_funcao, excluir_funcao
-from membros.api.membros_admin import MembroViewSet, download_termo_lgpd, download_termo_lgpd_em_branco
+from membros.api.membros_admin import (
+    AutoCadastroMembroView,
+    MembroViewSet,
+    download_termo_lgpd,
+    download_termo_lgpd_em_branco,
+)
 from membros.api.portal import ComentarioPalavraViewSet, DevocionalViewSet, MeusDadosView
 from membros.api.publico import (
     buscar_configuracao_publica,
@@ -18,13 +23,9 @@ from membros.api.publico import (
     init_publico,
     init_site,
     ultimo_video_youtube,
+    verificar_resposta_portal,
 )
 from membros.api.usuarios import ResetarSenhaView, TrocarSenhaView, UsuariosView
-
-from .view_public import (
-    portal_verificar_resposta_direto,
-    auto_cadastro_direto
-)
 
 # Router para a área administrativa e pública (ViewSets cuidam das permissões)
 router = DefaultRouter()
@@ -36,9 +37,9 @@ router.register(r'comentarios', ComentarioPalavraViewSet, basename='comentarios'
 router.register(r'devocionais', DevocionalViewSet, basename='devocionais')
 
 urlpatterns = [
-    # Rotas Públicas (Sem autenticação no prefixo /api/)
-    path('v/', portal_verificar_resposta_direto, name='portal_v'),
-    path('c/', auto_cadastro_direto, name='portal_c'),
+    # Auto-cadastro público (DRF — substitui view_public legado)
+    path('v/', verificar_resposta_portal, name='portal_v'),
+    path('c/', AutoCadastroMembroView.as_view(), name='portal_c'),
     
     # [ENDPOINTS CONSOLIDADOS - PERFORMANCE] Um request em vez de 3-5
     path('init-publico/', init_publico, name='init-publico'),

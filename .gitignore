@@ -41,3 +41,7 @@ Thumbs.db
 
 # Backup data
 backup_adcapital.json
+test_media/
+
+# Django collectstatic (gerado no deploy — não versionar)
+staticfiles/

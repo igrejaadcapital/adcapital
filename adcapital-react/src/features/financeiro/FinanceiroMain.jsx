@@ -1,4 +1,5 @@
 import StatusView from '../../shared/components/StatusView';
+import ConfirmDialog from '../../shared/components/ConfirmDialog';
 import { useState } from 'react';
 import LancamentoFinanceiroFormModal from './ModalLancamentosFinanceiro/LancamentoFinanceiroFormModal';
 import financeiroService from '../../api/financeiroService';
@@ -10,7 +11,6 @@ import { useCategoriasFinanceiras } from './useCategoriasFinanceiras';
 
 export default function FinanceiroMain() {
     const {
-        transacoes,
         transacoesFiltradas,
         buscaTexto, setBuscaTexto,
         buscaMes, setBuscaMes,
@@ -34,6 +34,7 @@ export default function FinanceiroMain() {
     const [lancamentoParaEditar, setLancamentoParaEditar] = useState(null);
     const [mostrarImportarOFX, setMostrarImportarOFX] = useState(false);
     const [mostrarExportarContabilidade, setMostrarExportarContabilidade] = useState(false);
+    const [lancamentoParaExcluir, setLancamentoParaExcluir] = useState(null);
 
     const abrirModalNovo = (tipo) => {
         setLancamentoParaEditar(null);
@@ -63,15 +64,15 @@ export default function FinanceiroMain() {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm("Deseja realmente excluir este lançamento?")) {
-            try {
-                await financeiroService.excluir(id);
-                atualizarTransacoes();
-            } catch(e) {
-                console.error(e);
-                alert("Erro ao remover.");
-            }
+    const confirmarExclusao = async () => {
+        if (!lancamentoParaExcluir) return;
+        try {
+            await financeiroService.excluir(lancamentoParaExcluir.id);
+            atualizarTransacoes();
+            setLancamentoParaExcluir(null);
+        } catch (e) {
+            console.error(e);
+            alert('Erro ao remover.');
         }
     };
 
@@ -256,7 +257,7 @@ export default function FinanceiroMain() {
                                             </svg>
                                         </button>
                                         <button
-                                            onClick={() => handleDelete(t.id)}
+                                            onClick={() => setLancamentoParaExcluir(t)}
                                             className="p-2 text-slate-400 hover:text-red-600 transition-all"
                                             title="Excluir"
                                         >
@@ -294,6 +295,21 @@ export default function FinanceiroMain() {
             <ExportarContabilidadeModal
                 isOpen={mostrarExportarContabilidade}
                 onClose={() => setMostrarExportarContabilidade(false)}
+            />
+
+            <ConfirmDialog
+                open={Boolean(lancamentoParaExcluir)}
+                title="Excluir lançamento?"
+                message={
+                    lancamentoParaExcluir
+                        ? `Deseja realmente excluir "${lancamentoParaExcluir.descricao || lancamentoParaExcluir.categoria}"?\n\nEsta ação é permanente.`
+                        : ''
+                }
+                confirmLabel="Sim, excluir"
+                cancelLabel="Cancelar"
+                danger
+                onConfirm={confirmarExclusao}
+                onCancel={() => setLancamentoParaExcluir(null)}
             />
         </div>
     );

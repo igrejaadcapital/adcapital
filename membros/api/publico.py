@@ -1,4 +1,5 @@
 """Endpoints públicos: site, auto-cadastro e buscas auxiliares."""
+import logging
 import urllib.request
 import xml.etree.ElementTree as ET
 
@@ -13,7 +14,9 @@ from agenda.serializers import ProgramacaoSemanalSerializer
 from membros.models import ConfiguracaoPortal, ConfiguracaoSite, FotoGaleria, Funcao, Membro, Parentesco
 from membros.serializers import ConfiguracaoSiteSerializer, FotoGaleriaSerializer
 from membros.services.keep_alive import garantir_keep_alive
-from membros.throttles import CurtidasRateThrottle
+from membros.throttles import CurtidasRateThrottle, PortalVerifyRateThrottle
+
+logger = logging.getLogger(__name__)
 
 
 @api_view(['GET'])
@@ -34,8 +37,8 @@ def init_publico(request):
             'graus': graus,
             'funcoes': funcoes_list,
         })
-    except Exception as e:
-        print(f'Erro em init_publico: {e}')
+    except Exception:
+        logger.exception('Erro em init_publico')
         return Response({
             'portal': {'is_ativo': True, 'pergunta': 'Qual o seu melhor amigo? (Modo Seguro)'},
             'graus': [{'id': f[0], 'nome': f[1]} for f in Parentesco.GRAU_CHOICES],
@@ -64,8 +67,8 @@ def init_site(request):
                 many=True,
             ).data,
         })
-    except Exception as e:
-        print(f'Erro em init_site: {e}')
+    except Exception:
+        logger.exception('Erro em init_site')
         return Response({'config': {}, 'programacao': [], 'galeria': []})
 
 
@@ -81,8 +84,9 @@ def curtir_palavra(request):
         config.curtidas_palavra += 1
         config.save()
         return Response({'success': True, 'curtidas_palavra': config.curtidas_palavra})
-    except Exception as e:
-        return Response({'error': str(e)}, status=500)
+    except Exception:
+        logger.exception('Erro em curtir_palavra')
+        return Response({'error': 'Erro interno no servidor.'}, status=500)
 
 
 @api_view(['GET'])
@@ -124,8 +128,9 @@ def ultimo_video_youtube(request):
         }
         cache.set(cache_key, data, 3600)
         return Response(data)
-    except Exception as e:
-        return Response({'error': str(e)}, status=500)
+    except Exception:
+        logger.exception('Erro em ultimo_video_youtube')
+        return Response({'error': 'Erro ao buscar vídeo.'}, status=500)
 
 
 @api_view(['GET'])
@@ -145,14 +150,15 @@ def buscar_configuracao_publica(request):
         if not config:
             return Response({'is_ativo': True, 'pergunta': 'Qual o seu melhor amigo?'})
         return Response({'is_ativo': config.is_ativo, 'pergunta': config.pergunta})
-    except Exception as e:
-        print(f'Erro ao buscar config pública: {e}')
+    except Exception:
+        logger.exception('Erro ao buscar config pública')
         return Response({'is_ativo': True, 'pergunta': 'Qual o seu melhor amigo? (Modo de Segurança)'})
 
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 @authentication_classes([])
+@throttle_classes([PortalVerifyRateThrottle])
 def verificar_resposta_portal(request):
     resposta_user = request.data.get('resposta', '').strip().lower()
     config = ConfiguracaoPortal.objects.filter(id=1).first()

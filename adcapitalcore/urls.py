@@ -2,7 +2,8 @@
 from django.contrib import admin
 from django.urls import path, include
 
-from membros.view_public import auto_cadastro_direto, portal_verificar_resposta_direto
+from membros.api.membros_admin import AutoCadastroMembroView
+from membros.api.publico import verificar_resposta_portal
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -14,8 +15,8 @@ urlpatterns = [
     path('api/', include('adcapitalcore.api_urls')),
 
     # Atalhos na raiz (links curtos históricos de cadastro)
-    path('v/', portal_verificar_resposta_direto, name='root_portal_v'),
-    path('c/', auto_cadastro_direto, name='root_portal_c'),
-    path('v', portal_verificar_resposta_direto),
-    path('c', auto_cadastro_direto),
+    path('v/', verificar_resposta_portal, name='root_portal_v'),
+    path('c/', AutoCadastroMembroView.as_view(), name='root_portal_c'),
+    path('v', verificar_resposta_portal),
+    path('c', AutoCadastroMembroView.as_view()),
 ]

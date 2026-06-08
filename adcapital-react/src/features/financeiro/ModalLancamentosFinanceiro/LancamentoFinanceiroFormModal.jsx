@@ -5,7 +5,6 @@ export default function LancamentoFinanceiroFormModal({ tipo, onClose, onSave, c
     const {
         formData,
         setFormData,
-        categorias: categoriasForm,
         valorExibicao,
         handleValorChange,
         handleSubmit

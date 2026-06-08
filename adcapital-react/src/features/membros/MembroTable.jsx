@@ -22,7 +22,7 @@ export default function MembroTable({ membros, onEdit, onDelete, deletandoId }) 
     try {
       const [ano, mes, dia] = dataStr.split('-');
       return `${dia}/${mes}/${ano}`;
-    } catch (e) {
+    } catch {
       return dataStr;
     }
   };

@@ -312,6 +312,32 @@ if not DEBUG:
     CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_HSTS_SECONDS = int(os.environ.get('SECURE_HSTS_SECONDS', '31536000'))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = os.environ.get('SECURE_HSTS_PRELOAD', 'True') == 'True'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '[{levelname}] {asctime} {name}: {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard',
+        },
+    },
+    'loggers': {
+        'membros': {'handlers': ['console'], 'level': 'INFO'},
+        'financeiro': {'handlers': ['console'], 'level': 'INFO'},
+        'agenda': {'handlers': ['console'], 'level': 'INFO'},
+        'analytics': {'handlers': ['console'], 'level': 'INFO'},
+    },
+}
 
 # Sentry (opcional — ative com SENTRY_DSN no Render)
 _sentry_dsn = os.environ.get('SENTRY_DSN', '').strip()

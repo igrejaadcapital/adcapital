@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint .",
+    "lint": "eslint src",
     "preview": "vite preview",
     "test": "vitest run",
     "build:mobile": "cross-env CAPACITOR_BUILD=true VITE_API_URL=https://api.adcapitaligreja.com.br/api/v1 vite build",

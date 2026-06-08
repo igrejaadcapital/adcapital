@@ -19,7 +19,7 @@ class CurtidasRateThrottle(AnonRateThrottle):
 
 
 class PortalVerifyRateThrottle(SimpleRateThrottle):
-    """Limite por IP nas rotas públicas legadas (view_public)."""
+    """Limite por IP nas rotas públicas de cadastro/portal."""
     scope = 'portal_verify'
 
     def get_cache_key(self, request, view):

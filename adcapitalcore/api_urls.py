@@ -8,7 +8,8 @@ from rest_framework_simplejwt.views import TokenRefreshView
 
 from analytics.dashboard_views import ConsolidatedDashboardView
 from membros.api.auth import CustomTokenObtainPairView, health_check, ping_view
-from membros.view_public import auto_cadastro_direto, portal_verificar_resposta_direto
+from membros.api.membros_admin import AutoCadastroMembroView
+from membros.api.publico import verificar_resposta_portal
 
 urlpatterns = [
     path('dashboard/resumo/', ConsolidatedDashboardView.as_view(), name='dashboard-resumo'),
@@ -17,10 +18,10 @@ urlpatterns = [
     path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     # Atalhos de cadastro público (api/v1/v/ e api/v1/c/)
-    path('v/', portal_verificar_resposta_direto, name='portal_v'),
-    path('c/', auto_cadastro_direto, name='portal_c'),
-    path('v', portal_verificar_resposta_direto),
-    path('c', auto_cadastro_direto),
+    path('v/', verificar_resposta_portal, name='portal_v'),
+    path('c/', AutoCadastroMembroView.as_view(), name='portal_c'),
+    path('v', verificar_resposta_portal),
+    path('c', AutoCadastroMembroView.as_view()),
     path('financeiro/', include('financeiro.urls')),
     path('agenda/', include('agenda.urls')),
     path('analytics/', include('analytics.urls')),

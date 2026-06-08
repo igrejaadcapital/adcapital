@@ -64,9 +64,10 @@ Este documento consolida todos os serviços e endereços que compõem o ecossist
 
 **Frontend (React 19)**
 
-- `adcapital-react/src/routes/` — React Router 7 (`BrowserRouter`), layouts admin/portal, guards por papel.
+- `adcapital-react/src/routes/` — React Router 7, layouts admin/portal, guards por papel.
+- `adcapital-react/src/main.jsx` — **`BrowserRouter` em dev**, **`HashRouter` em produção** (`/#/admin/...`); o host só precisa servir `index.html` na raiz.
 - `paths.js` — constantes de URL (base para app mobile).
-- Navegação por URL real (compartilhável, histórico do navegador, preparação Capacitor/React Native).
+- Navegação compartilhável em dev; em produção o hash evita 404 em refresh em hosts estáticos (Render, Capacitor).
 
 **Dependência nova:** `drf-spectacular` (documentação OpenAPI). Sem migrações de banco na Fase 1.
 

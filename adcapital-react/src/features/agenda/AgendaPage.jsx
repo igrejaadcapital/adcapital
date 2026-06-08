@@ -6,6 +6,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import ptBrLocale from '@fullcalendar/core/locales/pt-br';
 import StatusView from '../../shared/components/StatusView';
+import ConfirmDialog from '../../shared/components/ConfirmDialog';
 import { Loader2 } from 'lucide-react';
 
 export default function AgendaPage() {
@@ -13,6 +14,7 @@ export default function AgendaPage() {
   const [viewMode, setViewMode] = useState('calendar'); // 'calendar' ou 'list'
   const [loadingSync, setLoadingSync] = useState(false);
   const [deletandoId, setDeletandoId] = useState(null);
+  const [eventoParaExcluir, setEventoParaExcluir] = useState(null);
 
   const { 
     eventos, 
@@ -58,25 +60,22 @@ export default function AgendaPage() {
     borderColor: 'transparent'
   }));
 
-  const handleEventClick = async (info) => {
-    if (window.confirm(`Deseja excluir o evento "${info.event.title}"?`)) {
-      setDeletandoId(info.event.id);
-      try {
-        await deletarEvento(info.event.id);
-      } finally {
-        setDeletandoId(null);
-      }
-    }
+  const handleEventClick = (info) => {
+    setEventoParaExcluir({ id: info.event.id, titulo: info.event.title });
   };
 
-  const handleExcluirLista = async (id) => {
-    if (window.confirm('Deseja realmente excluir este evento?')) {
-      setDeletandoId(id);
-      try {
-         await deletarEvento(id);
-      } finally {
-         setDeletandoId(null);
-      }
+  const handleExcluirLista = (ev) => {
+    setEventoParaExcluir({ id: ev.id, titulo: ev.titulo });
+  };
+
+  const confirmarExclusaoEvento = async () => {
+    if (!eventoParaExcluir) return;
+    setDeletandoId(eventoParaExcluir.id);
+    try {
+      await deletarEvento(eventoParaExcluir.id);
+      setEventoParaExcluir(null);
+    } finally {
+      setDeletandoId(null);
     }
   };
 
@@ -204,6 +203,22 @@ export default function AgendaPage() {
           carregando={carregando}
         />
       )}
+
+      <ConfirmDialog
+        open={Boolean(eventoParaExcluir)}
+        title="Excluir evento?"
+        message={
+          eventoParaExcluir
+            ? `Deseja realmente excluir "${eventoParaExcluir.titulo}"?\n\nEsta ação é permanente.`
+            : ''
+        }
+        confirmLabel="Sim, excluir"
+        cancelLabel="Cancelar"
+        danger
+        loading={deletandoId === eventoParaExcluir?.id}
+        onConfirm={confirmarExclusaoEvento}
+        onCancel={() => !deletandoId && setEventoParaExcluir(null)}
+      />
     </div>
   );
 }
@@ -251,7 +266,7 @@ function ListItem({ ev, deletarEvento, editarEvento, deletandoId }) {
       </div>
       
       <button
-        onClick={() => deletarEvento(ev.id)}
+        onClick={() => deletarEvento(ev)}
         disabled={isDeleting}
         className={`px-5 py-2.5 font-bold text-xs uppercase tracking-wider rounded-xl transition-all active:scale-95 whitespace-nowrap self-start md:self-center flex items-center gap-2 ${
           isDeleting 

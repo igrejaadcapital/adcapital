@@ -40,7 +40,7 @@ export function AuthProvider({ children }) {
         setError('Credenciais incorretas ou sem permissão.');
         return false;
       }
-    } catch (err) {
+    } catch {
       // Se for erro de rede (cold start), retenta automaticamente
       if (attempt < maxAttempts) {
         setError(`Servidor iniciando... Tentativa ${attempt}/${maxAttempts}`);

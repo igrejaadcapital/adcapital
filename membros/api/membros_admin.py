@@ -1,10 +1,10 @@
 """CRUD administrativo de membros e auto-cadastro via API."""
-import threading
+import logging
 
 from django.shortcuts import redirect
 from django.utils import timezone
 from rest_framework import viewsets
-from rest_framework.decorators import api_view, permission_classes, action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import AllowAny
@@ -15,11 +15,13 @@ from membros.models import ConfiguracaoPortal, Membro
 from membros.permissions import IsAdminOrSecretario
 from membros.serializers import MembroSerializer
 from membros.services.acesso_service import garantir_acesso_membro
-from membros.services.cadastro_service import executar_tarefas_pos_cadastro
-from membros.services.lgpd_service import provisionar_termo_lgpd
+from membros.services.cadastro_service import finalizar_cadastro_publico
 from membros.contracts.parentesco import parse_parentescos_novo
 from membros.services.parentesco_service import salvar_parentescos
+from membros.services.lgpd_service import provisionar_termo_lgpd
 from membros.throttles import CadastroRateThrottle
+
+logger = logging.getLogger(__name__)
 
 
 class MembroPagination(PageNumberPagination):
@@ -69,14 +71,15 @@ class MembroViewSet(viewsets.ModelViewSet):
                 membro.save()
             elif not membro.lgpd_documento:
                 provisionar_termo_lgpd(membro, enviar_email=bool(membro.email))
-        except Exception as e:
-            print(f'Aviso: Erro ao processar LGPD no Admin: {e}')
+        except Exception as exc:
+            logger.warning('Erro ao processar LGPD no Admin (membro_id=%s): %s', membro.id, exc)
 
         parentescos_data = parse_parentescos_novo(self.request.data.get('parentescos_novo', []))
         salvar_parentescos(membro, parentescos_data)
 
 
 class AutoCadastroMembroView(APIView):
+    """Auto-cadastro público (DRF) — substitui view_public.auto_cadastro_direto."""
     permission_classes = [AllowAny]
     authentication_classes = []
     throttle_classes = [CadastroRateThrottle]
@@ -99,8 +102,13 @@ class AutoCadastroMembroView(APIView):
 
             cpf_limpo = ''.join(filter(str.isdigit, cpf_original))
             membro_existente = Membro.objects.filter(cpf=cpf_limpo).first()
+
             if membro_existente:
-                serializer = MembroSerializer(membro_existente, data=request.data, partial=True)
+                data_limpa = {
+                    k: v for k, v in request.data.items()
+                    if v not in (None, '', 'null', 'undefined')
+                }
+                serializer = MembroSerializer(membro_existente, data=data_limpa, partial=True)
             else:
                 serializer = MembroSerializer(data=request.data)
 
@@ -108,26 +116,19 @@ class AutoCadastroMembroView(APIView):
                 return Response(serializer.errors, status=400)
 
             membro = serializer.save()
-            garantir_acesso_membro(membro)
             parentescos_data = parse_parentescos_novo(request.data.get('parentescos_novo', []))
-
-            threading.Thread(
-                target=executar_tarefas_pos_cadastro,
-                args=(membro.id, parentescos_data),
-                daemon=True,
-            ).start()
+            lgpd_url = finalizar_cadastro_publico(membro, parentescos_data)
 
             return Response({
                 'success': True,
-                'message': (
-                    'Cadastro recebido! O processamento do seu termo LGPD está sendo '
-                    'finalizado em segundo plano.'
-                ),
+                'message': 'Cadastro salvo!',
                 'id': membro.id,
                 'is_update': membro_existente is not None,
+                'lgpd_url': lgpd_url,
             })
-        except Exception as e:
-            return Response({'error': 'Erro interno no servidor.', 'detail': str(e)}, status=500)
+        except Exception:
+            logger.exception('Erro no auto-cadastro público')
+            return Response({'error': 'Erro interno no servidor.'}, status=500)
 
 
 @api_view(['GET'])

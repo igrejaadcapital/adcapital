@@ -81,4 +81,4 @@ Ver `docs/ROLLBACK-FASE-1.md` e tag `prod-pre-fase1-20260522`.
 ## Ordem sugerida agora
 
 1. Manter CI verde em novos PRs (`pytest` + `vitest`).
-2. Opcional: remover pasta `adcapitalapp/` após revisão final.
+2. ~~Opcional: remover pasta `adcapitalapp/` após revisão final.~~ (feito na Fase 5)

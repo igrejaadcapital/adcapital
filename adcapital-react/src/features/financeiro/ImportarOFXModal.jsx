@@ -23,7 +23,7 @@ export default function ImportarOFXModal({ isOpen, onClose, onSuccess, categoria
       });
       setTransacoes(res.data);
       setSelecionadas(res.data.map(t => t.id_ofx));
-    } catch (err) {
+    } catch {
       alert("Erro ao ler arquivo OFX.");
     } finally {
       setLoading(false);
@@ -45,7 +45,7 @@ export default function ImportarOFXModal({ isOpen, onClose, onSuccess, categoria
       }
       onSuccess();
       onClose();
-    } catch (err) {
+    } catch {
       alert("Erro ao salvar transações.");
     } finally {
       setLoading(false);

@@ -52,13 +52,12 @@ export default function SettingsPage() {
   });
   const [programacao, setProgramacao] = useState([]);
   const [galeria, setGaleria] = useState([]);
-  const [editProg, setEditProg] = useState(null);
   const [novaProg, setNovaProg] = useState({ dia_semana: 0, titulo: '', horario: '', ordem: 0 });
   const [comentarios, setComentarios] = useState([]);
   const [devocionais, setDevocionais] = useState([]);
   const [novaDevocional, setNovaDevocional] = useState({ titulo: '', conteudo: '', autor: 'Pastor', is_ativo: true });
   const [deletandoId, setDeletandoId] = useState(null);
-  const [sucesso, setSucesso] = useState(false);
+  const [, setSucesso] = useState(false);
 
   const carregarDados = async () => {
     try {

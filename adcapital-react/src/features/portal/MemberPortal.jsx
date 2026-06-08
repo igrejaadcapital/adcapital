@@ -112,7 +112,7 @@ export default function MemberPortal({ abaAtiva = 'mensagens' }) {
       setMensagem({ type: 'success', text: 'Dados atualizados com sucesso!' });
       setEditando(false);
       carregarDados();
-    } catch (err) {
+    } catch {
       setMensagem({ type: 'error', text: 'Erro ao atualizar dados.' });
     } finally {
       setLoading(false);
@@ -153,7 +153,7 @@ export default function MemberPortal({ abaAtiva = 'mensagens' }) {
       await configuracaoService.trocarSenha(novaSenha);
       setMensagem({ type: 'success', text: 'Senha alterada com sucesso!' });
       setNovaSenha('');
-    } catch (err) {
+    } catch {
       setMensagem({ type: 'error', text: 'Erro ao trocar senha.' });
     } finally {
       setCarregandoSenha(false);

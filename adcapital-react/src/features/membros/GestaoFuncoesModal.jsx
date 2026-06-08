@@ -8,7 +8,7 @@ export default function GestaoFuncoesModal({ funcoes, onClose, onSuccess }) {
                 await membroService.excluirFuncao(id);
                 if (onSuccess) await onSuccess();
                 alert('Função excluída com sucesso!');
-            } catch (err) {
+            } catch {
                 alert('Erro ao excluir função. Verifique se ela está sendo usada como padrão do sistema.');
             }
         }

@@ -47,7 +47,7 @@ const LandingPage = () => {
   const [novoNome, setNovoNome] = useState('');
   const [novoTexto, setNovoTexto] = useState('');
   const [enviando, setEnviando] = useState(false);
-  const [devocionais, setDevocionais] = useState([]);
+  const [, setDevocionais] = useState([]);
 
   const fetchComentarios = async () => {
     try {
@@ -75,7 +75,7 @@ const LandingPage = () => {
       setComentarios([res.data, ...comentarios]);
       setNovoNome('');
       setNovoTexto('');
-    } catch (err) {
+    } catch {
       alert("Erro ao enviar comentário.");
     } finally {
       setEnviando(false);

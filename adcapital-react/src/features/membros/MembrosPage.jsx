@@ -39,7 +39,7 @@ export default function MembrosPage() {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-    } catch (err) {
+    } catch {
       alert('Não foi possível baixar o termo LGPD em branco.');
     }
   };
