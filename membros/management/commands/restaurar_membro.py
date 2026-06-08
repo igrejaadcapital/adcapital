@@ -108,8 +108,13 @@ class Command(BaseCommand):
                 )
 
             if not options['sem_termo'] and not membro.lgpd_documento:
-                if provisionar_termo_lgpd(membro, enviar_email=bool(membro.email)):
-                    self.stdout.write('Termo LGPD gerado.')
+                try:
+                    if provisionar_termo_lgpd(membro, enviar_email=bool(membro.email)):
+                        self.stdout.write('Termo LGPD gerado.')
+                except Exception as exc:
+                    self.stdout.write(
+                        self.style.WARNING(f'Termo LGPD não gerado (cadastro já restaurado): {exc}')
+                    )
 
         self.stdout.write(
             self.style.SUCCESS(
