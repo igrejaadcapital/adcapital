@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../../api/config';
 
 export default function ParentescoFormPublico({
-    formData, graus, atualizarParentesco, adicionarParentesco, removerParentesco
+    formData, graus, atualizarParentesco, adicionarParentesco, removerParentesco, portalToken
 }) {
     const [indiceFoco, setIndiceFoco] = useState(null);
     const [resultadosBusca, setResultadosBusca] = useState({});
@@ -14,14 +14,16 @@ export default function ParentescoFormPublico({
         if (indiceFoco === null) return;
         
         const p = formData.parentescos_novo[indiceFoco];
-        if (!p || !p.busca_termo || p.busca_termo.length < 3 || p.parente_id) {
+        if (!p || !p.busca_termo || p.busca_termo.length < 3 || p.parente_id || !portalToken) {
             return;
         }
 
         const delayDebounceFn = setTimeout(async () => {
             setLoadingBusca(true);
             try {
-                const res = await api.get(`/opcoes-membros-busca/?q=${encodeURIComponent(p.busca_termo)}`);
+                const res = await api.get(`/opcoes-membros-busca/?q=${encodeURIComponent(p.busca_termo)}`, {
+                    headers: { 'X-Portal-Token': portalToken },
+                });
                 setResultadosBusca(prev => ({
                     ...prev,
                     [indiceFoco]: res.data
@@ -34,7 +36,7 @@ export default function ParentescoFormPublico({
         }, 500); // 500ms debounce
 
         return () => clearTimeout(delayDebounceFn);
-    }, [indiceFoco, formData.parentescos_novo]);
+    }, [indiceFoco, formData.parentescos_novo, portalToken]);
 
     return (
         <div className="pt-6 border-t border-slate-100 mt-6">

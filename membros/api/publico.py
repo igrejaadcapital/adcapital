@@ -14,7 +14,8 @@ from agenda.serializers import ProgramacaoSemanalSerializer
 from membros.models import ConfiguracaoPortal, ConfiguracaoSite, FotoGaleria, Funcao, Membro, Parentesco
 from membros.serializers import ConfiguracaoSiteSerializer, FotoGaleriaSerializer
 from membros.services.keep_alive import garantir_keep_alive
-from membros.throttles import CurtidasRateThrottle, PortalVerifyRateThrottle
+from membros.services.portal_token_service import emitir_token_portal, validar_token_portal
+from membros.throttles import CurtidasRateThrottle, MembrosBuscaRateThrottle, PortalVerifyRateThrottle
 
 logger = logging.getLogger(__name__)
 
@@ -167,16 +168,30 @@ def verificar_resposta_portal(request):
     if not is_ativo:
         return Response({'error': 'O portal de cadastro está desativado no momento.'}, status=403)
     if resposta_user == resposta_correta:
-        return Response({'success': True})
+        return Response({'success': True, 'portal_token': emitir_token_portal()})
     return Response({'success': False, 'error': "Resposta incorreta. Dica: Tente 'Jesus'."}, status=401)
 
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 @authentication_classes([])
+@throttle_classes([MembrosBuscaRateThrottle])
 def buscar_membros_autocomplete_publico(request):
+    token = (
+        request.headers.get('X-Portal-Token')
+        or request.META.get('HTTP_X_PORTAL_TOKEN')
+        or request.GET.get('portal_token', '')
+    )
+    if not validar_token_portal(token):
+        return Response(
+            {'error': 'Verifique a pergunta de segurança antes de buscar parentes.'},
+            status=403,
+        )
     query = request.GET.get('q', '').strip()
     if len(query) < 3:
         return Response([])
-    membros = Membro.objects.filter(nome__icontains=query).order_by('nome')[:10]
+    membros = (
+        Membro.objects.filter(nome__icontains=query, status='LIGADO')
+        .order_by('nome')[:10]
+    )
     return Response([{'id': m.id, 'nome': m.nome} for m in membros])

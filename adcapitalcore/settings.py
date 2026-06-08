@@ -266,6 +266,7 @@ REST_FRAMEWORK = {
         'reset_senha': '5/hour',
         'curtidas': '30/hour',
         'portal_verify': '20/minute',
+        'membros_busca': '30/minute',
     },
 }
 

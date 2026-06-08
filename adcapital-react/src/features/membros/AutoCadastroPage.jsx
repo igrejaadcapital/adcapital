@@ -23,6 +23,7 @@ export default function AutoCadastroPage() {
     ]);
 
     const [step, setStep] = useState('challenge'); // 'challenge', 'form', 'success'
+    const [portalToken, setPortalToken] = useState('');
     const [resposta, setResposta] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -100,6 +101,7 @@ export default function AutoCadastroPage() {
             const res = await api.post(`/v/`, { resposta });
             
             if (res.data && res.data.success === true) {
+                setPortalToken(res.data.portal_token || '');
                 setStep('form');
             } else {
                 setError(res.data?.error || "Resposta incorreta.");
@@ -327,6 +329,7 @@ export default function AutoCadastroPage() {
                     <ParentescoFormPublico 
                         formData={formData}
                         graus={graus}
+                        portalToken={portalToken}
                         atualizarParentesco={atualizarParentesco}
                         adicionarParentesco={adicionarParentesco}
                         removerParentesco={removerParentesco}

@@ -27,3 +27,14 @@ class PortalVerifyRateThrottle(SimpleRateThrottle):
             return None
         ident = self.get_ident(request)
         return self.cache_format % {'scope': self.scope, 'ident': ident}
+
+
+class MembrosBuscaRateThrottle(SimpleRateThrottle):
+    """Limite por IP na busca de membros durante auto-cadastro."""
+    scope = 'membros_busca'
+
+    def get_cache_key(self, request, view):
+        if request.user and request.user.is_authenticated:
+            return None
+        ident = self.get_ident(request)
+        return self.cache_format % {'scope': self.scope, 'ident': ident}

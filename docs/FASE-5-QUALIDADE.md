@@ -21,8 +21,9 @@ Melhorias aplicadas após auditoria de código (jun/2026).
 ## Backlog (próximas iterações)
 
 - [x] Remover pasta `adcapitalapp/` após revisão final
+- [x] Cobertura mínima no CI (`pytest-cov`, limiar 35%)
+- [x] Revisar autocomplete público de membros (LGPD — token após verificação)
+- [x] `staticfiles/` removido do versionamento Git
 - [ ] Dividir `SettingsPage.jsx` e `LandingPage.jsx`
-- [ ] Cobertura mínima no CI (`pytest-cov`)
 - [ ] TypeScript gradual em `api/` e hooks
 - [ ] Retirar prefixo legado `/api/` quando todos os clientes usarem `/api/v1/`
-- [ ] Revisar autocomplete público de membros (LGPD)

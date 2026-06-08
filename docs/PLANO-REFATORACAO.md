@@ -11,6 +11,7 @@ Status atualizado após **Fase 1** em produção (maio/2026).
 | **2** | Front moderno (Query, UX mobile, pastas) | Concluída |
 | **3** | Android (PWA + Capacitor) | Concluída |
 | **4** | CI, staging, observabilidade | Concluída |
+| **5** | Qualidade, LGPD público, limpeza legado | Concluída |
 
 ---
 
