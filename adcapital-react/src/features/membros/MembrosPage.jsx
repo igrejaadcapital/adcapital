@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import StatusView from '../../shared/components/StatusView';
 import Header from '../../shared/components/Header';
+import ConfirmDialog from '../../shared/components/ConfirmDialog';
 import MembroCard from './MembroCard';
 import MembroTable from './MembroTable';
 import CadastroMainFormModal from './ModalCadastro/CadastroMainFormModal';
@@ -24,6 +25,7 @@ export default function MembrosPage() {
   const [membroParaEditar, setMembroParaEditar] = useState(null);
   const [viewType, setViewType] = useState('list'); // 'list' ou 'grid'
   const [deletandoId, setDeletandoId] = useState(null);
+  const [membroParaExcluir, setMembroParaExcluir] = useState(null);
 
   const baixarTermoLgpd = async () => {
     try {
@@ -52,18 +54,22 @@ export default function MembrosPage() {
     setMostrarModal(true);
   };
 
-  const handleExcluir = async (id) => {
-    if (window.confirm('Deseja realmente excluir este membro?')) {
-      setDeletandoId(id);
-      try {
-        await membroService.excluir(id);
-        await carregarDados();
-      } catch (err) {
-        console.error(err);
-        alert('Erro técnico ao excluir.');
-      } finally {
-        setDeletandoId(null);
-      }
+  const solicitarExcluir = (membro) => {
+    setMembroParaExcluir(membro);
+  };
+
+  const confirmarExcluir = async () => {
+    if (!membroParaExcluir) return;
+    setDeletandoId(membroParaExcluir.id);
+    try {
+      await membroService.excluir(membroParaExcluir.id);
+      await carregarDados();
+      setMembroParaExcluir(null);
+    } catch (err) {
+      console.error(err);
+      alert('Erro técnico ao excluir.');
+    } finally {
+      setDeletandoId(null);
     }
   };
 
@@ -123,7 +129,7 @@ export default function MembrosPage() {
                 m={m}
                 graus={graus}
                 onEdit={() => abrirEdicao(m)}
-                onDelete={() => handleExcluir(m.id)}
+                onDelete={() => solicitarExcluir(m)}
                 deletandoId={deletandoId}
               />
             ))}
@@ -132,7 +138,7 @@ export default function MembrosPage() {
           <MembroTable 
             membros={membrosFiltrados} 
             onEdit={abrirEdicao} 
-            onDelete={handleExcluir} 
+            onDelete={solicitarExcluir} 
             deletandoId={deletandoId}
           />
         )}
@@ -148,6 +154,22 @@ export default function MembrosPage() {
           onSuccess={carregarDados}
         />
       )}
+
+      <ConfirmDialog
+        open={Boolean(membroParaExcluir)}
+        title="Excluir membro?"
+        message={
+          membroParaExcluir
+            ? `Deseja realmente excluir o cadastro de ${membroParaExcluir.nome}?\n\nEsta ação é permanente e não pode ser desfeita pelo sistema.`
+            : ''
+        }
+        confirmLabel="Sim, excluir"
+        cancelLabel="Cancelar"
+        danger
+        loading={deletandoId === membroParaExcluir?.id}
+        onConfirm={confirmarExcluir}
+        onCancel={() => !deletandoId && setMembroParaExcluir(null)}
+      />
     </>
   );
 }

@@ -148,7 +148,7 @@ export default function MembroTable({ membros, onEdit, onDelete, deletandoId }) 
                       ✏️
                     </button>
                     <button
-                      onClick={() => onDelete(m.id)}
+                      onClick={() => onDelete(m)}
                       disabled={isDeleting}
                       className={`p-1.5 rounded-lg border transition-all shadow-sm flex items-center justify-center min-w-[34px] ${
                         isDeleting 
