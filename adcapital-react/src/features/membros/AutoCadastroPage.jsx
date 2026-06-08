@@ -6,9 +6,6 @@ import MembroFormFields from './MembroFormFields';
 import ParentescoFormPublico from './ParentescoFormPublico';
 import { Loader2 } from 'lucide-react';
 
-// URL Base da API (FIXA para evitar confusão de domínios)
-const BASE_HOST = 'https://api.adcapitaligreja.com.br/api';
-
 export default function AutoCadastroPage() {
     const [pergunta, setPergunta] = useState('Qual o seu melhor amigo?');
     const [portalAtivo, setPortalAtivo] = useState(true);

@@ -27,3 +27,14 @@ class ApiV1RoutesTests(TestCase):
     def test_debug_migrate_still_404_on_both_prefixes(self):
         for path in ('/api/debug/migrate/', '/api/v1/debug/migrate/'):
             self.assertEqual(self.client.get(path).status_code, 404)
+
+    def test_legacy_prefix_returns_deprecation_header(self):
+        response = self.client.get('/api/ping/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Deprecation'], 'true')
+        self.assertIn('successor-version', response['Link'])
+
+    def test_v1_prefix_without_deprecation_header(self):
+        response = self.client.get('/api/v1/ping/')
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn('Deprecation', response)

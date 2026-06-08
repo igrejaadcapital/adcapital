@@ -12,6 +12,7 @@ Status atualizado após **Fase 1** em produção (maio/2026).
 | **3** | Android (PWA + Capacitor) | Concluída |
 | **4** | CI, staging, observabilidade | Concluída |
 | **5** | Qualidade, LGPD público, limpeza legado | Concluída |
+| **6** | Refatoração front, TS gradual, API v1 | Em andamento |
 
 ---
 

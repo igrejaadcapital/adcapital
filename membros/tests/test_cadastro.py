@@ -30,7 +30,7 @@ class CadastroMembroTestCase(TestCase):
 
     def test_cadastro_sucesso(self):
         """Testa se o cadastro funciona corretamente com dados válidos"""
-        res = self.client.post('/api/c/', json.dumps(self.payload_valido), content_type='application/json')
+        res = self.client.post('/api/v1/c/', json.dumps(self.payload_valido), content_type='application/json')
         self.assertEqual(res.status_code, 200)
         data = res.json()
         self.assertTrue(data.get('success'))
@@ -44,7 +44,7 @@ class CadastroMembroTestCase(TestCase):
         payload = self.payload_valido.copy()
         payload['sync_resposta'] = 'errada'
         
-        res = self.client.post('/api/c/', json.dumps(payload), content_type='application/json')
+        res = self.client.post('/api/v1/c/', json.dumps(payload), content_type='application/json')
         self.assertEqual(res.status_code, 401)
         data = res.json()
         self.assertIn('Acesso negado', data.get('error', ''))
@@ -66,7 +66,7 @@ class CadastroMembroTestCase(TestCase):
             # Omitindo o e-mail propositalmente para ver se não é apagado
         }
 
-        res = self.client.post('/api/c/', json.dumps(payload_patch), content_type='application/json')
+        res = self.client.post('/api/v1/c/', json.dumps(payload_patch), content_type='application/json')
         self.assertEqual(res.status_code, 200)
 
         # Verifica se o nome mudou mas o email continuou o mesmo

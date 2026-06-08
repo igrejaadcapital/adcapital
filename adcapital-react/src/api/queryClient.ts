@@ -4,7 +4,7 @@ import { QueryClient } from '@tanstack/react-query';
  * Retry para cold start da API no Render Free.
  * Erros 401/403 não devem repetir (auth/permissão).
  */
-function shouldRetry(failureCount, error) {
+function shouldRetry(failureCount: number, error: { response?: { status?: number } }): boolean {
   const status = error?.response?.status;
   if (status === 401 || status === 403 || status === 404) {
     return false;
@@ -27,18 +27,18 @@ export const queryClient = new QueryClient({
 });
 
 export const agendaKeys = {
-  eventos: ['agenda', 'eventos'],
-  status: ['agenda', 'status'],
+  eventos: ['agenda', 'eventos'] as const,
+  status: ['agenda', 'status'] as const,
 };
 
 export const membrosKeys = {
-  lista: ['membros', 'lista'],
+  lista: ['membros', 'lista'] as const,
 };
 
 export const financeiroKeys = {
-  painel: ['financeiro', 'painel'],
+  painel: ['financeiro', 'painel'] as const,
 };
 
 export const dashboardKeys = {
-  resumo: ['dashboard', 'resumo'],
+  resumo: ['dashboard', 'resumo'] as const,
 };

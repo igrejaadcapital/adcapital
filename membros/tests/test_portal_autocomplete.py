@@ -28,18 +28,18 @@ class PortalAutocompleteLgpdTests(TestCase):
         )
 
     def test_busca_sem_token_retorna_403(self):
-        res = self.client.get('/api/opcoes-membros-busca/?q=maria')
+        res = self.client.get('/api/v1/opcoes-membros-busca/?q=maria')
         self.assertEqual(res.status_code, 403)
 
     def test_verificacao_portal_retorna_token(self):
-        res = self.client.post('/api/v/', {'resposta': 'Jesus'}, format='json')
+        res = self.client.post('/api/v1/v/', {'resposta': 'Jesus'}, format='json')
         self.assertEqual(res.status_code, 200)
         self.assertTrue(res.json().get('portal_token'))
 
     def test_busca_com_token_retorna_apenas_ligados(self):
         token = emitir_token_portal()
         res = self.client.get(
-            '/api/opcoes-membros-busca/?q=maria',
+            '/api/v1/opcoes-membros-busca/?q=maria',
             HTTP_X_PORTAL_TOKEN=token,
         )
         self.assertEqual(res.status_code, 200)
