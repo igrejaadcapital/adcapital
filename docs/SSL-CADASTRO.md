@@ -1,5 +1,7 @@
 # SSL — `cadastro.adcapitaligreja.com.br`
 
+Guia para renovar o certificado do subdomínio de **auto-cadastro**.
+
 ## Sintoma
 
 Smoke test (`scripts/smoke_producao.py`) falha com:
@@ -8,25 +10,84 @@ Smoke test (`scripts/smoke_producao.py`) falha com:
 certificate verify failed: certificate has expired
 ```
 
-O subdomínio passa pelo **Cloudflare** (proxy) e aponta para o serviço estático **Render** (`adcapital-web` ou site dedicado de cadastro).
+Outros hosts (`sistema.`, `api.`) costumam estar OK — o problema é específico do registro DNS `cadastro`.
 
-## Correção (Cloudflare)
+## Arquitetura DNS
 
-1. Acesse [dash.cloudflare.com](https://dash.cloudflare.com) → zona `adcapitaligreja.com.br`.
-2. **SSL/TLS** → **Edge Certificates** → confirme que **Universal SSL** está **Active**.
-3. Se expirado, use **Order Advanced Certificate** ou **Disable Universal → Re-enable** para forçar reemissão (aguarde até 24 h).
-4. **SSL/TLS** → **Overview** → modo recomendado: **Full (strict)** se a origem Render tiver certificado válido; **Full** se a origem só aceitar HTTP internamente.
-5. **DNS** → registro `cadastro` → proxy laranja (proxied) ativo.
+```
+Visitante → Cloudflare (proxy laranja) → Render adcapital-web (static site)
+```
+
+O certificado que o navegador valida é o **Edge Certificate** do Cloudflare, não o do Render.
+
+## Passo a passo — Cloudflare
+
+Conta: **igrejaadcapital@gmail.com** → [dash.cloudflare.com](https://dash.cloudflare.com)
+
+### 1. Confirmar o registro DNS
+
+1. Zona **adcapitaligreja.com.br** → **DNS** → **Records**.
+2. Localize o registro **cadastro** (tipo CNAME ou A).
+3. **Proxy status** deve estar **Proxied** (nuvem laranja).
+4. Destino típico: hostname do Render (`*.onrender.com` ou custom domain do `adcapital-web`).
+
+### 2. Verificar Universal SSL
+
+1. **SSL/TLS** → **Edge Certificates**.
+2. Em **Universal SSL**, status deve ser **Active**.
+3. Se **Expired** ou ausente:
+   - Clique em **Disable Universal SSL**, aguarde 1–2 min.
+   - Clique em **Enable Universal SSL**.
+   - Aguarde reemissão (minutos a 24 h).
+
+### 3. Modo SSL (Overview)
+
+1. **SSL/TLS** → **Overview**.
+2. Modo recomendado para Render:
+   - **Full** — se a origem Render aceitar HTTPS com certificado válido.
+   - **Full (strict)** — se o custom domain no Render tiver certificado Let's Encrypt ativo.
+3. Evite **Flexible** em produção (criptografia só até o Cloudflare).
+
+### 4. Certificado avançado (se Universal falhar)
+
+1. **SSL/TLS** → **Edge Certificates** → **Order Advanced Certificate**.
+2. Hostnames: `cadastro.adcapitaligreja.com.br` (ou `*.adcapitaligreja.com.br`).
+3. Aguarde status **Active**.
+
+### 5. Render (origem)
+
+1. [dashboard.render.com](https://dashboard.render.com) → **adcapital-web**.
+2. **Settings** → **Custom Domains** → confirme `cadastro.adcapitaligreja.com.br` listado e **Verified**.
+3. Se não estiver, adicione o domínio e siga as instruções de DNS do Render.
 
 ## Verificação
 
-```bash
+### PowerShell / terminal
+
+```powershell
 curl.exe -vI https://cadastro.adcapitaligreja.com.br/
-python scripts/smoke_producao.py
 ```
 
-Após renovação, o item `cadastro.adcapitaligreja.com.br carrega` deve passar.
+Procure `SSL certificate verify ok` ou status HTTP **200** sem erro de certificado.
 
-## Nota
+### Smoke test completo
 
-A API (`api.adcapitaligreja.com.br`) e o sistema admin (`sistema.adcapitaligreja.com.br`) não são afetados — apenas o host de auto-cadastro.
+```powershell
+.\venv\Scripts\python.exe scripts\smoke_producao.py
+```
+
+O item `cadastro.adcapitaligreja.com.br carrega` deve passar.
+
+### Navegador
+
+Abra https://cadastro.adcapitaligreja.com.br/ — cadeado verde, formulário de pergunta de segurança do auto-cadastro.
+
+## Propagação
+
+Após reemitir no Cloudflare, pode levar **5–30 minutos** (raro até 24 h). Limpe cache do navegador ou teste em aba anônima.
+
+## Referências no projeto
+
+- URLs: `ARQUITETURA.md`
+- Wiki: Configurações → Wiki → alerta SSL
+- Smoke: `scripts/smoke_producao.py`

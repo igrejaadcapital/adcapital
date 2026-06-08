@@ -27,7 +27,7 @@ Este documento consolida todos os serviços e endereços que compõem o ecossist
 | `cadastro.adcapitaligreja.com.br` | **Auto-cadastro público** | Novos membros |
 | `sistema.adcapitaligreja.com.br/cadastro` | Auto-cadastro (mesmo app, rota alternativa) | Novos membros |
 | `api.adcapitaligreja.com.br/api/v1/` | **API REST versionada** (contrato estável) | Front, cron, futuro app mobile |
-| `api.adcapitaligreja.com.br/api/` | **API legado** (mesmas rotas; compatibilidade) | Clientes antigos |
+| `api.adcapitaligreja.com.br/api/` | **API legado** (depreciada; sunset Dez/2026) | Evitar em clientes novos |
 | `api.adcapitaligreja.com.br/api/v1/docs/` | **Swagger UI** (OpenAPI) | TI / desenvolvimento |
 | `api.adcapitaligreja.com.br/api/v1/schema/` | **Esquema OpenAPI 3** | TI / integrações |
 | `api.adcapitaligreja.com.br/admin` | **Django Admin** (manual) | Superusuário / TI |
@@ -70,6 +70,52 @@ Este documento consolida todos os serviços e endereços que compõem o ecossist
 - Navegação compartilhável em dev; em produção o hash evita 404 em refresh em hosts estáticos (Render, Capacitor).
 
 **Dependência nova:** `drf-spectacular` (documentação OpenAPI). Sem migrações de banco na Fase 1.
+
+### 📋 Roadmap de fases (resumo)
+
+| Fase | Foco | Status |
+|------|------|--------|
+| **0** | Segurança (CORS, RBAC, JWT, cron) | Concluída |
+| **1** | API v1, OpenAPI, React Router, modularização `membros` | Concluída |
+| **2** | TanStack Query, `features/`, UX mobile | Concluída |
+| **3** | PWA + Capacitor Android | Concluída |
+| **4** | CI, staging, Sentry, backup automático | Concluída |
+| **5** | Qualidade: DRF público, HSTS, ESLint, LGPD autocomplete | Concluída |
+| **6** | Refatoração front, TS gradual, deprecação `/api/` | Em andamento |
+
+Detalhes: `docs/PLANO-REFATORACAO.md`, `docs/FASE-5-QUALIDADE.md`, `docs/FASE-6-EVOLUCAO.md`.
+
+### ✅ Fases 5–6 — Melhorias em produção (2026)
+
+**Cadastro e LGPD**
+
+- Cadastro pelo **admin** (`MembroViewSet`) chama `garantir_acesso_membro()` e `provisionar_termo_lgpd()` ao salvar.
+- Cadastro **público** unificado no DRF (`AutoCadastroMembroView`, `/api/v1/c/`).
+- Busca de parentes no auto-cadastro exige `portal_token` (após pergunta de segurança) — ver `membros/services/portal_token_service.py`.
+- Termo LGPD em branco para impressão: `GET /api/v1/membros/termo-lgpd-em-branco/`.
+- Restauração de membro excluído: `python manage.py restaurar_membro --cpf ...`.
+
+**Qualidade e operação**
+
+- CI: `pytest` com cobertura mínima 35%, `vitest`, `eslint src`, `npm run build`.
+- Comando de auditoria: `python manage.py auditar_acesso_lgpd`.
+- Prefixo legado `/api/` retorna header `Deprecation` (middleware em `adcapitalcore/middleware.py`).
+- App legado `adcapitalapp/` **removido** do repositório (Fase 5).
+- `staticfiles/` fora do versionamento Git.
+
+**Frontend**
+
+- `SettingsPage` e `LandingPage` divididos em módulos (`settings/`, `landing/sections/`).
+- TypeScript inicial: `src/config/apiBase.ts`, `src/api/queryClient.ts`.
+- `HashRouter` em produção; `BrowserRouter` em dev (`main.jsx`).
+
+**Pendências conhecidas**
+
+| Item | Ação |
+|------|------|
+| SSL `cadastro.adcapitaligreja.com.br` | Renovar no Cloudflare — `docs/SSL-CADASTRO.md` |
+| JWT em `localStorage` | Migrar para cookie httpOnly (backlog Fase 6) |
+| Remover `/api/` legado | Após Dez/2026 |
 
 ### 🔄 Rollback de produção
 
@@ -175,9 +221,25 @@ O sistema implementa um controle de acesso rigoroso baseado em cargos:
 ### 👤 Portal do Membro (Auto-serviço)
 
 Uma das maiores inovações do sistema é o portal onde o próprio membro gerencia sua ficha:
-*   **Acesso Simplificado:** Login via CPF e senha pessoal.
+*   **Acesso Simplificado:** Login via CPF (só dígitos) e senha pessoal.
+*   **Senha padrão** (novos acessos): `Adcapital` + 5 primeiros dígitos do CPF (ex.: CPF `01561969648` → `Adcapital01561`).
 *   **Atualização em Tempo Real:** O membro pode corrigir telefone, e-mail, endereço e cargo eclesiástico.
 *   **Transparência:** Visualização de vínculos familiares e status de regularidade.
+
+**Provisionamento automático (admin e público)**
+
+| Momento | Login (`User`) | Termo LGPD (PDF) |
+|---------|----------------|------------------|
+| Cadastro pelo admin | `garantir_acesso_membro()` no save | `provisionar_termo_lgpd()` se ainda não houver arquivo |
+| Auto-cadastro público | `finalizar_cadastro_publico()` | PDF gerado + e-mail em background (se houver e-mail) |
+
+**Auditoria periódica** (recomendado após cadastros em lote):
+
+```powershell
+python manage.py auditar_acesso_lgpd
+python manage.py gerar_acessos_membros   # se houver sem login
+python manage.py gerar_termos_lgpd         # se houver sem PDF
+```
 
 ---
 
@@ -237,5 +299,11 @@ Para alterar a conta de recebimento, basta atualizar essa chave no painel do Ren
 
 Confere ping/health em `/api/v1/`, legado `/api/`, login JWT, RBAC e frontends públicos.
 
+**SSL do auto-cadastro:** se `cadastro.adcapitaligreja.com.br` falhar com certificado expirado, siga `docs/SSL-CADASTRO.md` no Cloudflare.
+
+### 📚 Documentação no repositório
+
+Índice completo: `docs/README.md`. Wiki embutida no sistema: **Configurações → Wiki**.
+
 ---
-*Manual de arquitetura - AD Capital Igreja — atualizado após Fase 1 (PR #2, maio/2026)*
+*Manual de arquitetura — AD Capital Igreja — atualizado jun/2026 (Fases 5–6)*

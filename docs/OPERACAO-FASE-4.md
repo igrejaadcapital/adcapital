@@ -6,8 +6,22 @@ Workflow **CI** (`.github/workflows/ci.yml`) em todo push/PR na `main`:
 
 | Job | Comando | Banco |
 |-----|---------|-------|
-| Backend | `pytest` | SQLite (sem `DATABASE_URL`) |
-| Frontend | `npm test` + `npm run build` | — |
+| Backend | `pytest` (cobertura mín. 35%) | SQLite (sem `DATABASE_URL`) |
+| Frontend | `npm test` + `npm run lint` + `npm run build` | — |
+
+Dependabot: `.github/dependabot.yml` (pip + npm semanal).
+
+## Auditoria cadastro (pós-Fase 5)
+
+Após cadastros em lote pelo admin, valide login e termo LGPD:
+
+```bash
+python manage.py auditar_acesso_lgpd
+python manage.py gerar_acessos_membros   # se necessário
+python manage.py gerar_termos_lgpd       # se necessário
+```
+
+Ver também `docs/FASE-6-EVOLUCAO.md` e `ARQUITETURA.md` (seção Portal do Membro).
 
 Workflow **Build Android APK** continua separado (push em `adcapital-react/`).
 

@@ -34,7 +34,9 @@ export default function SettingsWikiTab() {
              <div className="space-y-4">
                 <TechItem label="Frontend" value="React 19 + Vite + Tailwind + React Router 7" />
                 <TechItem label="Backend" value="Django 6.0 (Python 3)" />
-                <TechItem label="API" value="DRF + /api/v1/ (legado /api/)" />
+                <TechItem label="API" value="DRF + /api/v1/ (legado /api/ depreciado Dez/2026)" />
+                <TechItem label="TypeScript" value="apiBase.ts + queryClient.ts (migração gradual)" />
+                <TechItem label="CI" value="pytest-cov 35% + vitest + eslint + build" />
                 <TechItem label="OpenAPI" value="drf-spectacular (Swagger + ReDoc)" />
                 <TechItem label="Banco de Dados" value="PostgreSQL (Supabase)" />
                 <TechItem label="Servidor Web" value="Gunicorn 25.1" />
@@ -113,7 +115,8 @@ export default function SettingsWikiTab() {
                 <h4 className="text-[10px] font-black text-violet-600 uppercase tracking-widest">API REST</h4>
                 <div className="space-y-2 text-[10px] font-bold text-slate-600">
                    <p>• Contrato: /api/v1/ (recomendado)</p>
-                   <p>• Legado: /api/ (mesmas rotas)</p>
+                   <p>• Legado: /api/ (header Deprecation; evitar)</p>
+                   <p>• HashRouter em produção, BrowserRouter em dev</p>
                    <p>• Docs: /api/v1/docs/ e /redoc/</p>
                    <p>• JWT 30 min + refresh 7d + blacklist</p>
                 </div>
@@ -196,6 +199,46 @@ export default function SettingsWikiTab() {
           </div>
        </div>
 
+       {/* Fases do projeto */}
+       <div className="bg-white rounded-[2.5rem] p-8 shadow-xl border border-slate-100 space-y-4">
+          <h3 className="font-black text-[10px] uppercase tracking-[0.2em] text-slate-600">Roadmap de Fases (0–6)</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-[10px] font-bold text-slate-600">
+             <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">0–4 Segurança, API, Front, Android, CI ✓</div>
+             <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">5 Qualidade + LGPD ✓</div>
+             <div className="p-3 bg-blue-50 rounded-xl border border-blue-100">6 Refatoração + TS (em andamento)</div>
+             <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">Docs: docs/README.md</div>
+          </div>
+       </div>
+
+       {/* Cadastro admin + auditoria */}
+       <div className="bg-white rounded-[2.5rem] p-8 shadow-xl border border-slate-100 space-y-6">
+          <h3 className="font-black text-[10px] uppercase tracking-[0.2em] text-blue-600 flex items-center gap-2">
+             <ShieldAlert size={14} /> Cadastro Admin, Login e LGPD
+          </h3>
+          <div className="space-y-2 text-[10px] font-bold text-slate-600 leading-relaxed">
+             <p>• Ao salvar membro no admin: cria <strong>User</strong> (CPF) + senha padrão <code>Adcapital</code> + 5 dígitos do CPF.</p>
+             <p>• Termo LGPD (PDF) gerado automaticamente se o membro ainda não tiver documento.</p>
+             <p>• Auto-cadastro público: DRF em <code>/api/v1/c/</code>; busca de parentes exige token após pergunta de segurança.</p>
+             <p>• Termo em branco (impressão): botão na lista de membros ou <code>GET .../termo-lgpd-em-branco/</code>.</p>
+          </div>
+          <div className="bg-slate-900 p-5 rounded-2xl font-mono text-xs text-blue-300 space-y-1">
+             <code>python manage.py auditar_acesso_lgpd</code>
+             <code className="block opacity-80">python manage.py gerar_acessos_membros</code>
+             <code className="block opacity-80">python manage.py gerar_termos_lgpd</code>
+          </div>
+       </div>
+
+       {/* Alerta SSL */}
+       <div className="bg-rose-50 rounded-[2.5rem] p-8 border border-rose-200 space-y-3">
+          <h3 className="font-black text-[10px] uppercase tracking-[0.2em] text-rose-700 flex items-center gap-2">
+             <ShieldAlert size={14} /> SSL — cadastro.adcapitaligreja.com.br
+          </h3>
+          <p className="text-[10px] font-bold text-rose-800/80 leading-relaxed">
+             Se o smoke test falhar com certificado expirado, renove o <strong>Universal SSL</strong> no Cloudflare
+             (zona adcapitaligreja.com.br → SSL/TLS → Edge Certificates). Guia: <code>docs/SSL-CADASTRO.md</code>.
+          </p>
+       </div>
+
        {/* Backup */}
        <div className="bg-slate-900 rounded-[2.5rem] p-10 text-white shadow-2xl shadow-slate-900/40 space-y-6">
           <div className="flex items-center gap-4">
@@ -240,7 +283,9 @@ export default function SettingsWikiTab() {
              <p>• <strong>Rollback:</strong> tag Git <code>prod-pre-fase1-20260522</code> (commit <code>def497c</code>). No Render: Manual Deploy nesse SHA. Ver <code>docs/ROLLBACK-FASE-1.md</code> e <code>ARQUITETURA.md</code> na raiz do repo.</p>
              <p>• <strong>Smoke pós-deploy:</strong> <code>python scripts/smoke_producao.py</code> ou <code>manage.py smoke_fase0</code>.</p>
              <p>• <strong>Deploy:</strong> push na <code>main</code> → build automático em adcapital-api e adcapital-web.</p>
-             <p>• <strong>Manual completo:</strong> arquivo <code>ARQUITETURA.md</code> no GitHub (mesmo conteúdo expandido desta wiki).</p>
+             <p>• <strong>Manual completo:</strong> <code>ARQUITETURA.md</code> na raiz do repo; índice em <code>docs/README.md</code>.</p>
+             <p>• <strong>Auditoria LGPD:</strong> rode <code>auditar_acesso_lgpd</code> após cadastros em lote no admin.</p>
+             <p>• <strong>Legado removido:</strong> pasta <code>adcapitalapp/</code> e <code>view_public.py</code> (Fase 5).</p>
           </div>
        </div>
     </section>

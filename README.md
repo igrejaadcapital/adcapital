@@ -12,13 +12,20 @@ Monorepo do ecossistema digital da AD Capital: API Django, SPA React e app Andro
 | `agenda/` | Eventos e programação |
 | `analytics/` | Métricas e dashboard |
 | `adcapital-react/` | Frontend React 19 + Vite + Capacitor |
-| `docs/` | Planos, operação, rollback, mobile |
+| `docs/` | Manuais, fases, operação, SSL |
 
 ## Documentação
 
-- [ARQUITETURA.md](./ARQUITETURA.md) — URLs, infra, RBAC, rollback
-- [docs/PLANO-REFATORACAO.md](./docs/PLANO-REFATORACAO.md) — Fases 0–4 (concluídas)
-- [docs/FASE-5-QUALIDADE.md](./docs/FASE-5-QUALIDADE.md) — Melhorias de qualidade
+| Documento | Descrição |
+|-----------|-----------|
+| [ARQUITETURA.md](./ARQUITETURA.md) | Manual principal (URLs, infra, RBAC, fases) |
+| [docs/README.md](./docs/README.md) | **Índice** de todos os manuais |
+| [docs/PLANO-REFATORACAO.md](./docs/PLANO-REFATORACAO.md) | Roadmap fases 0–6 |
+| [docs/FASE-5-QUALIDADE.md](./docs/FASE-5-QUALIDADE.md) | Qualidade e consolidação |
+| [docs/FASE-6-EVOLUCAO.md](./docs/FASE-6-EVOLUCAO.md) | Evolução atual |
+| [docs/SSL-CADASTRO.md](./docs/SSL-CADASTRO.md) | Renovar SSL do auto-cadastro |
+
+Wiki no sistema: **Configurações → aba Wiki** (espelha a arquitetura + alertas operacionais).
 
 ## Desenvolvimento local
 
@@ -42,6 +49,14 @@ npm run dev
 ```bash
 pytest
 cd adcapital-react && npm test && npm run lint
+```
+
+## Operação (produção)
+
+```bash
+python scripts/smoke_producao.py
+python manage.py auditar_acesso_lgpd
+python fast_backup.py
 ```
 
 ## Deploy

@@ -1,6 +1,6 @@
 # Plano de refatoração — AD Capital
 
-Status atualizado após **Fase 1** em produção (maio/2026).
+Status atualizado após **Fases 5–6** (jun/2026). Índice: [README.md](./README.md).
 
 ## Visão geral
 
@@ -80,7 +80,16 @@ Ver `docs/ROLLBACK-FASE-1.md` e tag `prod-pre-fase1-20260522`.
 
 ---
 
+## Fase 5 — Qualidade (concluída)
+
+Ver [FASE-5-QUALIDADE.md](./FASE-5-QUALIDADE.md).
+
+## Fase 6 — Evolução (em andamento)
+
+Ver [FASE-6-EVOLUCAO.md](./FASE-6-EVOLUCAO.md).
+
 ## Ordem sugerida agora
 
-1. Manter CI verde em novos PRs (`pytest` + `vitest`).
-2. ~~Opcional: remover pasta `adcapitalapp/` após revisão final.~~ (feito na Fase 5)
+1. Renovar SSL `cadastro.adcapitaligreja.com.br` — [SSL-CADASTRO.md](./SSL-CADASTRO.md).
+2. Manter CI verde (`pytest` + cobertura, `vitest`, `eslint`).
+3. Após cadastros em lote: `python manage.py auditar_acesso_lgpd`.
