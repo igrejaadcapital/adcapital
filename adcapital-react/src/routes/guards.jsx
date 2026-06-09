@@ -1,6 +1,6 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../features/auth/AuthProvider';
-import { isValidToken, PATHS } from './paths';
+import { PATHS } from './paths';
 
 export function PostAuthRedirect() {
   const { user } = useAuth();
@@ -9,10 +9,12 @@ export function PostAuthRedirect() {
 }
 
 export function RequireAuth() {
-  const { token } = useAuth();
+  const { isAuthenticated, sessionLoading } = useAuth();
   const location = useLocation();
 
-  if (!isValidToken(token)) {
+  if (sessionLoading) return null;
+
+  if (!isAuthenticated) {
     return <Navigate to={PATHS.login} replace state={{ from: location.pathname }} />;
   }
 
@@ -20,8 +22,9 @@ export function RequireAuth() {
 }
 
 export function GuestOnly() {
-  const { token } = useAuth();
-  if (isValidToken(token)) {
+  const { isAuthenticated, sessionLoading } = useAuth();
+  if (sessionLoading) return null;
+  if (isAuthenticated) {
     return <PostAuthRedirect />;
   }
   return <Outlet />;

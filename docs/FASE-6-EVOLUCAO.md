@@ -1,24 +1,27 @@
 # Fase 6 — Evolução e endurecimento
 
-Continuação do backlog pós-Fase 5 (jun/2026).
+**Status: concluída** (jun/2026).
 
 ## Concluído
 
 - [x] Front 100% em `/api/v1/` (`getApiBaseUrl`, testes atualizados)
 - [x] Header `Deprecation` no prefixo legado `/api/`
-- [x] Dividir `SettingsPage.jsx` (tabs Wiki + Devocionais + `settingsUi`)
+- [x] Dividir `SettingsPage.jsx` (abas Geral, Site, Programação, Galeria, Segurança, Wiki, Devocionais)
 - [x] Dividir `LandingPage.jsx` (Pastoral, Programação, Footer)
-- [x] TypeScript gradual: `apiBase.ts`, `queryClient.ts`, `tsconfig.json`
+- [x] TypeScript: `apiBase.ts`, `queryClient.ts`, `config.ts`, `membroService.ts`
 - [x] Comando `auditar_acesso_lgpd` (login + termo LGPD)
+- [x] Subdomínio `cadastro.adcapitaligreja.com.br` descontinuado
+- [x] JWT em cookies **httpOnly** (`CookieJWTAuthentication`, `/auth/me/`, `/auth/logout/`)
+- [x] Confirmação de exclusão de membro com digitação do CPF
+- [x] Cron mensal GitHub Actions: `.github/workflows/auditar-lgpd.yml`
+- [x] Documentação iOS: [MOBILE-IOS.md](./MOBILE-IOS.md)
 
-## Backlog
+## Pós-Fase 6 (agendado)
 
-- [ ] JWT em cookie httpOnly (substituir `localStorage`)
-- [x] Subdomínio `cadastro.adcapitaligreja.com.br` descontinuado — [DEPRECACAO-CADASTRO-SUBDOMINIO.md](./DEPRECACAO-CADASTRO-SUBDOMINIO.md)
-- [ ] Remover rotas `/api/` e atalhos `/c/`, `/v/` na raiz (após sunset Dez/2026)
-- [ ] TypeScript: migrar `config.js` e services (`membroService`, etc.)
-- [ ] Dividir abas restantes de `SettingsPage` (Site, Galeria, Segurança)
-- [ ] Cron mensal: `auditar_acesso_lgpd` + alerta se pendências
+- [ ] Remover rotas `/api/` e atalhos `/c/`, `/v/` na raiz — **sunset Dez/2026**
+- [ ] TypeScript: migrar demais services (`financeiroService`, `configuracaoService`, etc.)
+- [ ] App iOS nativo (requer Mac + Apple Developer)
+- [ ] Push notifications (Firebase) — fora de escopo v1
 
 ## Operação recomendada
 

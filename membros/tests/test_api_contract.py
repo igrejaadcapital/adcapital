@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
 from rest_framework.test import APIClient
 
+from membros.api.jwt_cookies import ACCESS_COOKIE, REFRESH_COOKIE
 from membros.models import ConfiguracaoPortal, Funcao, Membro
 
 
@@ -49,6 +50,40 @@ class LoginContractTests(TestCase):
         self.assertEqual(v1.status_code, 200)
         self.assertEqual(legacy.status_code, 200)
         self.assertIn('access', legacy.json())
+
+    def test_login_define_cookies_httponly(self):
+        res = self.client.post(
+            '/api/v1/token/',
+            {'username': '99988877766', 'password': 'senha-pastoral-123'},
+            format='json',
+        )
+        self.assertEqual(res.status_code, 200)
+        self.assertIn(ACCESS_COOKIE, res.cookies)
+        self.assertIn(REFRESH_COOKIE, res.cookies)
+        self.assertTrue(res.cookies[ACCESS_COOKIE]['httponly'])
+
+    def test_auth_me_com_cookie(self):
+        login = self.client.post(
+            '/api/v1/token/',
+            {'username': '99988877766', 'password': 'senha-pastoral-123'},
+            format='json',
+        )
+        self.client.cookies[ACCESS_COOKIE] = login.cookies[ACCESS_COOKIE].value
+        me = self.client.get('/api/v1/auth/me/')
+        self.assertEqual(me.status_code, 200)
+        self.assertEqual(me.json()['role'], 'ADMIN')
+
+    def test_auth_logout_limpa_cookies(self):
+        login = self.client.post(
+            '/api/v1/token/',
+            {'username': '99988877766', 'password': 'senha-pastoral-123'},
+            format='json',
+        )
+        self.client.cookies[ACCESS_COOKIE] = login.cookies[ACCESS_COOKIE].value
+        out = self.client.post('/api/v1/auth/logout/')
+        self.assertEqual(out.status_code, 200)
+        me = self.client.get('/api/v1/auth/me/')
+        self.assertEqual(me.status_code, 401)
 
 
 @override_settings(DEBUG=True, SECRET_KEY='test-secret-key-for-dev-only')

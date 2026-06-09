@@ -17,7 +17,13 @@ vi.mock('../../features/site/LandingPage', () => ({
 }));
 
 vi.mock('../../features/auth/AuthProvider', () => ({
-  useAuth: () => ({ token: null, user: null, logout: vi.fn() }),
+  useAuth: () => ({
+    token: null,
+    user: null,
+    isAuthenticated: false,
+    sessionLoading: false,
+    logout: vi.fn(),
+  }),
 }));
 
 vi.mock('../AdminLayout', () => ({

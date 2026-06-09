@@ -2,7 +2,7 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/AuthProvider';
 import LandingPage from '../features/site/LandingPage';
 import { isNativeApp } from '../mobile/capacitorSetup';
-import { isValidToken, PATHS } from './paths';
+import { PATHS } from './paths';
 import { PostAuthRedirect } from './guards';
 
 function isLandingHost() {
@@ -20,10 +20,12 @@ function isSystemHost() {
 }
 
 export default function RootEntry() {
-  const { token } = useAuth();
+  const { isAuthenticated, sessionLoading } = useAuth();
+
+  if (sessionLoading) return null;
 
   if (isNativeApp()) {
-    return isValidToken(token) ? (
+    return isAuthenticated ? (
       <PostAuthRedirect />
     ) : (
       <Navigate to={PATHS.login} replace />
@@ -34,7 +36,7 @@ export default function RootEntry() {
     return <Navigate to={PATHS.cadastro} replace />;
   }
 
-  if (isValidToken(token)) {
+  if (isAuthenticated) {
     return <PostAuthRedirect />;
   }
 

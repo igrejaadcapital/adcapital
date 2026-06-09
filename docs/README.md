@@ -39,6 +39,7 @@
 
 | Documento | Conteúdo |
 |-----------|----------|
+| [MOBILE-IOS.md](./MOBILE-IOS.md) | iPhone — PWA Safari (sem App Store hoje) |
 | [MOBILE-ANDROID.md](./MOBILE-ANDROID.md) | Capacitor, APK, PWA |
 
 ## Comandos úteis (produção / local)

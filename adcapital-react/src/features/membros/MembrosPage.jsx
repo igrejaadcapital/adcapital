@@ -7,6 +7,7 @@ import MembroTable from './MembroTable';
 import CadastroMainFormModal from './ModalCadastro/CadastroMainFormModal';
 import membroService from '../../api/membroService';
 import { useMembros } from './useMembros';
+import { formatCpf, onlyDigits } from '../../shared/lib/masks';
 
 export default function MembrosPage() {
   const { 
@@ -157,13 +158,16 @@ export default function MembrosPage() {
 
       <ConfirmDialog
         open={Boolean(membroParaExcluir)}
-        title="Excluir membro?"
+        title="Excluir membro permanentemente?"
         message={
           membroParaExcluir
-            ? `Deseja realmente excluir o cadastro de ${membroParaExcluir.nome}?\n\nEsta ação é permanente e não pode ser desfeita pelo sistema.`
+            ? `Você está prestes a excluir:\n\n${membroParaExcluir.nome}\nCPF: ${formatCpf(membroParaExcluir.cpf)}\n\nEsta ação não pode ser desfeita pelo sistema. Para confirmar, digite o CPF abaixo.`
             : ''
         }
-        confirmLabel="Sim, excluir"
+        requireText={membroParaExcluir?.cpf ? formatCpf(membroParaExcluir.cpf) : ''}
+        requireTextLabel="Digite o CPF completo para confirmar"
+        normalizeRequireText={onlyDigits}
+        confirmLabel="Sim, excluir definitivamente"
         cancelLabel="Cancelar"
         danger
         loading={deletandoId === membroParaExcluir?.id}

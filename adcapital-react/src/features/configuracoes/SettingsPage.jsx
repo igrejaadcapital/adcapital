@@ -5,19 +5,20 @@ import {
   Globe, 
   ImageIcon, 
   Calendar, 
-  Trash2, 
-  Plus, 
   BookOpen,
-  Info,
   Settings,
   ShieldAlert,
-  Loader2,
   MessageSquare
 } from 'lucide-react';
 import StatusView from '../../shared/components/StatusView';
-import { cn, Field, SettingsBox } from './settings/settingsUi';
+import { cn } from './settings/settingsUi';
 import SettingsWikiTab from './settings/SettingsWikiTab';
 import SettingsDevocionaisTab from './settings/SettingsDevocionaisTab';
+import SettingsGeralTab from './settings/SettingsGeralTab';
+import SettingsSiteTab from './settings/SettingsSiteTab';
+import SettingsProgramacaoTab from './settings/SettingsProgramacaoTab';
+import SettingsGaleriaTab from './settings/SettingsGaleriaTab';
+import SettingsSegurancaTab from './settings/SettingsSegurancaTab';
 
 export default function SettingsPage() {
   const [aba, setAba] = useState('geral');
@@ -292,317 +293,54 @@ export default function SettingsPage() {
       <div className="flex-1">
           {/* --- ABA GERAIS --- */}
           {aba === 'geral' && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <SettingsBox 
-                title="Funções" 
-                color="blue" 
-                data={funcoes} 
-                onAdd={v => configuracaoService.adicionarFuncao(v)
-                  .then(carregarDados)
-                  .catch(err => alert(err.response?.data?.error || "Erro ao salvar função."))}
-                onDelete={id => configuracaoService.excluirFuncao(id).then(carregarDados)} 
-              />
-              <SettingsBox 
-                title="Categorias (+)" 
-                color="emerald" 
-                data={categoriasEntrada} 
-                onAdd={v => configuracaoService.adicionarCategoria({nome: v, tipo: 'ENTRADA'})
-                  .then(carregarDados)
-                  .catch(err => alert(err.response?.data?.error || "Erro ao salvar categoria."))}
-                onDelete={id => configuracaoService.excluirCategoria(id).then(carregarDados)} 
-              />
-              <SettingsBox 
-                title="Categorias (-)" 
-                color="rose" 
-                data={categoriasSaida} 
-                onAdd={v => configuracaoService.adicionarCategoria({nome: v, tipo: 'SAIDA'})
-                  .then(carregarDados)
-                  .catch(err => alert(err.response?.data?.error || "Erro ao salvar categoria."))}
-                onDelete={id => configuracaoService.excluirCategoria(id).then(carregarDados)} 
-              />
-            </div>
+            <SettingsGeralTab
+              funcoes={funcoes}
+              categoriasEntrada={categoriasEntrada}
+              categoriasSaida={categoriasSaida}
+              configuracaoService={configuracaoService}
+              carregarDados={carregarDados}
+            />
           )}
 
-          {/* --- ABA SITE PÚBLICO --- */}
-          {aba === 'site' && siteConfig && (
-            <section className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 overflow-hidden">
-               <div className="p-8 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                  <h2 className="font-black uppercase text-xs tracking-widest">Configuração do Site</h2>
-                  <button onClick={salvarSite} className="bg-blue-600 text-white px-8 py-3 rounded-full font-black text-xs uppercase tracking-widest hover:scale-105 transition-all">
-                    SALVAR
-                  </button>
-               </div>
-               <div className="p-8 space-y-10">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                     <div className="space-y-6">
-                        <Field label="Instagram URL (Perfil)" value={siteConfig.instagram_url} onChange={v => setSiteConfig({...siteConfig, instagram_url: v})} />
-                        <Field label="URL do Último Post do Instagram (Feed/Reel)" value={siteConfig.ultimo_post_instagram_url} onChange={v => setSiteConfig({...siteConfig, ultimo_post_instagram_url: v})} />
-                        <Field label="Youtube URL" value={siteConfig.youtube_url} onChange={v => setSiteConfig({...siteConfig, youtube_url: v})} />
-                        <Field label="Chave PIX (Dízimos)" value={siteConfig.pix_chave} onChange={v => setSiteConfig({...siteConfig, pix_chave: v})} />
-                     </div>
-                     <div className="space-y-6">
-                        <Field label="Nome do Banco" value={siteConfig.banco_nome} onChange={v => setSiteConfig({...siteConfig, banco_nome: v})} />
-                        <Field label="Pastor Responsável" value={siteConfig.pastor_nome} onChange={v => setSiteConfig({...siteConfig, pastor_nome: v})} />
-                        <div className="flex flex-col">
-                           <label className="text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Foto do Pastor</label>
-                           <input type="file" accept=".jpg,.jpeg,.png,.webp,.JPG,.JPEG,.PNG" onChange={e => setSiteConfig({...siteConfig, pastor_foto: e.target.files[0]})} className="text-xs" />
-                        </div>
-                     </div>
-                  </div>
-
-                  {/* Agrupamento Pastoral Recomendado */}
-                  <div className="bg-blue-50/50 p-8 rounded-[2rem] border border-blue-100/50 space-y-6">
-                      <h3 className="font-black text-blue-900/40 text-[10px] uppercase tracking-[0.2em] mb-2">Palavra do Pastor (Destaque no Site)</h3>
-                      <Field label="Título Pastoral" value={siteConfig.pastoral_titulo} onChange={v => setSiteConfig({...siteConfig, pastoral_titulo: v})} />
-                      <Field label="Mensagem Pastoral" isTextArea value={siteConfig.pastoral_texto} onChange={v => setSiteConfig({...siteConfig, pastoral_texto: v})} />
-                  </div>
-
-                  {/* Moderação de Comentários */}
-                  <div className="bg-slate-50/50 p-8 rounded-[2rem] border border-slate-100 space-y-6">
-                      <h3 className="font-black text-slate-800 text-[10px] uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
-                         <MessageSquare size={14} className="text-blue-500" />
-                         Moderação de Comentários
-                      </h3>
-                      <p className="text-[10px] text-slate-400 font-bold uppercase mb-4">Gerencie as mensagens deixadas na Palavra Pastoral</p>
-                      
-                      <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                        {comentarios.length === 0 ? (
-                           <div className="text-center py-10 border-2 border-dashed border-slate-200 rounded-[2rem]">
-                              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Nenhum comentário ainda</p>
-                           </div>
-                        ) : (
-                           comentarios.map(c => (
-                             <div key={c.id} className="flex flex-col md:flex-row justify-between items-start md:items-center p-5 bg-white border border-slate-200 rounded-2xl hover:border-blue-200 transition-colors gap-4">
-                               <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-1">
-                                     <span className="font-black text-sm text-blue-600">{c.nome}</span>
-                                     <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">
-                                       {new Date(c.criado_em).toLocaleDateString('pt-BR')}
-                                     </span>
-                                  </div>
-                                  <p className="text-xs font-medium text-slate-600">{c.texto}</p>
-                               </div>
-                               <button 
-                                 onClick={() => handleDelComentario(c.id)}
-                                 disabled={deletandoId === `com_${c.id}`}
-                                 className="flex items-center gap-2 px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl transition-colors font-black text-[10px] uppercase tracking-widest shrink-0"
-                               >
-                                 {deletandoId === `com_${c.id}` ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                                 Excluir
-                               </button>
-                             </div>
-                           ))
-                        )}
-                      </div>
-                  </div>
-               </div>
-            </section>
+          {aba === 'site' && (
+            <SettingsSiteTab
+              siteConfig={siteConfig}
+              setSiteConfig={setSiteConfig}
+              comentarios={comentarios}
+              salvarSite={salvarSite}
+              handleDelComentario={handleDelComentario}
+              deletandoId={deletandoId}
+            />
           )}
 
-          {/* --- ABA PROGRAMAÇÃO --- */}
           {aba === 'programacao' && (
-            <section className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 overflow-hidden">
-               <div className="p-8 border-b border-slate-100 bg-slate-50/50">
-                  <h2 className="font-black uppercase text-xs tracking-widest text-slate-800">Programação Semanal</h2>
-               </div>
-               
-               {/* Formulário de Inserção Restaurado */}
-               <div className="p-8 bg-slate-50 border-b border-slate-100">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                     <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Dia</label>
-                        <select className="p-4 bg-white border border-slate-200 rounded-2xl font-bold text-xs"
-                          value={novaProg.dia_semana} onChange={e => setNovaProg({...novaProg, dia_semana: parseInt(e.target.value)})}>
-                          <option value="0">DOMINGO</option>
-                          <option value="1">SEGUNDA</option>
-                          <option value="2">TERÇA</option>
-                          <option value="3">QUARTA</option>
-                          <option value="4">QUINTA</option>
-                          <option value="5">SEXTA</option>
-                          <option value="6">SÁBADO</option>
-                        </select>
-                     </div>
-                     <div className="md:col-span-1"><Field label="Título do Evento" value={novaProg.titulo} onChange={v => setNovaProg({...novaProg, titulo: v})} /></div>
-                     <div className="md:col-span-1"><Field label="Horário" value={novaProg.horario} onChange={v => setNovaProg({...novaProg, horario: v})} /></div>
-                     <button onClick={handleSalvarProg} className="bg-slate-900 text-white p-4 rounded-2xl font-black text-xs uppercase tracking-widest">ADICIONAR</button>
-                  </div>
-               </div>
-
-               <div className="p-8 space-y-4">
-                  {programacao.sort((a,b) => a.dia_semana - b.dia_semana).map(p => (
-                    <div key={p.id} className="flex justify-between items-center p-5 bg-white border border-slate-100 rounded-[1.5rem] hover:border-blue-200 hover:shadow-lg hover:shadow-blue-900/5 transition-all group">
-                       <div>
-                          <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest mb-1 block">
-                            {['DOMINGO','SEGUNDA','TERÇA','QUARTA','QUINTA','SEXTA','SÁBADO'][p.dia_semana]}
-                          </span>
-                          <p className="font-bold text-slate-800">{p.titulo}</p>
-                          <p className="text-xs font-bold text-slate-400">{p.horario}</p>
-                       </div>
-                       <button 
-                         onClick={() => handleDelProg(p.id)} 
-                         disabled={deletandoId !== null}
-                         className={cn("p-3 rounded-xl transition-all", 
-                           deletandoId === p.id ? "text-blue-600 bg-blue-50" : "text-rose-500 opacity-20 group-hover:opacity-100 hover:bg-rose-50"
-                         )}
-                       >
-                          {deletandoId === p.id ? (
-                            <Loader2 size={18} className="animate-spin" />
-                          ) : (
-                            <Trash2 size={18} />
-                          )}
-                       </button>
-                    </div>
-                  ))}
-               </div>
-            </section>
+            <SettingsProgramacaoTab
+              programacao={programacao}
+              novaProg={novaProg}
+              setNovaProg={setNovaProg}
+              handleSalvarProg={handleSalvarProg}
+              handleDelProg={handleDelProg}
+              deletandoId={deletandoId}
+            />
           )}
 
-          {/* --- ABA GALERIA --- */}
           {aba === 'galeria' && (
-             <section className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 p-8">
-                <div className="flex justify-between items-center mb-10">
-                   <div>
-                      <h2 className="font-black uppercase text-xs tracking-widest text-slate-800">Galeria Institucional</h2>
-                      <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase">Imagens exibidas no site público</p>
-                   </div>
-                   <label className="bg-blue-600 text-white px-8 py-4 rounded-full font-black text-xs uppercase tracking-widest cursor-pointer hover:bg-blue-700 shadow-xl shadow-blue-600/20 transition-all flex items-center gap-3">
-                      <Plus size={16} /> Carregar Fotos
-                      <input type="file" className="hidden" multiple accept=".jpg,.jpeg,.png,.webp,.JPG,.JPEG,.PNG" onChange={handleAddFoto} />
-                   </label>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                   {galeria.map(f => (
-                     <div key={f.id} className="aspect-square bg-slate-50 rounded-[2rem] overflow-hidden relative group border border-slate-100">
-                        <img src={f.imagem} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
-                        <div className={cn("absolute inset-0 transition-all flex flex-col items-center justify-center gap-2", 
-                          deletandoId === f.id ? "bg-white/90 opacity-100" : "bg-rose-600/90 opacity-0 group-hover:opacity-100"
-                        )}>
-                           <button 
-                             onClick={() => handleDelFoto(f.id)} 
-                             disabled={deletandoId !== null}
-                             className={cn("font-black text-xs uppercase tracking-widest flex items-center gap-2", 
-                               deletandoId === f.id ? "text-blue-600" : "text-white"
-                             )}
-                           >
-                              {deletandoId === f.id ? (
-                                <Loader2 size={16} className="animate-spin" />
-                              ) : (
-                                <Trash2 size={16} />
-                              )}
-                              {deletandoId === f.id ? 'Excluindo...' : 'Excluir'}
-                           </button>
-                        </div>
-                     </div>
-                   ))}
-                   {galeria.length === 0 && (
-                     <div className="col-span-full py-20 text-center border-2 border-dashed border-slate-100 rounded-[3rem] text-slate-300 font-bold uppercase tracking-widest text-xs">
-                        Nenhuma foto na galeria
-                     </div>
-                   )}
-                </div>
-             </section>
+            <SettingsGaleriaTab
+              galeria={galeria}
+              handleAddFoto={handleAddFoto}
+              handleDelFoto={handleDelFoto}
+              deletandoId={deletandoId}
+            />
           )}
 
-          {/* --- ABA SEGURANÇA --- */}
-          {aba === 'seguranca' && portalConfig && (
-            <div className="space-y-8">
-              {/* Configuração do Portal */}
-              <section className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 overflow-hidden">
-                <div className="p-8 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                    <h2 className="font-black uppercase text-xs tracking-widest text-slate-800">Segurança do Portal de Cadastro</h2>
-                    <button onClick={salvarSeguranca} className="bg-blue-600 text-white px-8 py-3 rounded-full font-black text-xs uppercase tracking-widest hover:scale-105 transition-all">
-                      SALVAR
-                    </button>
-                </div>
-                <div className="p-8 space-y-10">
-                    <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100 space-y-6">
-                      <div className="flex items-center gap-4">
-                        <div className={cn("w-14 h-8 rounded-full relative cursor-pointer transition-all", portalConfig.is_ativo ? "bg-emerald-500" : "bg-slate-300")}
-                            onClick={() => setPortalConfig({...portalConfig, is_ativo: !portalConfig.is_ativo})}>
-                          <div className={cn("absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-all shadow-sm", portalConfig.is_ativo ? "translate-x-6" : "translate-x-0")} />
-                        </div>
-                        <div>
-                          <p className="font-bold text-xs text-slate-800 uppercase tracking-widest">Portal Ativo</p>
-                          <p className="text-[10px] text-slate-400 font-bold uppercase">Define se o auto-cadastro está aberto ao público</p>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <Field label="Pergunta de Acesso" value={portalConfig.pergunta} onChange={v => setPortalConfig({...portalConfig, pergunta: v})} />
-                        <Field label="Resposta Correta (Senha)" value={portalConfig.resposta} onChange={v => setPortalConfig({...portalConfig, resposta: v})} />
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-4 p-6 bg-blue-50/50 rounded-2xl border border-blue-100">
-                      <Info className="text-blue-600 shrink-0" size={20} />
-                      <div>
-                        <p className="text-[10px] font-black text-blue-900 uppercase tracking-widest mb-1">Dica de Segurança</p>
-                        <p className="text-[10px] text-blue-800/60 font-bold leading-relaxed">
-                          A "Resposta Correta" funciona como uma senha compartilhada para sua igreja. Informe esta resposta aos membros que desejam se cadastrar. O sistema não diferencia maiúsculas de minúsculas.
-                        </p>
-                      </div>
-                    </div>
-                </div>
-              </section>
-
-              {/* Gestão de Usuários (RBAC) */}
-              <section className="bg-white rounded-[2.5rem] shadow-xl border border-slate-100 overflow-hidden">
-                <div className="p-8 border-b border-slate-100 bg-slate-50/50">
-                    <h2 className="font-black uppercase text-xs tracking-widest text-slate-800 flex items-center gap-2">
-                       Gestão de Acessos e Usuários
-                    </h2>
-                </div>
-                <div className="p-8">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                      <thead>
-                        <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
-                          <th className="pb-4 px-2">Usuário</th>
-                          <th className="pb-4 px-2 text-center">Nível de Acesso</th>
-                          <th className="pb-4 px-2 text-right">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-50">
-                        {usuarios.map(u => (
-                          <tr key={u.id} className="group hover:bg-slate-50 transition-colors">
-                            <td className="py-4 px-2">
-                              <p className="font-bold text-slate-800 text-sm">{u.nome?.split(' ')[0]}</p>
-                              <p className="text-[10px] text-slate-400 font-bold uppercase">{u.username}</p>
-                            </td>
-                            <td className="py-4 px-2 text-center">
-                              <select 
-                                className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-[10px] font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-blue-500"
-                                value={u.role}
-                                onChange={(e) => handleMudarPapel(u.id, e.target.value)}
-                              >
-                                <option value="ADMIN">ADMIN</option>
-                                <option value="SECRETARIO">SECRETÁRIO</option>
-                                <option value="TESOUREIRO">TESOUREIRO</option>
-                                <option value="MEMBRO">MEMBRO</option>
-                              </select>
-                            </td>
-                            <td className="py-4 px-2 text-right">
-                              <span className={cn(
-                                "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest",
-                                u.is_active ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
-                              )}>
-                                {u.is_active ? 'Ativo' : 'Inativo'}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div className="mt-8 p-4 bg-amber-50 rounded-2xl border border-amber-100 flex items-center gap-3">
-                    <ShieldAlert className="text-amber-600 shrink-0" size={18} />
-                    <p className="text-[10px] font-bold text-amber-800 uppercase leading-relaxed">
-                      Cuidado ao alterar níveis de acesso. Administradores podem visualizar e editar todos os dados, inclusive financeiros.
-                    </p>
-                  </div>
-                </div>
-              </section>
-            </div>
+          {aba === 'seguranca' && (
+            <SettingsSegurancaTab
+              portalConfig={portalConfig}
+              setPortalConfig={setPortalConfig}
+              usuarios={usuarios}
+              salvarSeguranca={salvarSeguranca}
+              handleMudarPapel={handleMudarPapel}
+            />
           )}
 
           {/* --- TAB WIKI & SISTEMA --- */}

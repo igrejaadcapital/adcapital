@@ -98,7 +98,7 @@ export default function SettingsWikiTab() {
                 <div className="space-y-2 text-[10px] font-bold text-slate-600">
                    <p>• React 19 + Vite + React Router 7</p>
                    <p>• Rotas: /login, /admin/*, /portal/*, /cadastro</p>
-                   <p>• JWT no localStorage + Axios (120s timeout)</p>
+                   <p>• JWT em cookies httpOnly + Axios (90s timeout)</p>
                    <p>• VITE_API_URL → /api/v1 em produção</p>
                 </div>
              </div>

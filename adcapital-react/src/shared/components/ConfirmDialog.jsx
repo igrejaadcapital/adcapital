@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 
 export default function ConfirmDialog({
@@ -10,8 +11,20 @@ export default function ConfirmDialog({
   onCancel,
   loading = false,
   danger = false,
+  requireText,
+  requireTextLabel,
+  normalizeRequireText = (value) => value.trim(),
 }) {
+  const [typedText, setTypedText] = useState('');
+
+  useEffect(() => {
+    if (!open) setTypedText('');
+  }, [open]);
+
   if (!open) return null;
+
+  const textOk = !requireText
+    || normalizeRequireText(typedText) === normalizeRequireText(requireText);
 
   return (
     <div
@@ -29,6 +42,22 @@ export default function ConfirmDialog({
             {message}
           </p>
         )}
+        {requireText && (
+          <div className="mt-6 space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              {requireTextLabel || 'Digite para confirmar'}
+            </label>
+            <input
+              type="text"
+              value={typedText}
+              onChange={(e) => setTypedText(e.target.value)}
+              disabled={loading}
+              autoComplete="off"
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:ring-2 focus:ring-rose-500 disabled:opacity-50"
+              placeholder={requireText}
+            />
+          </div>
+        )}
         <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <button
             type="button"
@@ -41,7 +70,7 @@ export default function ConfirmDialog({
           <button
             type="button"
             onClick={onConfirm}
-            disabled={loading}
+            disabled={loading || !textOk}
             className={`rounded-2xl px-6 py-3 text-sm font-black text-white transition disabled:opacity-50 flex items-center justify-center gap-2 ${
               danger ? 'bg-rose-600 hover:bg-rose-700' : 'bg-blue-600 hover:bg-blue-700'
             }`}

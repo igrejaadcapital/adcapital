@@ -1,0 +1,45 @@
+name: Auditoria LGPD mensal
+
+on:
+  schedule:
+    # Dia 1 de cada mês, 09:00 UTC (06:00 Brasília)
+    - cron: '0 9 1 * *'
+  workflow_dispatch:
+
+jobs:
+  auditar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Auditar acesso e termo LGPD
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          DEBUG: 'False'
+        run: |
+          if [ -z "$DATABASE_URL" ] || [ -z "$SECRET_KEY" ]; then
+            echo "::error::Secrets DATABASE_URL e SECRET_KEY são obrigatórios."
+            exit 1
+          fi
+          python manage.py auditar_acesso_lgpd > auditoria_lgpd.txt
+          cat auditoria_lgpd.txt
+          if grep -qi "pendência\|pendencia\|sem login\|sem termo" auditoria_lgpd.txt; then
+            echo "::warning::Auditoria encontrou pendências — revise o relatório acima."
+          fi
+
+      - name: Upload relatório
+        uses: actions/upload-artifact@v4
+        with:
+          name: auditoria-lgpd
+          path: auditoria_lgpd.txt
+          retention-days: 90

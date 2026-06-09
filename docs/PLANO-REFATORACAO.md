@@ -12,7 +12,7 @@ Status atualizado após **Fases 5–6** (jun/2026). Índice: [README.md](./READM
 | **3** | Android (PWA + Capacitor) | Concluída |
 | **4** | CI, staging, observabilidade | Concluída |
 | **5** | Qualidade, LGPD público, limpeza legado | Concluída |
-| **6** | Refatoração front, TS gradual, API v1 | Em andamento |
+| **6** | Refatoração front, TS gradual, JWT httpOnly | Concluída |
 
 ---
 
@@ -84,7 +84,7 @@ Ver `docs/ROLLBACK-FASE-1.md` e tag `prod-pre-fase1-20260522`.
 
 Ver [FASE-5-QUALIDADE.md](./FASE-5-QUALIDADE.md).
 
-## Fase 6 — Evolução (em andamento)
+## Fase 6 — Evolução (concluída)
 
 Ver [FASE-6-EVOLUCAO.md](./FASE-6-EVOLUCAO.md).
 
@@ -92,4 +92,5 @@ Ver [FASE-6-EVOLUCAO.md](./FASE-6-EVOLUCAO.md).
 
 1. Manter CI verde (`pytest` + cobertura, `vitest`, `eslint`).
 2. Após cadastros em lote: `python manage.py auditar_acesso_lgpd`.
-3. Backlog Fase 6: JWT httpOnly, TypeScript services, sunset `/api/` legado.
+3. iPhone: orientar PWA Safari — [MOBILE-IOS.md](./MOBILE-IOS.md).
+4. Dez/2026: remover prefixo legado `/api/`.

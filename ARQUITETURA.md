@@ -112,8 +112,8 @@ Detalhes: `docs/PLANO-REFATORACAO.md`, `docs/FASE-5-QUALIDADE.md`, `docs/FASE-6-
 
 | Item | Ação |
 |------|------|
-| JWT em `localStorage` | Migrar para cookie httpOnly (backlog Fase 6) |
 | Remover `/api/` legado | Após Dez/2026 |
+| App iOS (App Store) | PWA Safari hoje — ver `docs/MOBILE-IOS.md` |
 
 ### 🔄 Rollback de produção
 
