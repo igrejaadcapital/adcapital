@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Derruba todas as sessões JWT (cookies e tokens legados)."""
 from django.core.management.base import BaseCommand
-from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
+from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 
 from membros.services.session_revocation import marcar_revogacao_global
 
@@ -34,7 +34,7 @@ class Command(BaseCommand):
 
         revoked = 0
         for row in OutstandingToken.objects.all().iterator():
-            row.blacklist()
+            BlacklistedToken.objects.get_or_create(token=row)
             revoked += 1
 
         ts = marcar_revogacao_global()
