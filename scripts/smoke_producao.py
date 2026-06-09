@@ -128,11 +128,11 @@ def main():
     check('POST /api/token/ rejeita senha invalida -> 401/400', s in (400, 401), f'status={s}')
 
     # --- Frontends ---
-    ok, det = site_ok('https://cadastro.adcapitaligreja.com.br/')
-    check('cadastro.adcapitaligreja.com.br carrega', ok, det)
-
     ok, det = site_ok('https://sistema.adcapitaligreja.com.br/')
     check('sistema.adcapitaligreja.com.br carrega', ok, det)
+
+    ok, det = site_ok('https://sistema.adcapitaligreja.com.br/#/cadastro')
+    check('auto-cadastro (sistema/#/cadastro) carrega', ok, det)
 
     # --- RBAC na API (login real em produção; JWT local só em API local) ---
     def _token_from_login(username, password):

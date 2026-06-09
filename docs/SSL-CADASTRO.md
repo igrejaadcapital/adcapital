@@ -1,6 +1,10 @@
-# SSL — `cadastro.adcapitaligreja.com.br`
+# SSL — `cadastro.adcapitaligreja.com.br` (arquivado)
 
-Guia para renovar o certificado do subdomínio de **auto-cadastro**.
+> **Obsoleto (jun/2026):** o subdomínio foi descontinuado. Use `https://sistema.adcapitaligreja.com.br/#/cadastro`. Ver [DEPRECACAO-CADASTRO-SUBDOMINIO.md](./DEPRECACAO-CADASTRO-SUBDOMINIO.md).
+
+---
+
+Guia histórico para renovar o certificado do subdomínio de **auto-cadastro**.
 
 ## Sintoma
 

@@ -14,7 +14,7 @@ Continuação do backlog pós-Fase 5 (jun/2026).
 ## Backlog
 
 - [ ] JWT em cookie httpOnly (substituir `localStorage`)
-- [ ] SSL `cadastro.adcapitaligreja.com.br` — renovar no Cloudflare ([SSL-CADASTRO.md](./SSL-CADASTRO.md))
+- [x] Subdomínio `cadastro.adcapitaligreja.com.br` descontinuado — [DEPRECACAO-CADASTRO-SUBDOMINIO.md](./DEPRECACAO-CADASTRO-SUBDOMINIO.md)
 - [ ] Remover rotas `/api/` e atalhos `/c/`, `/v/` na raiz (após sunset Dez/2026)
 - [ ] TypeScript: migrar `config.js` e services (`membroService`, etc.)
 - [ ] Dividir abas restantes de `SettingsPage` (Site, Galeria, Segurança)

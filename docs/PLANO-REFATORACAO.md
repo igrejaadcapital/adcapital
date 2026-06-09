@@ -90,6 +90,6 @@ Ver [FASE-6-EVOLUCAO.md](./FASE-6-EVOLUCAO.md).
 
 ## Ordem sugerida agora
 
-1. Renovar SSL `cadastro.adcapitaligreja.com.br` — [SSL-CADASTRO.md](./SSL-CADASTRO.md).
-2. Manter CI verde (`pytest` + cobertura, `vitest`, `eslint`).
-3. Após cadastros em lote: `python manage.py auditar_acesso_lgpd`.
+1. Manter CI verde (`pytest` + cobertura, `vitest`, `eslint`).
+2. Após cadastros em lote: `python manage.py auditar_acesso_lgpd`.
+3. Backlog Fase 6: JWT httpOnly, TypeScript services, sunset `/api/` legado.

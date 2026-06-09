@@ -24,7 +24,8 @@
 | [OPERACAO-FASE-4.md](./OPERACAO-FASE-4.md) | CI, Sentry, backup GitHub Actions |
 | [STAGING.md](./STAGING.md) | Ambiente staging no Render |
 | [DEPLOY-FRONTEND-SPA.md](./DEPLOY-FRONTEND-SPA.md) | SPA, rewrites, HashRouter |
-| [SSL-CADASTRO.md](./SSL-CADASTRO.md) | Renovar certificado `cadastro.adcapitaligreja.com.br` |
+| [DEPRECACAO-CADASTRO-SUBDOMINIO.md](./DEPRECACAO-CADASTRO-SUBDOMINIO.md) | Subdomínio `cadastro.*` descontinuado — URL em `sistema/#/cadastro` |
+| [SSL-CADASTRO.md](./SSL-CADASTRO.md) | *(arquivado)* Guia SSL do subdomínio legado |
 | [ROLLBACK-FASE-1.md](./ROLLBACK-FASE-1.md) | Rollback de emergência pós-Fase 1 |
 
 ## Contratos e legado

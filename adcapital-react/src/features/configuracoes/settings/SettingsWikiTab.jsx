@@ -59,7 +59,7 @@ export default function SettingsWikiTab() {
                 <UrlItem label="Login / Sistema" url="sistema.adcapitaligreja.com.br/login" />
                 <UrlItem label="Painel Admin" url="sistema.adcapitaligreja.com.br/admin/inicio" />
                 <UrlItem label="Portal Membro" url="sistema.adcapitaligreja.com.br/portal/mensagens" />
-                <UrlItem label="Auto-cadastro" url="cadastro.adcapitaligreja.com.br" />
+                <UrlItem label="Auto-cadastro" url="sistema.adcapitaligreja.com.br/#/cadastro" />
                 <UrlItem label="API v1" url="api.adcapitaligreja.com.br/api/v1/" />
                 <UrlItem label="Swagger (docs)" url="api.adcapitaligreja.com.br/api/v1/docs/" />
                 <UrlItem label="Django Admin" url="api.adcapitaligreja.com.br/admin/" />
@@ -226,17 +226,6 @@ export default function SettingsWikiTab() {
              <code className="block opacity-80">python manage.py gerar_acessos_membros</code>
              <code className="block opacity-80">python manage.py gerar_termos_lgpd</code>
           </div>
-       </div>
-
-       {/* Alerta SSL */}
-       <div className="bg-rose-50 rounded-[2.5rem] p-8 border border-rose-200 space-y-3">
-          <h3 className="font-black text-[10px] uppercase tracking-[0.2em] text-rose-700 flex items-center gap-2">
-             <ShieldAlert size={14} /> SSL — cadastro.adcapitaligreja.com.br
-          </h3>
-          <p className="text-[10px] font-bold text-rose-800/80 leading-relaxed">
-             Se o smoke test falhar com certificado expirado, renove o <strong>Universal SSL</strong> no Cloudflare
-             (zona adcapitaligreja.com.br → SSL/TLS → Edge Certificates). Guia: <code>docs/SSL-CADASTRO.md</code>.
-          </p>
        </div>
 
        {/* Backup */}

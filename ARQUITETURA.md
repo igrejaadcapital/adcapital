@@ -24,8 +24,7 @@ Este documento consolida todos os serviços e endereços que compõem o ecossist
 | `sistema.adcapitaligreja.com.br/login` | **Login** (JWT) | Pastoral / membros |
 | `sistema.adcapitaligreja.com.br/admin/inicio` | **Painel administrativo** | ADMIN, SECRETARIO, TESOUREIRO |
 | `sistema.adcapitaligreja.com.br/portal/mensagens` | **Portal do membro** | MEMBRO |
-| `cadastro.adcapitaligreja.com.br` | **Auto-cadastro público** | Novos membros |
-| `sistema.adcapitaligreja.com.br/cadastro` | Auto-cadastro (mesmo app, rota alternativa) | Novos membros |
+| `sistema.adcapitaligreja.com.br/#/cadastro` | **Auto-cadastro público** (quando portal ativo) | Novos membros |
 | `api.adcapitaligreja.com.br/api/v1/` | **API REST versionada** (contrato estável) | Front, cron, futuro app mobile |
 | `api.adcapitaligreja.com.br/api/` | **API legado** (depreciada; sunset Dez/2026) | Evitar em clientes novos |
 | `api.adcapitaligreja.com.br/api/v1/docs/` | **Swagger UI** (OpenAPI) | TI / desenvolvimento |
@@ -113,7 +112,6 @@ Detalhes: `docs/PLANO-REFATORACAO.md`, `docs/FASE-5-QUALIDADE.md`, `docs/FASE-6-
 
 | Item | Ação |
 |------|------|
-| SSL `cadastro.adcapitaligreja.com.br` | Renovar no Cloudflare — `docs/SSL-CADASTRO.md` |
 | JWT em `localStorage` | Migrar para cookie httpOnly (backlog Fase 6) |
 | Remover `/api/` legado | Após Dez/2026 |
 
@@ -299,7 +297,7 @@ Para alterar a conta de recebimento, basta atualizar essa chave no painel do Ren
 
 Confere ping/health em `/api/v1/`, legado `/api/`, login JWT, RBAC e frontends públicos.
 
-**SSL do auto-cadastro:** se `cadastro.adcapitaligreja.com.br` falhar com certificado expirado, siga `docs/SSL-CADASTRO.md` no Cloudflare.
+**Subdomínio legado:** `cadastro.adcapitaligreja.com.br` foi **descontinuado** (jun/2026). Use `sistema…/#/cadastro`. Ver `docs/DEPRECACAO-CADASTRO-SUBDOMINIO.md`.
 
 ### 📚 Documentação no repositório
 

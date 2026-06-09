@@ -41,7 +41,6 @@ SECRET_KEY = _secret_key or 'django-insecure-*jzy@g1==oqy@(o+*(+ibbsojas%_7-=*hd
 ALLOWED_HOSTS = [
     'adcapitaligreja.com.br',
     'sistema.adcapitaligreja.com.br',
-    'cadastro.adcapitaligreja.com.br',
     'api.adcapitaligreja.com.br',
     'localhost',
     '127.0.0.1',
@@ -199,7 +198,6 @@ CORS_ALLOWED_ORIGINS = [
     'https://adcapitaligreja.com.br',
     'https://www.adcapitaligreja.com.br',
     'https://sistema.adcapitaligreja.com.br',
-    'https://cadastro.adcapitaligreja.com.br',
     'http://localhost:5173',
     'http://127.0.0.1:5173',
     'https://localhost',
@@ -216,7 +214,6 @@ CSRF_TRUSTED_ORIGINS = [
     'https://adcapitaligreja.com.br',
     'https://www.adcapitaligreja.com.br',
     'https://sistema.adcapitaligreja.com.br',
-    'https://cadastro.adcapitaligreja.com.br',
     'https://api.adcapitaligreja.com.br',
 ]
 
@@ -224,11 +221,9 @@ if DJANGO_ENV == 'staging':
     ALLOWED_HOSTS.extend([
         'staging-api.adcapitaligreja.com.br',
         'staging.sistema.adcapitaligreja.com.br',
-        'staging.cadastro.adcapitaligreja.com.br',
     ])
     _staging_origins = [
         'https://staging.sistema.adcapitaligreja.com.br',
-        'https://staging.cadastro.adcapitaligreja.com.br',
         'https://staging-api.adcapitaligreja.com.br',
     ]
     CORS_ALLOWED_ORIGINS.extend(_staging_origins)
