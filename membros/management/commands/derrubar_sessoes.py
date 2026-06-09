@@ -33,7 +33,7 @@ class Command(BaseCommand):
             return
 
         revoked = 0
-        for row in OutstandingToken.objects.all().iterator():
+        for row in OutstandingToken.objects.all():
             BlacklistedToken.objects.get_or_create(token=row)
             revoked += 1
 
