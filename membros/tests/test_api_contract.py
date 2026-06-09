@@ -5,6 +5,7 @@ from django.test import TestCase, override_settings
 from rest_framework.test import APIClient
 
 from membros.api.jwt_cookies import ACCESS_COOKIE, REFRESH_COOKIE
+from membros.services.session_revocation import marcar_revogacao_global
 from membros.models import ConfiguracaoPortal, Funcao, Membro
 
 
@@ -82,6 +83,21 @@ class LoginContractTests(TestCase):
         self.client.cookies[ACCESS_COOKIE] = login.cookies[ACCESS_COOKIE].value
         out = self.client.post('/api/v1/auth/logout/')
         self.assertEqual(out.status_code, 200)
+        me = self.client.get('/api/v1/auth/me/')
+        self.assertEqual(me.status_code, 401)
+
+
+    def test_derrubar_sessoes_invalida_token_anterior(self):
+        login = self.client.post(
+            '/api/v1/token/',
+            {'username': '99988877766', 'password': 'senha-pastoral-123'},
+            format='json',
+        )
+        self.client.cookies[ACCESS_COOKIE] = login.cookies[ACCESS_COOKIE].value
+        self.assertEqual(self.client.get('/api/v1/auth/me/').status_code, 200)
+
+        marcar_revogacao_global()
+
         me = self.client.get('/api/v1/auth/me/')
         self.assertEqual(me.status_code, 401)
 

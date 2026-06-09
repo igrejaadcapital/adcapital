@@ -30,6 +30,9 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
+    // Migração Fase 6: tokens legados no localStorage não são mais usados
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
     bootstrapSession();
   }, [bootstrapSession]);
 
