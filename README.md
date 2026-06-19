@@ -23,7 +23,8 @@ Monorepo do ecossistema digital da AD Capital: API Django, SPA React e app Andro
 | [docs/PLANO-REFATORACAO.md](./docs/PLANO-REFATORACAO.md) | Roadmap fases 0–6 |
 | [docs/FASE-5-QUALIDADE.md](./docs/FASE-5-QUALIDADE.md) | Qualidade e consolidação |
 | [docs/FASE-6-EVOLUCAO.md](./docs/FASE-6-EVOLUCAO.md) | Evolução atual |
-| [docs/DEPRECACAO-CADASTRO-SUBDOMINIO.md](./docs/DEPRECACAO-CADASTRO-SUBDOMINIO.md) | Auto-cadastro em `sistema/#/cadastro` (subdomínio legado removido) |
+| [docs/HANDOFF.md](./docs/HANDOFF.md) | **Avaliação e handoff** para retomar o projeto |
+| [AGENTS.md](./AGENTS.md) | Guia rápido para IA ou dev novo |
 
 Wiki no sistema: **Configurações → aba Wiki** (espelha a arquitetura + alertas operacionais).
 

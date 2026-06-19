@@ -80,7 +80,7 @@ Este documento consolida todos os serviços e endereços que compõem o ecossist
 | **3** | PWA + Capacitor Android | Concluída |
 | **4** | CI, staging, Sentry, backup automático | Concluída |
 | **5** | Qualidade: DRF público, HSTS, ESLint, LGPD autocomplete | Concluída |
-| **6** | Refatoração front, TS gradual, deprecação `/api/` | Em andamento |
+| **6** | Refatoração front, TS gradual, JWT httpOnly, handoff | Concluída |
 
 Detalhes: `docs/PLANO-REFATORACAO.md`, `docs/FASE-5-QUALIDADE.md`, `docs/FASE-6-EVOLUCAO.md`.
 

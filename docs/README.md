@@ -2,6 +2,15 @@
 
 Índice dos manuais do repositório `igrejaadcapital/adcapital`.
 
+## Handoff (continuidade sem contexto de chat)
+
+| Documento | Conteúdo |
+|-----------|----------|
+| [AGENTS.md](../AGENTS.md) | **Guia para IA/dev** — regras, comandos, o que não fazer |
+| [HANDOFF.md](./HANDOFF.md) | **Avaliação completa** — lacunas, pronto vs pendente |
+| [CONTA-E-SECRETS.template.md](./CONTA-E-SECRETS.template.md) | Template de contas (preencher offline, sem senhas no Git) |
+| [DEPLOY-API-RENDER.md](./DEPLOY-API-RENDER.md) | API no Render (fora do render.yaml) |
+
 ## Arquitetura e visão geral
 
 | Documento | Conteúdo |
