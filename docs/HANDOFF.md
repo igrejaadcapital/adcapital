@@ -146,12 +146,16 @@ Ver `.env.example` (API) e `adcapital-react/.env.example` (front).
 
 ## 8. Roteiro para a próxima IA (ordem sugerida)
 
+> **Espelho em:** `ARQUITETURA.md` (seção *Como retornar*), `README.md`, Wiki **Configurações → Wiki** (topo).
+
 1. Ler **`AGENTS.md`** (regras) e **`ARQUITETURA.md`** (infra).
 2. Clonar, `cp .env.example .env`, `npm ci`, `pytest`, `npm test`.
 3. Preencher **`docs/CONTA-E-SECRETS.template.md`** offline com titular da igreja.
 4. Antes de feature nova: grep `/api/` no front — só `/api/v1/`.
 5. Após deploy: `smoke_producao.py`.
 6. **Dez/2026:** executar runbook remoção `/api/` legado (seção 9).
+
+**Prompt pronto:** *"Leia AGENTS.md, docs/HANDOFF.md e ARQUITETURA.md. Depois execute: [tarefa]."*
 
 ---
 

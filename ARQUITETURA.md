@@ -299,9 +299,108 @@ Confere ping/health em `/api/v1/`, legado `/api/`, login JWT, RBAC e frontends p
 
 **Subdomínio legado:** `cadastro.adcapitaligreja.com.br` foi **descontinuado** (jun/2026). Use `sistema…/#/cadastro`. Ver `docs/DEPRECACAO-CADASTRO-SUBDOMINIO.md`.
 
+### 🔄 Como retornar ao projeto (handoff)
+
+Use este roteiro quando **outro desenvolvedor**, **nova assinatura de IA** (Cursor, Copilot, etc.) ou **você mesmo após meses** for retomar o código. Não depende de conversas antigas — tudo está no GitHub.
+
+#### 1. Onde está o código
+
+| Item | Valor |
+|------|-------|
+| Repositório | [github.com/igrejaadcapital/adcapital](https://github.com/igrejaadcapital/adcapital) |
+| Branch produção | `main` |
+| Clone | `git clone https://github.com/igrejaadcapital/adcapital.git` |
+
+#### 2. O que ler primeiro (ordem)
+
+| Ordem | Arquivo | Conteúdo |
+|-------|---------|----------|
+| 1 | **`AGENTS.md`** | Regras para IA/dev: API v1, cookies, testes, o que não fazer |
+| 2 | **`docs/HANDOFF.md`** | Avaliação completa: pronto vs lacunas, emergências |
+| 3 | **`ARQUITETURA.md`** | Este manual (infra, URLs, RBAC, backup) |
+| 4 | **`docs/CONTA-E-SECRETS.template.md`** | Template de contas — **preencher offline**, nunca commitar senhas |
+| 5 | **`docs/DEPLOY-API-RENDER.md`** | API no Render (fora do `render.yaml`) |
+
+Índice geral: `docs/README.md`. Wiki no sistema: **Configurações → Wiki**.
+
+#### 3. Ambiente local (Windows)
+
+```powershell
+cd adcapital
+python -m venv venv
+.\venv\Scripts\activate
+pip install -r requirements.txt -r requirements-dev.txt
+copy .env.example .env          # preencher DATABASE_URL, SECRET_KEY, etc.
+$env:DEBUG='True'               # obrigatório se SECRET_KEY de dev
+python manage.py migrate
+python manage.py runserver
+
+# Outro terminal — frontend
+cd adcapital-react
+npm ci
+npm run dev                     # http://localhost:5173
+```
+
+#### 4. Validar antes de alterar
+
+```powershell
+pytest
+cd adcapital-react && npm test && npm run lint
+```
+
+#### 5. Prompt sugerido para nova IA
+
+> Leia `AGENTS.md`, `docs/HANDOFF.md` e `ARQUITETURA.md`. Depois execute a tarefa: [descreva aqui].
+
+#### 6. Deploy e validação em produção
+
+1. Commit na `main` (ou PR merge) → Render redeploya **adcapital-api** e **adcapital-web** automaticamente.
+2. Após o deploy:
+
+```powershell
+.\venv\Scripts\python.exe scripts\smoke_producao.py
+```
+
+#### 7. Comandos operacionais frequentes
+
+| Situação | Comando |
+|----------|---------|
+| Auditoria login + LGPD | `python manage.py auditar_acesso_lgpd` |
+| Membro excluído por engano | `python manage.py restaurar_membro --cpf XXXXXXXXXXX` |
+| Forçar todos a logar de novo | `python manage.py derrubar_sessoes` |
+| Backup JSON | `python fast_backup.py` |
+| Restaurar backup | `python import_backup.py` + `python repair_db.py` |
+
+#### 8. Mobile
+
+| Plataforma | Como |
+|------------|------|
+| **Android** | APK Capacitor — `docs/MOBILE-ANDROID.md` |
+| **iPhone** | Sem App Store — Safari → `sistema.adcapitaligreja.com.br` → **Adicionar à Tela de Início** — `docs/MOBILE-IOS.md` |
+
+#### 9. O que NÃO precisa refazer
+
+Fases **0–6 concluídas**: API `/api/v1/`, JWT cookies httpOnly, RBAC, LGPD, CI, backup, Android, Settings modular, confirmação de exclusão de membro com CPF.
+
+#### 10. Backlog opcional (pós-handoff)
+
+- TypeScript nos services restantes (`financeiroService.js`, etc.)
+- Remover `/api/` legado — **Dez/2026**
+- App iOS nativo (Mac + Apple Developer)
+
+Detalhe: `docs/FASE-6-EVOLUCAO.md`.
+
 ### 📚 Documentação no repositório
 
-Índice completo: `docs/README.md`. Wiki embutida no sistema: **Configurações → Wiki**.
+Índice completo: `docs/README.md`. Wiki embutida no sistema: **Configurações → Wiki** (bloco *Como retornar ao projeto* no topo).
+
+| Documento | Uso |
+|-----------|-----|
+| `AGENTS.md` | Primeiro arquivo para IA ou dev novo |
+| `docs/HANDOFF.md` | Avaliação e lacunas |
+| `ARQUITETURA.md` | Manual principal (este arquivo) |
+| `docs/CONTA-E-SECRETS.template.md` | Contas — preencher offline |
+| `docs/DEPLOY-API-RENDER.md` | Recriar API no Render |
 
 ---
 *Manual de arquitetura — AD Capital Igreja — atualizado jun/2026 (Fases 5–6)*

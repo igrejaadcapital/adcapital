@@ -25,6 +25,55 @@ export default function SettingsWikiTab() {
           </div>
        </div>
 
+       {/* Como retornar ao projeto — handoff */}
+       <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2.5rem] p-8 md:p-10 text-white shadow-2xl shadow-blue-900/30 space-y-6">
+          <div className="flex items-center gap-4">
+             <div className="p-3 bg-white/15 rounded-2xl">
+                <BookOpen size={24} />
+             </div>
+             <div>
+                <h3 className="font-black uppercase text-sm tracking-widest">Como retornar ao projeto</h3>
+                <p className="text-[10px] font-bold text-blue-100 uppercase">Handoff — dev, TI ou nova assinatura de IA</p>
+             </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-[10px] font-bold leading-relaxed">
+             <div className="space-y-3">
+                <p className="text-blue-100 uppercase tracking-widest text-[9px]">1. Repositório</p>
+                <p>GitHub: <strong>igrejaadcapital/adcapital</strong> · branch <code className="bg-black/20 px-1 rounded">main</code></p>
+                <p className="text-blue-100 uppercase tracking-widest text-[9px] mt-4">2. Ler nesta ordem</p>
+                <ul className="space-y-1 text-blue-50">
+                   <li>• <code className="bg-black/20 px-1 rounded">AGENTS.md</code> — regras para IA/dev</li>
+                   <li>• <code className="bg-black/20 px-1 rounded">docs/HANDOFF.md</code> — avaliação e lacunas</li>
+                   <li>• <code className="bg-black/20 px-1 rounded">ARQUITETURA.md</code> — manual completo</li>
+                   <li>• <code className="bg-black/20 px-1 rounded">docs/CONTA-E-SECRETS.template.md</code> — contas (offline)</li>
+                </ul>
+             </div>
+             <div className="space-y-3">
+                <p className="text-blue-100 uppercase tracking-widest text-[9px]">3. Ambiente local</p>
+                <div className="bg-black/25 p-4 rounded-2xl font-mono text-[9px] text-blue-200 space-y-1">
+                   <code>git clone .../adcapital.git</code>
+                   <code className="block">pip install -r requirements.txt -r requirements-dev.txt</code>
+                   <code className="block">copy .env.example .env</code>
+                   <code className="block">python manage.py migrate && runserver</code>
+                   <code className="block">cd adcapital-react && npm ci && npm run dev</code>
+                </div>
+                <p className="text-blue-100 uppercase tracking-widest text-[9px] mt-2">4. Testes + deploy</p>
+                <p><code className="bg-black/20 px-1 rounded">pytest</code> · <code className="bg-black/20 px-1 rounded">npm test</code> · push <code className="bg-black/20 px-1 rounded">main</code> → Render · <code className="bg-black/20 px-1 rounded">smoke_producao.py</code></p>
+             </div>
+          </div>
+          <div className="bg-white/10 p-5 rounded-2xl border border-white/10">
+             <p className="text-[10px] font-black uppercase tracking-widest text-blue-100 mb-2">Prompt para nova IA</p>
+             <p className="text-xs text-white/90 italic">
+                &quot;Leia AGENTS.md, docs/HANDOFF.md e ARQUITETURA.md. Depois execute: [sua tarefa].&quot;
+             </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-[9px] font-bold uppercase tracking-wider">
+             <div className="bg-white/10 p-3 rounded-xl">Android: docs/MOBILE-ANDROID.md</div>
+             <div className="bg-white/10 p-3 rounded-xl">iPhone: PWA Safari — MOBILE-IOS.md</div>
+             <div className="bg-white/10 p-3 rounded-xl">Emergência: derrubar_sessoes · restaurar_membro</div>
+          </div>
+       </div>
+
        {/* Stack Tecnológica + URLs */}
        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white rounded-[2.5rem] p-8 shadow-md border border-slate-100 space-y-6">
@@ -205,7 +254,7 @@ export default function SettingsWikiTab() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-[10px] font-bold text-slate-600">
              <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">0–4 Segurança, API, Front, Android, CI ✓</div>
              <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">5 Qualidade + LGPD ✓</div>
-             <div className="p-3 bg-blue-50 rounded-xl border border-blue-100">6 Refatoração + TS (em andamento)</div>
+             <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">6 Refatoração + JWT httpOnly ✓</div>
              <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">Docs: docs/README.md</div>
           </div>
        </div>
@@ -225,6 +274,8 @@ export default function SettingsWikiTab() {
              <code>python manage.py auditar_acesso_lgpd</code>
              <code className="block opacity-80">python manage.py gerar_acessos_membros</code>
              <code className="block opacity-80">python manage.py gerar_termos_lgpd</code>
+             <code className="block opacity-80">python manage.py derrubar_sessoes</code>
+             <code className="block opacity-80">python manage.py restaurar_membro --cpf ...</code>
           </div>
        </div>
 
@@ -273,6 +324,9 @@ export default function SettingsWikiTab() {
              <p>• <strong>Smoke pós-deploy:</strong> <code>python scripts/smoke_producao.py</code> ou <code>manage.py smoke_fase0</code>.</p>
              <p>• <strong>Deploy:</strong> push na <code>main</code> → build automático em adcapital-api e adcapital-web.</p>
              <p>• <strong>Manual completo:</strong> <code>ARQUITETURA.md</code> na raiz do repo; índice em <code>docs/README.md</code>.</p>
+             <p>• <strong>Handoff:</strong> como retomar o projeto — seção no topo desta Wiki e em <code>ARQUITETURA.md</code> / <code>AGENTS.md</code>.</p>
+             <p>• <strong>Exclusão de membro:</strong> exige digitar o CPF no diálogo de confirmação.</p>
+             <p>• <strong>Login:</strong> JWT em cookies httpOnly (não localStorage). Relogin geral: <code>derrubar_sessoes</code>.</p>
              <p>• <strong>Auditoria LGPD:</strong> rode <code>auditar_acesso_lgpd</code> após cadastros em lote no admin.</p>
              <p>• <strong>Legado removido:</strong> pasta <code>adcapitalapp/</code> e <code>view_public.py</code> (Fase 5).</p>
           </div>

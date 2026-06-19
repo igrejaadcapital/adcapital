@@ -11,6 +11,16 @@
 | [CONTA-E-SECRETS.template.md](./CONTA-E-SECRETS.template.md) | Template de contas (preencher offline, sem senhas no Git) |
 | [DEPLOY-API-RENDER.md](./DEPLOY-API-RENDER.md) | API no Render (fora do render.yaml) |
 
+### Como retornar (resumo)
+
+1. `git clone https://github.com/igrejaadcapital/adcapital.git`
+2. Ler **AGENTS.md** → **HANDOFF.md** → **ARQUITETURA.md** (seção *Como retornar*)
+3. `copy .env.example .env` + `npm ci` + `pytest` / `npm test`
+4. Nova IA: *"Leia AGENTS.md, HANDOFF.md e ARQUITETURA.md. Depois: [tarefa]."*
+5. Pós-deploy: `python scripts/smoke_producao.py`
+
+Wiki no sistema: **Configurações → Wiki** (bloco *Como retornar ao projeto* no topo).
+
 ## Arquitetura e visão geral
 
 | Documento | Conteúdo |

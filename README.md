@@ -26,7 +26,19 @@ Monorepo do ecossistema digital da AD Capital: API Django, SPA React e app Andro
 | [docs/HANDOFF.md](./docs/HANDOFF.md) | **Avaliação e handoff** para retomar o projeto |
 | [AGENTS.md](./AGENTS.md) | Guia rápido para IA ou dev novo |
 
-Wiki no sistema: **Configurações → aba Wiki** (espelha a arquitetura + alertas operacionais).
+Wiki no sistema: **Configurações → aba Wiki** (espelha a arquitetura + handoff).
+
+## Como retornar ao projeto
+
+Para **TI**, **novo dev** ou **nova assinatura de IA** retomar o trabalho:
+
+1. Clone `https://github.com/igrejaadcapital/adcapital` (branch `main`)
+2. Leia nesta ordem: **[AGENTS.md](./AGENTS.md)** → **[docs/HANDOFF.md](./docs/HANDOFF.md)** → **[ARQUITETURA.md](./ARQUITETURA.md)**
+3. Preencha **[docs/CONTA-E-SECRETS.template.md](./docs/CONTA-E-SECRETS.template.md)** offline (senhas não vão no Git)
+4. Ambiente local: ver seção abaixo; valide com `pytest` e `npm test`
+5. Prompt para IA: *"Leia AGENTS.md, HANDOFF.md e ARQUITETURA.md. Depois: [tarefa]."*
+
+Produção **não depende** de assinatura Cursor — deploy é GitHub → Render.
 
 ## Desenvolvimento local
 

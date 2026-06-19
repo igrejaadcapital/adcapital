@@ -2,6 +2,17 @@
 
 **Leia isto primeiro** antes de alterar código. Repositório: `igrejaadcapital/adcapital` (branch `main`).
 
+## Como retornar (checklist rápido)
+
+1. `git clone https://github.com/igrejaadcapital/adcapital.git`
+2. Ler **este arquivo** → `docs/HANDOFF.md` → `ARQUITETURA.md` (seção *Como retornar*)
+3. `copy .env.example .env` · `pip install -r requirements.txt -r requirements-dev.txt` · `npm ci` em `adcapital-react/`
+4. `pytest` + `npm test` + `npm run lint`
+5. Prompt IA: *"Leia AGENTS.md, HANDOFF.md e ARQUITETURA.md. Depois: [tarefa]."*
+6. Deploy: push `main` → Render · validar: `python scripts/smoke_producao.py`
+
+Wiki no sistema: **Configurações → Wiki** (handoff no topo).
+
 ## O que é este projeto
 
 Monorepo da **Igreja AD Capital**: API Django 6 + SPA React 19 + app Android (Capacitor). Produção em Render + Supabase + Cloudflare.

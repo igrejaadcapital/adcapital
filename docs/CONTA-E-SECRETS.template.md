@@ -3,6 +3,8 @@
 **Instrução:** copie este arquivo para um local **privado** (1Password, Bitwarden, papel do tesoureiro/TI).  
 **Nunca** commite o arquivo preenchido no Git.
 
+**Como retornar ao desenvolvimento:** leia `AGENTS.md` → `docs/HANDOFF.md` → `ARQUITETURA.md` (seção *Como retornar*). Wiki: **Configurações → Wiki**.
+
 ---
 
 ## Repositório
