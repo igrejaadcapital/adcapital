@@ -7,7 +7,7 @@
   },
   {
     "servico": "Cloudflare (plano)",
-    "vencimento": null,
+    "vencimento": "2030-03-26",
     "dias_aviso": 30,
     "notas": "Free — SSL Universal; monitorado via check SSL"
   },
