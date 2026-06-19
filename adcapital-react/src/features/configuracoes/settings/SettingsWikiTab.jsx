@@ -276,7 +276,12 @@ export default function SettingsWikiTab() {
              <code className="block opacity-80">python manage.py gerar_termos_lgpd</code>
              <code className="block opacity-80">python manage.py derrubar_sessoes</code>
              <code className="block opacity-80">python manage.py restaurar_membro --cpf ...</code>
+             <code className="block opacity-80">python manage.py alertas_servicos --dry-run</code>
           </div>
+          <p className="text-[10px] font-bold text-slate-500 mt-3">
+             Alertas por e-mail (SSL, Render, vencimentos): GitHub Actions diário + <code>docs/ALERTAS-INFRA.md</code>.
+             Cadastre datas em <code>docs/alertas-vencimentos.json</code>.
+          </p>
        </div>
 
        {/* Backup */}

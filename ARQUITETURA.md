@@ -368,6 +368,7 @@ cd adcapital-react && npm test && npm run lint
 | Auditoria login + LGPD | `python manage.py auditar_acesso_lgpd` |
 | Membro excluído por engano | `python manage.py restaurar_membro --cpf XXXXXXXXXXX` |
 | Forçar todos a logar de novo | `python manage.py derrubar_sessoes` |
+| Alertas infra (SSL/serviços) | `python manage.py alertas_servicos --dry-run` — ver `docs/ALERTAS-INFRA.md` |
 | Backup JSON | `python fast_backup.py` |
 | Restaurar backup | `python import_backup.py` + `python repair_db.py` |
 

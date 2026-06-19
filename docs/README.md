@@ -40,7 +40,7 @@ Wiki no sistema: **Configurações → Wiki** (bloco *Como retornar ao projeto* 
 
 | Documento | Conteúdo |
 |-----------|----------|
-| [OPERACAO-FASE-4.md](./OPERACAO-FASE-4.md) | CI, Sentry, backup GitHub Actions |
+| [ALERTAS-INFRA.md](./ALERTAS-INFRA.md) | E-mail diário: SSL, ping Render/API, vencimentos |
 | [STAGING.md](./STAGING.md) | Ambiente staging no Render |
 | [DEPLOY-FRONTEND-SPA.md](./DEPLOY-FRONTEND-SPA.md) | SPA, rewrites, HashRouter |
 | [DEPRECACAO-CADASTRO-SUBDOMINIO.md](./DEPRECACAO-CADASTRO-SUBDOMINIO.md) | Subdomínio `cadastro.*` descontinuado — URL em `sistema/#/cadastro` |

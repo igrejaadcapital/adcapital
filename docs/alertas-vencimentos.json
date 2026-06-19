@@ -1,0 +1,44 @@
+[
+  {
+    "servico": "Domínio adcapitaligreja.com.br (Registro.br)",
+    "vencimento": null,
+    "dias_aviso": 60,
+    "notas": "Atualize vencimento após renovar em registro.br"
+  },
+  {
+    "servico": "Cloudflare (plano)",
+    "vencimento": null,
+    "dias_aviso": 30,
+    "notas": "Free — SSL Universal; monitorado via check SSL"
+  },
+  {
+    "servico": "Render adcapital-api + adcapital-web",
+    "vencimento": null,
+    "dias_aviso": 0,
+    "notas": "Monitorado por ping diário; Free tier pode suspender por inatividade"
+  },
+  {
+    "servico": "Supabase PostgreSQL",
+    "vencimento": null,
+    "dias_aviso": 30,
+    "notas": "Free pausa após 7 dias sem uso — keep-alive via cron-job.org"
+  },
+  {
+    "servico": "Cloudinary",
+    "vencimento": null,
+    "dias_aviso": 30,
+    "notas": "Plano free — conferir quota no dashboard"
+  },
+  {
+    "servico": "Resend (e-mail)",
+    "vencimento": null,
+    "dias_aviso": 30,
+    "notas": "Quota mensal free — alertas usam a mesma API"
+  },
+  {
+    "servico": "GitHub (repositório + Actions)",
+    "vencimento": null,
+    "dias_aviso": 0,
+    "notas": "Free — CI, backup e alertas"
+  }
+]

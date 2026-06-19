@@ -1,0 +1,38 @@
+name: Alertas infraestrutura
+
+on:
+  schedule:
+    # 11:00 UTC ≈ 08:00 Brasília
+    - cron: '0 11 * * *'
+  workflow_dispatch:
+
+jobs:
+  alertas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Verificar infra e enviar alertas
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          ALERTAS_EMAIL_PARA: ${{ secrets.ALERTAS_EMAIL_PARA }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          DEBUG: 'False'
+        run: |
+          if [ -z "$RESEND_API_KEY" ]; then
+            echo "::warning::Secret RESEND_API_KEY ausente — configure em GitHub → Settings → Secrets."
+          fi
+          if [ -z "$ALERTAS_EMAIL_PARA" ]; then
+            export ALERTAS_EMAIL_PARA="igrejaadcapital@gmail.com"
+          fi
+          python manage.py alertas_servicos --com-banco --semanal
