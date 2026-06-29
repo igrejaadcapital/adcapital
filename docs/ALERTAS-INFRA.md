@@ -63,8 +63,22 @@ Disparo manual: GitHub → Actions → *Alertas infraestrutura* → Run workflow
 - **Render Free suspendendo:** detectado quando ping falha; não avisa antes.
 - **Apple / Google Play:** não monitorados (sem app iOS na loja).
 
+## Keep-alive Render (horas free)
+
+Self-ping na API com **stand-by 23h–6h (Brasília)** para economizar horas do plano free.
+
+| Variável (Render → adcapital-api) | Valor sugerido |
+|-----------------------------------|----------------|
+| `KEEP_ALIVE_QUIET_START` | `23` |
+| `KEEP_ALIVE_QUIET_END` | `6` |
+| `KEEP_ALIVE_TIMEZONE` | `America/Sao_Paulo` |
+| `KEEP_ALIVE_INTERVAL_SECONDS` | `1800` (30 min no horário ativo) |
+| `KEEP_ALIVE_ENABLED` | `true` |
+
+**Importante:** no [cron-job.org](https://cron-job.org), o job de keep-alive (`GET /api/v1/configuracao-site/`) deve rodar **só entre 6h e 23h**. Se continuar a cada 10 min à noite, a API não dorme.
+
 ## Relacionados
 
-- Keep-alive: cron-job.org → `/api/v1/configuracao-site/`
+- Keep-alive externo (horário ativo): cron-job.org → `/api/v1/configuracao-site/`
 - Smoke manual: `python scripts/smoke_producao.py`
 - Backup diário: `.github/workflows/backup-supabase.yml`

@@ -248,11 +248,14 @@ Devido às limitações dos planos gratuitos utilizados:
 2. **Supabase Free (Banco de Dados)**: Pausa o projeto inteiro após 7 dias ininterruptos de inatividade.
 
 **Solução Aplicada:**
-Utilizamos o serviço externo **[cron-job.org](https://cron-job.org/en/)** com duas tarefas (recomendado usar `/api/v1/`; o legado `/api/` responde igual):
-1. **Keep-alive** (a cada 10 min): `GET https://api.adcapitaligreja.com.br/api/v1/configuracao-site/`
-2. **Aniversários** (diário): `GET https://api.adcapitaligreja.com.br/api/v1/verificar-aniversarios/` com header `X-Cron-Secret: <CRON_SECRET no Render>`
+1. **Self-ping na API** (`membros/services/keep_alive.py`): ping em `/api/ping/` no horário ativo; **stand-by 23h–6h (Brasília)** para economizar horas do Render Free.
+2. **[cron-job.org](https://cron-job.org/en/)** (use `/api/v1/`):
+   - **Keep-alive** (ex.: a cada 30 min, **só 6h–23h**): `GET https://api.adcapitaligreja.com.br/api/v1/configuracao-site/`
+   - **Aniversários** (diário, ex. 08h): `GET .../api/v1/verificar-aniversarios/` com header `X-Cron-Secret: <CRON_SECRET no Render>`
 
-Isso mantém o servidor da API "acordado", o banco ativo e envia e-mails de aniversário apenas com o segredo configurado.
+Variáveis no Render (`adcapital-api`): `KEEP_ALIVE_QUIET_START=23`, `KEEP_ALIVE_QUIET_END=6`, `KEEP_ALIVE_TIMEZONE=America/Sao_Paulo`, `KEEP_ALIVE_INTERVAL_SECONDS=1800`.
+
+Detalhes: `docs/ALERTAS-INFRA.md`.
 
 ---
 
