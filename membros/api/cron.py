@@ -16,6 +16,30 @@ from membros.utils import enviar_email_resend_api
 @authentication_classes([])
 def verificar_aniversarios(request):
     try:
+        # Suporte a disparo de teste manual: ?test_email=email@exemplo.com
+        test_email = request.GET.get('test_email', '').strip()
+        if test_email:
+            membro = Membro.objects.filter(email__iexact=test_email).first()
+            nome = membro.nome if membro else 'Membro AD Capital'
+            html = f"""
+            <html><body>
+                <h2 style="color: #2563eb;">Feliz Aniversário, {nome}! 🎉</h2>
+                <p>Nós da <strong>Igreja AD Capital</strong> celebramos sua vida neste dia especial.</p>
+                <p><em>"O Senhor te abençoe e te guarde..." (Números 6:24-26)</em></p>
+            </body></html>
+            """
+            sucesso = enviar_email_resend_api(
+                to=test_email,
+                subject=f'Feliz Aniversário, {nome}! 🎉',
+                body=html,
+            )
+            return Response({
+                'success': sucesso,
+                'enviados': 1 if sucesso else 0,
+                'modo_teste': True,
+                'destinatario': test_email,
+            })
+
         hoje = datetime.date.today()
         membros = Membro.objects.filter(
             data_nascimento__month=hoje.month,
@@ -33,14 +57,15 @@ def verificar_aniversarios(request):
                 <p><em>"O Senhor te abençoe e te guarde..." (Números 6:24-26)</em></p>
             </body></html>
             """
-            enviar_email_resend_api(
-                para=[m.email],
-                assunto=f'Feliz Aniversário, {m.nome}! 🎉',
-                html_conteudo=html,
+            sucesso = enviar_email_resend_api(
+                to=m.email,
+                subject=f'Feliz Aniversário, {m.nome}! 🎉',
+                body=html,
             )
-            m.ano_ultimo_email_aniversario = hoje.year
-            m.save()
-            enviados += 1
+            if sucesso:
+                m.ano_ultimo_email_aniversario = hoje.year
+                m.save(update_fields=['ano_ultimo_email_aniversario'])
+                enviados += 1
         return Response({'success': True, 'enviados': enviados})
     except Exception as e:
         return Response({'error': str(e)}, status=500)

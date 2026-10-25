@@ -50,6 +50,75 @@ class SecurityPhase0Tests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
+    @override_settings(DEBUG=True, SECRET_KEY='test-secret-key-for-dev-only', CRON_SECRET='cron-test-secret')
+    def test_verificar_aniversarios_envia_email_para_aniversariante(self):
+        import datetime
+        from unittest.mock import patch
+        from membros.models import Funcao, Membro
+
+        hoje = datetime.date.today()
+        funcao, _ = Funcao.objects.get_or_create(nome='Membro')
+        membro = Membro.objects.create(
+            nome='Aniversariante do Dia',
+            cpf='12345678901',
+            email='aniversariante@example.com',
+            data_nascimento=hoje.replace(year=1990),
+            funcao=funcao,
+        )
+
+        with patch('membros.api.cron.enviar_email_resend_api', return_value=True) as mock_send:
+            response = self.client.get(
+                '/api/v1/verificar-aniversarios/',
+                HTTP_X_CRON_SECRET='cron-test-secret',
+            )
+            self.assertEqual(response.status_code, 200)
+            self.assertTrue(response.data['success'])
+            self.assertEqual(response.data['enviados'], 1)
+            mock_send.assert_called_once()
+            args, kwargs = mock_send.call_args
+            self.assertEqual(kwargs.get('to'), 'aniversariante@example.com')
+
+            membro.refresh_from_db()
+            self.assertEqual(membro.ano_ultimo_email_aniversario, hoje.year)
+
+    @override_settings(DEBUG=True, SECRET_KEY='test-secret-key-for-dev-only', CRON_SECRET='cron-test-secret')
+    def test_verificar_aniversarios_modo_teste(self):
+        from unittest.mock import patch
+
+        with patch('membros.api.cron.enviar_email_resend_api', return_value=True) as mock_send:
+            response = self.client.get(
+                '/api/v1/verificar-aniversarios/?test_email=teste@example.com',
+                HTTP_X_CRON_SECRET='cron-test-secret',
+            )
+            self.assertEqual(response.status_code, 200)
+            self.assertTrue(response.data['success'])
+            self.assertTrue(response.data['modo_teste'])
+            mock_send.assert_called_once()
+            args, kwargs = mock_send.call_args
+            self.assertEqual(kwargs.get('to'), 'teste@example.com')
+
+    def test_enviar_email_resend_api_aliases(self):
+        from unittest.mock import patch
+        from membros.utils import enviar_email_resend_api
+
+        with patch.dict('os.environ', {'RESEND_API_KEY': 're_test_123'}), \
+             patch('requests.post') as mock_post:
+            mock_post.return_value.status_code = 200
+            mock_post.return_value.json.return_value = {'id': 'email-123'}
+
+            # Teste com aliases em português e lista de destinatários
+            ok = enviar_email_resend_api(
+                para=['dest@example.com'],
+                assunto='Assunto Teste',
+                html_conteudo='<p>Mensagem</p>',
+            )
+            self.assertTrue(ok)
+            mock_post.assert_called_once()
+            payload = mock_post.call_args[1]['json']
+            self.assertEqual(payload['to'], ['dest@example.com'])
+            self.assertEqual(payload['subject'], 'Assunto Teste')
+            self.assertIn('Mensagem', payload['html'])
+
     def test_cors_not_allow_all_in_settings(self):
         from django.conf import settings
         self.assertFalse(getattr(settings, 'CORS_ALLOW_ALL_ORIGINS', True))
@@ -63,3 +132,4 @@ class SecurityPhase0Tests(TestCase):
         from django.conf import settings
         backend = settings.CACHES['default']['BACKEND']
         self.assertIn('DatabaseCache', backend)
+
