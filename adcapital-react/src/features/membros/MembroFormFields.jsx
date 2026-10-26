@@ -1,6 +1,7 @@
-﻿import React from 'react';
+import React from 'react';
 import CpfInput from '../../shared/components/CpfInput';
 import PhoneInput from '../../shared/components/PhoneInput';
+import { formatarDataExtenso } from '../../shared/lib/masks';
 
 const fieldClass =
   'p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-mono';
@@ -58,6 +59,11 @@ export default function MembroFormFields({ formData, handleChange, funcoes, isPu
                         value={formData.data_nascimento || ''}
                         onChange={e => handleChange('data_nascimento', e.target.value)}
                     />
+                    {formatarDataExtenso(formData.data_nascimento) && (
+                        <span className="text-[11px] font-bold text-blue-600 mt-1.5 ml-1 flex items-center gap-1 bg-blue-50/80 px-2.5 py-1 rounded-lg border border-blue-100/60">
+                            🗓️ {formatarDataExtenso(formData.data_nascimento)}
+                        </span>
+                    )}
                 </div>
 
                 <div className="flex flex-col">
@@ -138,6 +144,11 @@ export default function MembroFormFields({ formData, handleChange, funcoes, isPu
                         value={formData.data_entrada || ''}
                         onChange={e => handleChange('data_entrada', e.target.value)}
                     />
+                    {formatarDataExtenso(formData.data_entrada) && (
+                        <span className="text-[11px] font-bold text-blue-600 mt-1.5 ml-1 flex items-center gap-1 bg-blue-50/80 px-2.5 py-1 rounded-lg border border-blue-100/60">
+                            🗓️ {formatarDataExtenso(formData.data_entrada)}
+                        </span>
+                    )}
                 </div>
 
                 {!isPublic && (
@@ -150,6 +161,11 @@ export default function MembroFormFields({ formData, handleChange, funcoes, isPu
                                 value={formData.data_saida || ''}
                                 onChange={e => handleChange('data_saida', e.target.value)}
                             />
+                            {formatarDataExtenso(formData.data_saida) && (
+                                <span className="text-[11px] font-bold text-slate-600 mt-1.5 ml-1 flex items-center gap-1 bg-slate-100/80 px-2.5 py-1 rounded-lg border border-slate-200/60">
+                                    🗓️ {formatarDataExtenso(formData.data_saida)}
+                                </span>
+                            )}
                         </div>
                     </>
                 )}

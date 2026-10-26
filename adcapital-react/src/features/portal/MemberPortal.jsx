@@ -9,6 +9,7 @@ import ParentescoFormPublico from '../membros/ParentescoFormPublico';
 import { trackPageView } from '../../shared/hooks/useAnalytics';
 import { trackInternalAcesso } from '../../api/internalAnalytics';
 import PhoneInput from '../../shared/components/PhoneInput';
+import { formatarDataExtenso } from '../../shared/lib/masks';
 
 export default function MemberPortal({ abaAtiva = 'mensagens' }) {
   const [dados, setDados] = useState(null);
@@ -329,6 +330,11 @@ export default function MemberPortal({ abaAtiva = 'mensagens' }) {
               disabled={!editando}
               onChange={e => setFormData({...formData, data_nascimento: e.target.value})}
             />
+            {formatarDataExtenso(formData.data_nascimento) && (
+              <span className="text-[11px] font-bold text-blue-600 mt-1.5 ml-1 flex items-center gap-1 bg-blue-50/80 px-2.5 py-1 rounded-lg border border-blue-100/60">
+                🗓️ {formatarDataExtenso(formData.data_nascimento)}
+              </span>
+            )}
           </div>
           <div className="space-y-1">
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Gênero</label>

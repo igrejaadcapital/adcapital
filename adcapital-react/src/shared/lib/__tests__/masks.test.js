@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { maskCpf, maskPhone, formatCpf, onlyDigits } from '../masks';
+import { maskCpf, maskPhone, formatCpf, onlyDigits, formatarDataExtenso } from '../masks';
 
 describe('masks', () => {
   it('onlyDigits remove caracteres não numéricos', () => {
@@ -20,4 +20,13 @@ describe('masks', () => {
     expect(formatCpf('')).toBe('---');
     expect(formatCpf('12345678901')).toBe('123.456.789-01');
   });
+
+  it('formatarDataExtenso formata YYYY-MM-DD em extenso em português', () => {
+    expect(formatarDataExtenso('1961-02-09')).toBe('09 de fevereiro de 1961');
+    expect(formatarDataExtenso('1961-09-02')).toBe('02 de setembro de 1961');
+    expect(formatarDataExtenso('')).toBe('');
+    expect(formatarDataExtenso(null)).toBe('');
+    expect(formatarDataExtenso('data-invalida')).toBe('');
+  });
 });
+

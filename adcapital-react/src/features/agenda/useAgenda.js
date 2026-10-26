@@ -2,6 +2,26 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '../../api/config';
 import { agendaKeys } from '../../api/queryClient';
 
+export function normalizeDateTimeForApi(value) {
+  if (value === null || value === undefined || value === '') return value;
+
+  const raw = String(value).trim();
+  if (!raw) return raw;
+
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?$/.test(raw)) {
+    return raw;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}T.*(?:[Zz]|[+-]\d{2}:\d{2})$/.test(raw)) {
+    return raw;
+  }
+
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) return raw;
+
+  return raw;
+}
+
 async function fetchEventos() {
   const response = await api.get('/agenda/eventos/');
   return response.data;
@@ -35,8 +55,8 @@ export function useAgenda({ includeSyncStatus = true } = {}) {
       api.post('/agenda/eventos/', {
         titulo: novoEvento.titulo,
         descricao: novoEvento.descricao,
-        data_inicio: new Date(novoEvento.data_inicio).toISOString(),
-        data_fim: new Date(novoEvento.data_fim).toISOString(),
+        data_inicio: normalizeDateTimeForApi(novoEvento.data_inicio),
+        data_fim: normalizeDateTimeForApi(novoEvento.data_fim),
       }),
     onSuccess: invalidateEventos,
   });
